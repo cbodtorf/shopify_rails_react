@@ -1,18 +1,13 @@
-<% content_for :javascript do %>
-  <script type="text/javascript">
-    ShopifyApp.ready(function(){
-      ShopifyApp.Bar.initialize({
-        title: "Home",
-        icon: "<%= asset_path('favicon.ico') %>"
-      });
-    });
-  </script>
-<% end %>
 
-<h2>Products</h2>
+<% @shopOrigin = "https://#{ @shop_session.url }" if @shop_session %>
 
-<ul>
-  <% @products.each do |product| %>
-    <li><%= link_to product.title, "https://#{@shop_session.url}/admin/products/#{product.id}", target: "_top" %></li>
-  <% end %>
-</ul>
+<%= react_component(
+      "Home",
+      props: {
+        apiKey: ShopifyApp.configuration.api_key,
+        shopOrigin: @shopOrigin,
+        debug: Rails.env.development? ? 'true' : 'false',
+        forceRedirect: true,
+        shop_session: @shop_session,
+        products: @products
+        }) %>
