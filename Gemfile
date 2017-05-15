@@ -7,6 +7,8 @@ end
 
 # postgres sql
 gem 'pg'
+# respond_to rule for json
+gem 'responders'
 # Haltable is a gem that allows halting controller actions to simplify the flows.
 gem 'haltable'
 # shopify auth/api
