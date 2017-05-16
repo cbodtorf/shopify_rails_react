@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   get 'error', to: 'home#error'
   get 'onboarding', to: 'home#onboarding'
 
+  get 'dashboard', to: 'dashboard#index'
+
   namespace :api do
     namespace :v1 do
       resources :rates, only: [:index, :create, :destroy, :update]

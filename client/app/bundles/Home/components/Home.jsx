@@ -2,52 +2,47 @@ import React from 'react';
 import {
   Layout,
   Page,
-  Stack,
   FooterHelp,
   Card,
+  Stack,
   Link,
   Button,
-  Tag,
   Icon,
   Badge,
   Banner,
-  FormLayout,
   TextField,
   AccountConnection,
-  ChoiceList,
-  SettingToggle,
 } from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Rate from './Rate'
+import Bundle from './Bundle'
 
 class Home extends React.Component {
   constructor(props) {
     super(props);
 
-    console.log('rates', this.props.rates);
     this.state = {
-      first: '',
-      last: '',
-      email: '',
-      checkboxes: [],
       connected: false,
-      rates: this.props.rates
+      rates: []
     };
   }
 
-  render() {
-    const products = this.props.products.map((product, i) => {
-      return (
-        <Card
-          key={i}
-          title={product.title}
-          primaryFooterAction={{content: 'check it out', url: `https://${this.props.shop_session.url}/admin/products/${product.id}`}}
-          sectioned
-        >
-          <p>View a summary of {product.title}</p>
-        </Card>
-      );
+  componentWillMount() {
+    let self = this;
+    fetch('/api/v1/rates.json', {method: 'GET', mode: 'cors', cache: 'default'}).then(response => {
+      if (response.ok) {
+        return response.json()
+      } else {
+        // error
+        console.error('err', response);
+      }
+    }).then(response => {
+      self.setState({rates: response});
     })
+
+  }
+
+  render() {
 
     const breadcrumbs = [
       {content: 'Example apps'},
@@ -64,24 +59,47 @@ class Home extends React.Component {
       >
         <Page
         title={`Home`}
-        
+
         primaryAction={primaryAction}
         secondaryActions={secondaryActions}
         >
-          <a href="/error">error</a><br />
-          <a href="/onboarding">onboarding</a>
+
           <Layout>
+            <Layout.Section>
+              <Banner
+                status="warning"
+                title="These are some links for testing routes."
+              >
+                <a href="/error">error</a><br />
+                <a href="/onboarding">onboarding</a>
+              </Banner>
+            </Layout.Section>
+
             <Layout.AnnotatedSection
               title="Dashboard"
-              description="Up-to-date Order and Customer information."
+              description={
+                <div>
+                  <p>Info on orders, customers, etc!</p>
+                  <Button primary url={'/dashboard'}>Dasboard</Button>
+                </div>
+              }
             >
-              <SettingToggle
-                action={{
-                  content: 'Dashboard', url: '/dashboard',
-                }}
-              >
-                Upload your store’s logo, change colors and fonts, and more.
-              </SettingToggle>
+              <Card>
+                <Stack>
+                  <Card.Section sectioned title="Juices to Cook">
+                    <h1  className="Polaris-DisplayText--sizeLarge">341</h1>
+                  </Card.Section>
+                  <Card.Section sectioned title="New Orders">
+                    <h1 className="Polaris-DisplayText--sizeLarge">136</h1>
+                  </Card.Section>
+                  <Card.Section sectioned title="New Customers">
+                    <h1 className="Polaris-DisplayText--sizeLarge">23</h1>
+                  </Card.Section>
+                  <Card.Section sectioned title="Today's Revenue">
+                    <h1 className="Polaris-DisplayText--sizeLarge">$2,392</h1>
+                  </Card.Section>
+                </Stack>
+              </Card>
             </Layout.AnnotatedSection>
 
            {this.renderRates()}
@@ -146,7 +164,7 @@ class Home extends React.Component {
           termsOfService={<p>Learn about adding custom Delivery Rates at <Link url="https://polaris.shopify.com">Bamboo Support</Link>.</p>}
         />
 
-        {rates}
+        <Card>{rates}</Card>
 
       </Layout.AnnotatedSection>
     );
@@ -171,6 +189,12 @@ class Home extends React.Component {
   }
 
   hideBundles() {
+    const self = this
+    const bundles = this.props.bundles.map((bundle, i) => {
+      return (
+        <Bundle key={bundle.id} bundleData={bundle} shop={self.props.shop} />
+      )
+    })
     return (
 
       <Layout.AnnotatedSection
@@ -186,79 +210,7 @@ class Home extends React.Component {
           details={<div><Badge status="info">4</Badge> Bundles</div>}
           termsOfService={<p>Learn about adding custom Bundles at <Link url="https://polaris.shopify.com">Bamboo Support</Link>.</p>}
         />
-        <AccountConnection
-          connected
-          action={{
-            content: 'Edit',
-            onAction: this.toggleBundles.bind(this, this.state),
-          }}
-          accountName="Cleanse"
-          title={<Link url="http://google.com">The Beginner - 3 Day Cleanse</Link>}
-          termsOfService={
-            <div>
-              <Badge>Coconut Almond Milk</Badge>
-              <Badge>Spinach Apple</Badge>
-              <Badge>Lemon Ginger</Badge>
-              <Badge>Beet Cucumber</Badge>
-              <Badge>Cinnamon Yam</Badge>
-              <Badge>Carrot Coconut</Badge>
-              <Badge>Sweet Celery</Badge>
-            </div>
-          }
-        />
-        <AccountConnection
-          connected
-          action={{
-            content: 'Edit',
-            onAction: this.toggleBundles.bind(this, this.state),
-          }}
-          accountName="Cleanse"
-          title={<Link url="http://google.com">The Organ Cleanse - 1 Day Cleanse</Link>}
-          termsOfService={
-            <div>
-              <Badge>Psyllium Husk Apple</Badge>
-              <Badge>Spinach Apple</Badge>
-              <Badge>Seasonal Greens</Badge>
-              <Badge>Spiced Yam</Badge>
-              <Badge>Carrot Coconut</Badge>
-              <Badge>Vanilla Mint Almond Milk</Badge>
-            </div>
-          }
-        />
-        <AccountConnection
-          connected
-          action={{
-            content: 'Edit',
-            onAction: this.toggleBundles.bind(this, this.state),
-          }}
-          accountName="Kit"
-          title={<Link url="http://google.com">The Feel Better</Link>}
-          termsOfService={
-            <div>
-              <Badge>Feel Better Elixir</Badge>
-              <Badge>Lemon Ginger</Badge>
-              <Badge>Dandelion</Badge>
-              <Badge>Beet Cucumber</Badge>
-            </div>
-          }
-        />
-        <AccountConnection
-          connected
-          action={{
-            content: 'Edit',
-            onAction: this.toggleBundles.bind(this, this.state),
-          }}
-          accountName="Kit"
-          title={<Link url="http://google.com">Energy</Link>}
-          termsOfService={
-            <div>
-              <Badge>Deep Chocolate</Badge>
-              <Badge>Coffee Almond</Badge>
-              <Badge>Dandelion</Badge>
-              <Badge>Feel Better Elixir</Badge>
-            </div>
-          }
-        />
+          <Card>{ bundles }</Card>
       </Layout.AnnotatedSection>
 
     );
@@ -274,7 +226,6 @@ class Home extends React.Component {
       ? this.hideBundles()
       : this.showBundles();
   }
-
 
 }
 export default Home

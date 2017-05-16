@@ -1,5 +1,4 @@
 class Bundle < ApplicationRecord
   belongs_to :shop
-  serialize :juice_ids, Array
-  
+  has_many :juices, dependent: :destroy
 end

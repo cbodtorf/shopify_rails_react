@@ -22,7 +22,7 @@ class HomeController < ShopifyApp::AuthenticatedController
     ]
     @rates = shop.rates.order(:name)
     @bundles = shop.bundles.order(:name)
-    
+
     haltable do
       handle_unsuccessful_onboarding
       ensure_shipping_carrier_created
@@ -69,6 +69,7 @@ class HomeController < ShopifyApp::AuthenticatedController
     return unless onboarding?
     render('onboarding')
     halt
+    render('home')
   end
 
   def handle_unsuccessful_onboarding

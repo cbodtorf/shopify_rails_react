@@ -4,6 +4,10 @@ class Api::V1::RatesController < Api::V1::BaseController
     respond_with Rate.all
   end
 
+  def show
+  respond_with Rate.find(params[:id])
+  end
+
   def create
     respond_with :api, :v1, Rate.create(rate_params)
   end
