@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  description: MyText
+  price: 1
+  shop_id: one
+  juice_ids: 1
+
+two:
+  name: MyString
+  description: MyText
+  price: 1
+  shop_id: two
+  juice_ids: 1

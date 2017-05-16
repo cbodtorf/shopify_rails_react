@@ -10,7 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170515203701) do
+ActiveRecord::Schema.define(version: 20170516024841) do
+
+  create_table "bundles", force: :cascade do |t|
+    t.integer  "shop_id"
+    t.string   "name"
+    t.text     "description"
+    t.integer  "price"
+    t.integer  "juice_ids"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["shop_id"], name: "index_bundles_on_shop_id"
+  end
 
   create_table "rates", force: :cascade do |t|
     t.integer  "shop_id"
@@ -26,11 +37,11 @@ ActiveRecord::Schema.define(version: 20170515203701) do
     t.string   "shopify_domain",                     null: false
     t.string   "shopify_token",                      null: false
     t.integer  "shipping_carrier_id"
+    t.string   "money_format"
+    t.string   "currency"
+    t.string   "locale",              default: "en"
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
-    t.string   "currency"
-    t.string   "money_format"
-    t.string   "locale",              default: "en"
     t.index ["shopify_domain"], name: "index_shops_on_shopify_domain", unique: true
   end
 

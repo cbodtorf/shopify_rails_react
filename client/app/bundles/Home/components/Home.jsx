@@ -64,7 +64,7 @@ class Home extends React.Component {
       >
         <Page
         title={`Home`}
-        breadcrumbs={breadcrumbs}
+        
         primaryAction={primaryAction}
         secondaryActions={secondaryActions}
         >

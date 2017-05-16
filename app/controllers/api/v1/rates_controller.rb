@@ -21,6 +21,6 @@ class Api::V1::RatesController < Api::V1::BaseController
   private
 
   def rate_params
-    params.require(:rate).permit(:id, :name, :description)
+    params.require(:rate).permit(:id, :name, :description, :price)
   end
 end
