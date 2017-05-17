@@ -5,6 +5,7 @@ class CreateBundles < ActiveRecord::Migration[5.0]
       t.string :name
       t.text :description
       t.integer :price
+      t.string :product_ids, array: true, default: []
 
       t.timestamps null: false
     end

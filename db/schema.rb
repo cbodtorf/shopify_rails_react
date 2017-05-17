@@ -10,25 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170516173817) do
+ActiveRecord::Schema.define(version: 20170516024841) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "bundles", force: :cascade do |t|
     t.integer  "shop_id"
     t.string   "name"
     t.text     "description"
     t.integer  "price"
-    t.integer  "juice_ids"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.index ["shop_id"], name: "index_bundles_on_shop_id"
-  end
-
-  create_table "juices", force: :cascade do |t|
-    t.string   "name"
-    t.integer  "bundle_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["bundle_id"], name: "index_juices_on_bundle_id"
+    t.string   "product_ids", default: [],              array: true
+    t.datetime "created_at",               null: false
+    t.datetime "updated_at",               null: false
+    t.index ["shop_id"], name: "index_bundles_on_shop_id", using: :btree
   end
 
   create_table "rates", force: :cascade do |t|
@@ -38,7 +33,7 @@ ActiveRecord::Schema.define(version: 20170516173817) do
     t.integer  "price"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
-    t.index ["shop_id"], name: "index_rates_on_shop_id"
+    t.index ["shop_id"], name: "index_rates_on_shop_id", using: :btree
   end
 
   create_table "shops", force: :cascade do |t|
@@ -50,7 +45,9 @@ ActiveRecord::Schema.define(version: 20170516173817) do
     t.string   "locale",              default: "en"
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
-    t.index ["shopify_domain"], name: "index_shops_on_shopify_domain", unique: true
+    t.index ["shopify_domain"], name: "index_shops_on_shopify_domain", unique: true, using: :btree
   end
 
+  add_foreign_key "bundles", "shops"
+  add_foreign_key "rates", "shops"
 end

@@ -4,6 +4,10 @@ class Api::V1::BundlesController < Api::V1::BaseController
     respond_with Bundle.all
   end
 
+  def show
+  respond_with Bundle.find(params[:id])
+  end
+
   def create
     respond_with :api, :v1, Bundle.create(bundle_params)
   end

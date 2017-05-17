@@ -11,15 +11,20 @@ import {
 class Bundle extends Component {
 
   render() {
-    const juices = this.props.bundleData.juice_ids.map(juice => {
-      return (
-        <Badge key={juice}>juice</Badge>
-      )
-    })
+    let products = []
+    if(this.props.bundleData.metafields !== null) {
+      products = this.props.bundleData.metafields.value.split(',').map((product, i) => {
+        return (
+          <Badge key={i}>{product}</Badge>
+        )
+      })
+    } else {
+      products = <Badge status="attention" >No product attached to this bundle</Badge>
+    }
 
     return (
       <Card.Section
-        title={ `${this.props.bundleData.name}` }
+        title={ `${this.props.bundleData.title}` }
         subdued
       >
         <div style={{float: 'right'}}>
@@ -30,8 +35,8 @@ class Bundle extends Component {
             </a>
           </ButtonGroup>
         </div>
-        <p>{this.props.bundleData.description}</p>
-        { juices }
+        <br />
+        { products }
       </Card.Section>
     );
   }

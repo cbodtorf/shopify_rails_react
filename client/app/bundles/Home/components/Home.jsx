@@ -28,6 +28,7 @@ class Home extends React.Component {
   }
 
   componentWillMount() {
+
     let self = this;
     fetch('/api/v1/rates.json', {method: 'GET', mode: 'cors', cache: 'default'}).then(response => {
       if (response.ok) {
@@ -207,7 +208,7 @@ class Home extends React.Component {
             content: 'Hide Bundles',
             onAction: this.toggleBundles.bind(this, this.state),
           }}
-          details={<div><Badge status="info">4</Badge> Bundles</div>}
+          details={<div><Badge status="info">{this.props.bundles.length}</Badge> Bundles</div>}
           termsOfService={<p>Learn about adding custom Bundles at <Link url="https://polaris.shopify.com">Bamboo Support</Link>.</p>}
         />
           <Card>{ bundles }</Card>
