@@ -1,7 +1,7 @@
 class BundleController < ShopifyApp::AuthenticatedController
 
   def index
-    # TODO: Need to have conditional if product is not a bundle
+    # TODO: Need to have conditional if product is not a bundle right now is handled on Client
     @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
     @bundle = ShopifyAPI::Product.find(params[:id])
     @bundle.metafields = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => @bundle.id, :namespace => "bundle", :key => "items"})
