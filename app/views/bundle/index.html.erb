@@ -1,13 +1,21 @@
 <% @shopOrigin = "https://#{ @shop_session.url }" if @shop_session %>
 
+<!-- <%= form_tag("/bundle/#{@bundle.id}", method: "put") do %>
+  <%= label_tag(:metafield, "Search for:") %>
+  <%= text_field_tag(:metafield) %>
+  <%= submit_tag("submit") %>
+<% end %> -->
+
 <%= react_component(
-      "Home",
+      "BundleEditor",
       props: {
         apiKey: ShopifyApp.configuration.api_key,
         shopOrigin: @shopOrigin,
         debug: Rails.env.development? ? 'true' : 'false',
         forceRedirect: true,
         shop_session: @shop_session,
+        bundle: @bundle,
+        products: @products,
         shop: @shop,
-        bundles: @bundles,
+        form_authenticity_token: form_authenticity_token,
         }, prerender: false) %>

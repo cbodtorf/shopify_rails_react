@@ -28,12 +28,7 @@ class Bundle extends Component {
         subdued
       >
         <div style={{float: 'right'}}>
-          <ButtonGroup segmented>
-            <Button size="slim" url={"/bundles/" + this.props.bundleData.id}>Edit</Button>
-            <a rel="nofollow" data-confirm="Delete?" data-method="delete" href={"/bundles/" + this.props.bundleData.id}>
-              <Button destructive icon="delete" size="slim" accessibilityLabel="delete bundle"/>
-            </a>
-          </ButtonGroup>
+          <Button size="slim" url={"/bundle?id=" + this.props.bundleData.id}>Edit</Button>
         </div>
         <br />
         { products }

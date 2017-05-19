@@ -1,5 +1,6 @@
 #bundles_controller.rb
 class Api::V1::BundlesController < Api::V1::BaseController
+
   def index
     respond_with Bundle.all
   end
@@ -9,7 +10,8 @@ class Api::V1::BundlesController < Api::V1::BaseController
   end
 
   def create
-    respond_with :api, :v1, Bundle.create(bundle_params)
+    # respond_with :api, :v1, Bundle.create(bundle_params)
+    Rails.logger.debug("My bundle: #{bundle_params.inspect}")
   end
 
   def destroy
@@ -17,14 +19,17 @@ class Api::V1::BundlesController < Api::V1::BaseController
   end
 
   def update
-    bundle = Bundle.find(params["id"])
-    bundle.update_attributes(bundle_params)
-    respond_with bundle, json: bundle
+    bundle = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => params[:id], :namespace => "bundle", :key => "items"})
+    # bundle.
+    # bundle.save
+      # Rails.logger.debug("My bundle: #{bundle.inspect}")
+      Rails.logger.debug("My params: #{ShopifyAPI::Metafield.inspect}")
   end
 
   private
 
   def bundle_params
-    params.require(:bundle).permit(:id, :name, :description, :price, :juice_ids)
+    # params.require(:bundle).permit(:id, :name, :description, :price)
+    params
   end
 end

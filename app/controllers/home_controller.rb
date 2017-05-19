@@ -2,15 +2,12 @@ class HomeController < ShopifyApp::AuthenticatedController
   include Haltable
 
   def index
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
     @rates = shop.rates.order(:name)
     @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
 
     @bundles.each do |bundle|
       bundle.metafields = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
     end
-
-    # @bundles = shop.bundles.order(:name)
 
     haltable do
       handle_unsuccessful_onboarding
