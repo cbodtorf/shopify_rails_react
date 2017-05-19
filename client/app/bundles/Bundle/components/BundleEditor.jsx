@@ -8,20 +8,31 @@ class BundleEditor extends React.Component {
 
     this.state = {
       formFields: [],
-      hiddenFormInput: ''
+      hiddenFormInput: '',
+      method: '',
+      url: ''
     }
   }
 
   componentWillMount() {
     console.log("props", this.props);
     let metafields = []
+    let method = 'post'
+    let url = `/bundle?id=${this.props.bundle.id}`
+
     if (this.props.bundle.metafields !== null) {
       metafields = this.props.bundle.metafields.value.split(',').map((item, i) => {
         return {'title': item, 'id': i}
       })
+      method = 'put'
+      url = `/bundle/${this.props.bundle.id}`
     }
 
-    this.setState({formFields: metafields})
+    this.setState({
+      formFields: metafields,
+      method: method,
+      url: url
+    })
   }
 
   render() {
@@ -42,19 +53,13 @@ class BundleEditor extends React.Component {
             options={productOptions}
             placeholder="Select"
             onChange={this.valueUpdater(item.id)}
-            labelAction={{content: 'remove', onAction: () => { console.log('meh', item.id )}}}
+            labelAction={{content: 'remove', onAction: () => { this.removeFormField(item.id) }}}
           />
         )
       })
     } else {
       existingMetafields = (
-        <Select
-          label="Bundle Item"
-          options={productOptions}
-          placeholder="Select"
-          labelAction={{content: 'remove', onAction: () => { console.log('meh', 0)}}}
-          onChange={this.valueUpdater(0)}
-        />
+        <p>No associated products yet.</p>
       )
     }
 
@@ -71,16 +76,22 @@ class BundleEditor extends React.Component {
                   sectioned
                   title={this.props.bundle.title}
                   primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() }}}
+                  actions={[{content: 'Add bundle item', onAction: () => { this.addFormField() }}]}
                   >
                 <FormLayout>
                   <FormLayout.Group>
                     { existingMetafields }
-                    <form action={`/bundle/${this.props.bundle.id}`} acceptCharset="UTF-8" method="post" >
+                    <form
+                      action={this.state.url}
+                      acceptCharset="UTF-8" method="post"
+                      ref={(form) => {this.metaForm = form}}
+                      style={{'display': 'none'}}
+                      >
                       <input name="utf8" type="hidden" value="✓" />
-                      <input type="hidden" name="_method" value="put" />
+                      <input type="hidden" name="_method" value={this.state.method} />
                       <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
                       <label htmlFor="metafield">Search for:</label>
-                      <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={this.formUpdater('hiddenFormInput')}/>
+                      <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
                       <input type="submit" name="commit" value="submit" data-disable-with="submit" />
                     </form>
                   </FormLayout.Group>
@@ -113,45 +124,32 @@ class BundleEditor extends React.Component {
     return (value) => this.setState({[field]: value});
   }
 
-  handleSave(id) {
-    console.log('this', this);
-
+  handleSave() {
     let dataString = this.state.formFields.map(field => {
       return field.title
     }).join(',')
-    let url = `https://bamboojuices.myshopify.com/admin/products/${this.props.bundle.id}/metafields/28750988869.json`
 
+    this.metaInput.value = dataString
+    console.log('data', dataString, this.metaForm, this.metaInput.value);
+    this.metaForm.submit()
+  }
 
-    let form = document.querySelector('form')
-    let input = $('input#metafield')
-    input.value = `{"metafield": {"value": ${dataString}}})`
-    form.submit()
-    console.log('data', dataString, form, input);
+  addFormField() {
+    console.log('formFields', this.state.formFields);
+    let formFields = this.state.formFields
+    formFields.push({title: this.props.products[0].title, id: this.state.formFields.length + 1})
 
-    // fetch(`/bundle/${this.props.bundle.id}`, {
-    //   method: 'PUT',
-    //   mode: 'cors',
-    //   body: JSON.stringify({
-    //     "utf8": "✓",
-    //     "authenticity_token": this.props.form_authenticity_token,
-    //     "data": {"metafield": {"value": dataString}},
-    //     "commit": "submit"
-    //   }),
-    //   headers: {
-    //     'Accept': 'application/json',
-    //     'Content-Type': 'application/json'
-    //   }
-    // }).then(response => {
-    //   if (response.ok) {
-    //     // return response.json()
-    //   } else {
-    //     // error
-    //     console.error('err', response);
-    //   }
-    // }).then(response => {
-    //   console.log('yay!');
-    // })
+    this.setState({formFields: formFields})
+  }
 
+  removeFormField(id) {
+    console.log('formFields', this.state.formFields);
+    let formFields = this.state.formFields.filter(item => {
+      // Remove item
+      return item.id !== id
+    })
+
+    this.setState({formFields: formFields})
   }
 
 

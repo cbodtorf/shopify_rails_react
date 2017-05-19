@@ -29,17 +29,7 @@ class Home extends React.Component {
 
   componentWillMount() {
 
-    let self = this;
-    fetch('/api/v1/rates.json', {method: 'GET', mode: 'cors', cache: 'default'}).then(response => {
-      if (response.ok) {
-        return response.json()
-      } else {
-        // error
-        console.error('err', response);
-      }
-    }).then(response => {
-      self.setState({rates: response});
-    })
+    this.setState({rates: this.props.rates});
 
   }
 

@@ -1,5 +1,4 @@
-#rates_controller.rb
-class Api::V1::RatesController < Api::V1::BaseController
+class RatesController < ShopifyApp::AuthenticatedController
   def index
     respond_with Rate.all
   end

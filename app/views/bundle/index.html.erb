@@ -1,11 +1,5 @@
 <% @shopOrigin = "https://#{ @shop_session.url }" if @shop_session %>
 
-<!-- <%= form_tag("/bundle/#{@bundle.id}", method: "put") do %>
-  <%= label_tag(:metafield, "Search for:") %>
-  <%= text_field_tag(:metafield) %>
-  <%= submit_tag("submit") %>
-<% end %> -->
-
 <%= react_component(
       "BundleEditor",
       props: {

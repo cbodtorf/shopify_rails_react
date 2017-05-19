@@ -2,7 +2,7 @@ ShopifyApp.configure do |config|
   config.application_name = "Bamboo App"
   config.api_key = ENV['SHOPIFY_CLIENT_API_KEY']
   config.secret = ENV['SHOPIFY_CLIENT_API_SECRET']
-  config.scope = "read_orders, read_products, write_shipping, read_shipping"
+  config.scope = "read_reports, write_orders, read_orders, write_products, read_products, write_shipping, read_shipping"
   config.embedded_app = true
   config.webhooks = [
   {
