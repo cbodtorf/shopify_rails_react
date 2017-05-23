@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 
 class BundleEditor extends React.Component {
@@ -7,6 +7,8 @@ class BundleEditor extends React.Component {
     super(props)
 
     this.state = {
+      bundle: {},
+      bundleItems: [],
       formFields: [],
       hiddenFormInput: '',
       method: '',
@@ -16,20 +18,36 @@ class BundleEditor extends React.Component {
 
   componentWillMount() {
     console.log("props", this.props);
-    let metafields = []
+    console.log("meta", this.props.bundle.metafield);
+    let metafield = []
     let method = 'post'
     let url = `/bundle?id=${this.props.bundle.id}`
 
-    if (this.props.bundle.metafields !== null) {
-      metafields = this.props.bundle.metafields.value.split(',').map((item, i) => {
-        return {'title': item, 'id': i}
-      })
+    let bundleItems = this.props.bundles.map(bundle => {
+      return (
+        {
+          url: bundle.url,
+          media: <Thumbnail
+            source={bundle.image.src}
+            alt={bundle.image.alt}
+          />,
+          attributeOne: bundle.title,
+          attributeTwo: <TextStyle variation="subdued">{`${bundle.metafield.length} associated products`}</TextStyle>,
+          actions: [{content: 'Edit listing', onAction: () => { this.handleEdit(bundle) }}],
+          persistActions: true,
+        }
+      )
+    })
+
+    if (this.props.bundle.metafield.length !== 0) {
       method = 'put'
       url = `/bundle/${this.props.bundle.id}`
     }
 
     this.setState({
-      formFields: metafields,
+      bundle: this.props.bundle,
+      bundleItems: bundleItems,
+      formFields: this.props.bundle.metafield,
       method: method,
       url: url
     })
@@ -37,12 +55,16 @@ class BundleEditor extends React.Component {
 
   render() {
     const productOptions = this.props.products.filter(product => {
-      return product.product_type !== 'bundle'
+      /**
+      * @TODO: need a stricter filter for removing unwanted product like auto renew and bundles.
+      */
+      return product.product_type !== 'bundle' && product.title.toLowerCase().indexOf('auto') === -1
     }).map(product => {
       return product.title
     })
 
     let existingMetafields = []
+    console.log('state', this.state);
     if (this.state.formFields.length !== 0 ) {
       existingMetafields = this.state.formFields.map((item, i) => {
         return (
@@ -74,9 +96,10 @@ class BundleEditor extends React.Component {
             <Layout.Section>
                 <Card
                   sectioned
-                  title={this.props.bundle.title}
-                  primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() }}}
-                  actions={[{content: 'Add bundle item', onAction: () => { this.addFormField() }}]}
+                  title={this.state.bundle.title}
+                  primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() } }}
+                  secondaryFooterAction={{content: 'Cancel', onAction: () => { this.handleCancel() } }}
+                  actions={[{content: 'Add bundle item', onAction: () => { this.addFormField() } }]}
                   >
                 <FormLayout>
                   <FormLayout.Group>
@@ -97,6 +120,16 @@ class BundleEditor extends React.Component {
                   </FormLayout.Group>
                 </FormLayout>
                 </Card>
+                <Card
+                  title="Other Bundles"
+                >
+                  <ResourceList
+                    items={this.state.bundleItems}
+                    renderItem={(item, index) => {
+                      return <ResourceList.Item key={index} {...item} />;
+                    }}
+                  />
+                </Card>
             </Layout.Section>
           </Layout>
         </Page>
@@ -107,7 +140,7 @@ class BundleEditor extends React.Component {
   valueUpdater(id) {
 
     return (value) => {
-      let metafields = this.state.formFields.map((field, i) => {
+      let metafield = this.state.formFields.map((field, i) => {
         if (field.id !== id) {
           return field
         } else {
@@ -115,7 +148,7 @@ class BundleEditor extends React.Component {
           return field
         }
         })
-        this.setState({formFields: metafields})
+        this.setState({formFields: metafield})
       }
 
   }
@@ -132,6 +165,31 @@ class BundleEditor extends React.Component {
     this.metaInput.value = dataString
     console.log('data', dataString, this.metaForm, this.metaInput.value);
     this.metaForm.submit()
+  }
+
+  handleCancel() {
+    window.location = '/'
+  }
+
+  handleEdit(bundle) {
+    let method = 'post'
+    let url = `/bundle?id=${bundle.id}`
+
+    if (bundle.metafield.length !== 0) {
+      method = 'put'
+      url = `/bundle/${bundle.id}`
+    }
+
+    this.setState({
+      bundle: bundle,
+      formFields: bundle.metafield,
+      method: method,
+      url: url
+    })
+
+    if (history.pushState) {
+      history.pushState('', bundle.title, `${window.location.origin}?id=${bundle.id}`);
+    }
   }
 
   addFormField() {
