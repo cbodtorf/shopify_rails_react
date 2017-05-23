@@ -10,20 +10,31 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170516024841) do
+ActiveRecord::Schema.define(version: 20170523193709) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "bundles", force: :cascade do |t|
-    t.integer  "shop_id"
-    t.string   "name"
-    t.text     "description"
+  create_table "conditions", force: :cascade do |t|
+    t.integer  "rate_id"
+    t.string   "field",                               null: false
+    t.string   "verb",                                null: false
+    t.text     "value",                               null: false
+    t.boolean  "all_items_must_match", default: true
+    t.datetime "created_at",                          null: false
+    t.datetime "updated_at",                          null: false
+    t.index ["rate_id"], name: "index_conditions_on_rate_id", using: :btree
+  end
+
+  create_table "product_specific_prices", force: :cascade do |t|
+    t.integer  "rate_id"
+    t.string   "field",      null: false
+    t.string   "verb",       null: false
+    t.text     "value",      null: false
     t.integer  "price"
-    t.string   "product_ids", default: [],              array: true
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
-    t.index ["shop_id"], name: "index_bundles_on_shop_id", using: :btree
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rate_id"], name: "index_product_specific_prices_on_rate_id", using: :btree
   end
 
   create_table "rates", force: :cascade do |t|
@@ -31,8 +42,16 @@ ActiveRecord::Schema.define(version: 20170516024841) do
     t.string   "name"
     t.text     "description"
     t.integer  "price"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.integer  "min_grams"
+    t.integer  "max_grams"
+    t.integer  "min_price"
+    t.integer  "max_price"
+    t.float    "price_weight_modifier",         default: 0.0, null: false
+    t.string   "code"
+    t.text     "notes"
+    t.integer  "price_weight_modifier_starter", default: 0,   null: false
+    t.datetime "created_at",                                  null: false
+    t.datetime "updated_at",                                  null: false
     t.index ["shop_id"], name: "index_rates_on_shop_id", using: :btree
   end
 
@@ -48,6 +67,7 @@ ActiveRecord::Schema.define(version: 20170516024841) do
     t.index ["shopify_domain"], name: "index_shops_on_shopify_domain", unique: true, using: :btree
   end
 
-  add_foreign_key "bundles", "shops"
+  add_foreign_key "conditions", "rates"
+  add_foreign_key "product_specific_prices", "rates"
   add_foreign_key "rates", "shops"
 end

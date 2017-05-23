@@ -3,7 +3,6 @@ class Shop < ActiveRecord::Base
   include ShopifyApp::SessionStorage
 
   has_many :rates, dependent: :destroy
-  has_many :bundles, dependent: :destroy
 
   def shipping_carrier_created?
     shipping_carrier_id.present? && !shipping_carrier_error?

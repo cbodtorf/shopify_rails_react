@@ -24,7 +24,7 @@ class Rate extends Component {
       >
         <div style={{float: 'right'}}>
           <ButtonGroup segmented>
-            <Button size="slim" url={"/rates/" + this.props.rateData.id}>Edit</Button>
+            <Button size="slim" url={"/rates?id=" + this.props.rateData.id}>Edit</Button>
             <a rel="nofollow" data-confirm="Delete 'Store Pickup'?" data-method="delete" href={"/rates/" + this.props.rateData.id}>
               <Button destructive icon="delete" size="slim" accessibilityLabel="delete rate"/>
             </a>

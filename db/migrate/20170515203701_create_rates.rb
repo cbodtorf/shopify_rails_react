@@ -5,6 +5,14 @@ class CreateRates < ActiveRecord::Migration[5.0]
       t.string :name
       t.text :description
       t.integer :price
+      t.integer  "min_grams"
+      t.integer  "max_grams"
+      t.integer  "min_price"
+      t.integer  "max_price"
+      t.float    "price_weight_modifier",         default: 0.0, null: false
+      t.string   "code"
+      t.text     "notes"
+      t.integer  "price_weight_modifier_starter", default: 0,   null: false
 
       t.timestamps null: false
     end
