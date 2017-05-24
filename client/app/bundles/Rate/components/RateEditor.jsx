@@ -1,6 +1,6 @@
 import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField} from '@shopify/polaris';
-import {EmbeddedApp} from '@shopify/polaris/embedded';
+import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 
 class RateEditor extends React.Component {
   constructor(props) {
@@ -9,23 +9,39 @@ class RateEditor extends React.Component {
     this.state = {
       rate: {},
       method: '',
-      url: ''
+      url: '',
+      newRate: false,
+      deleteAlertOpen: false
     }
   }
 
   componentWillMount() {
-    console.log("props", this.props);
+    console.log("this", this);
     let method = 'post'
-    let url = `/rate/${this.props.rate.id}`
+    let url = `/rates`
+    let rate = {}
+    let newRate = true
+
+    if (this.props.rate.id) {
+      console.log('meh');
+      method = 'put'
+      url = `/rates/${this.props.rate.id}`
+      rate = this.props.rate
+      newRate = false
+    } else {
+      rate = {}
+    }
 
     this.setState({
-      rate: this.props.rate,
+      rate: rate,
       method: method,
-      url: url
+      url: url,
+      newRate: newRate
     })
   }
 
   render() {
+    console.log("render", this.state);
 
     let rates = this.props.rates.map(rate => {
       return (
@@ -35,7 +51,10 @@ class RateEditor extends React.Component {
           />,
           attributeOne: `${rate.name} - ${rate.price / 100.0} ${this.props.shop.currency}`,
           attributeTwo: <TextStyle variation="subdued">{rate.description}</TextStyle>,
-          actions: [{content: 'Edit rate', onAction: () => { this.handleEdit(rate) }}],
+          actions: [
+            {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }},
+            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, rateToDelete: rate}) }},
+          ],
           persistActions: true,
         }
       )
@@ -46,12 +65,13 @@ class RateEditor extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Edit Bundle`}>
+        <Page title={`Edit Rate`}>
           <Layout>
             <Layout.Section>
                 <Card
                   sectioned
-                  title={this.state.rate.name}
+                  title="Rate"
+                  actions={[{content: <TextStyle variation="subdued">{this.state.newRate ? 'New Rate' : this.state.rate.name}</TextStyle>}]}
                   primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() } }}
                   secondaryFooterAction={{content: 'Cancel', onAction: () => { this.handleCancel() } }}
                   >
@@ -65,15 +85,30 @@ class RateEditor extends React.Component {
                         <input type="hidden" name="_method" value={this.state.method} />
                         <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
                         <TextField
-                          label="Rate name"
+                          label="Name"
+                          name="name"
                           type="text"
+                          value={this.state.rate.name}
+                          onChange={this.valueUpdater('name')}
                           connectedRight={
-                            <TextField type="number" prefix="Price" suffix={` ${this.props.shop.currency}`}/>
+                            <TextField
+                              label="Price"
+                              name="price"
+                              type="number"
+                              labelHidden
+                              prefix={<TextStyle variation="strong">Price: </TextStyle>}
+                              value={this.state.rate.price}
+                              onChange={this.valueUpdater('price')}
+                              suffix={<TextStyle variation="strong">{this.props.shop.currency}</TextStyle>}
+                              />
                           }
                           />
                           <TextField
                             label="Description"
+                            name="description"
                             type="text"
+                            value={this.state.rate.description}
+                            onChange={this.valueUpdater('description')}
                             multiline
                           />
                     </FormLayout>
@@ -81,6 +116,14 @@ class RateEditor extends React.Component {
                 </Card>
                 <Card
                   title="Other Rates"
+                  sectioned
+                  actions={ [{
+                    content: (
+                    <Button icon='add'>
+                      New rate
+                    </Button>),
+                    onAction: () => { this.handleEdit() }
+                  }] }
                 >
                   <ResourceList
                     items={rates}
@@ -91,38 +134,30 @@ class RateEditor extends React.Component {
                 </Card>
             </Layout.Section>
           </Layout>
+          <Alert
+            title="Delete Delivery Rate?"
+            open={this.state.deleteAlertOpen}
+            confirmContent="Delete"
+            onConfirm={() => {
+              this.handleDelete(this.state.rateToDelete)
+              this.setState({deleteAlertOpen: false, rateToDelete: null})
+              }}
+            cancelContent="Continue editing"
+            onCancel={() => this.setState({deleteAlertOpen: false})}
+          >
+            Are you sure you want to delete this rate?
+          </Alert>
         </Page>
       </EmbeddedApp>
     );
   }
 
-  valueUpdater(id) {
-
-    return (value) => {
-      let metafield = this.state.formFields.map((field, i) => {
-        if (field.id !== id) {
-          return field
-        } else {
-          field.title = value
-          return field
-        }
-        })
-        this.setState({formFields: metafield})
-      }
-
-  }
-
-  formUpdater(field) {
-    return (value) => this.setState({[field]: value});
+  valueUpdater(field) {
+    return (value) => this.setState({ rate: { ...this.state.rate, [field]: value } });
   }
 
   handleSave() {
-    // let dataString = this.state.formFields.map(field => {
-    //   return field.title
-    // }).join(',')
-    //
-    // this.metaInput.value = dataString
-    // console.log('data', dataString, this.metaForm, this.metaInput.value);
+
     this.rateForm.submit()
   }
 
@@ -131,24 +166,50 @@ class RateEditor extends React.Component {
   }
 
   handleEdit(rate) {
-    // let method = 'post'
-    // let url = `/bundle?id=${bundle.id}`
-    //
-    // if (bundle.metafield.length !== 0) {
-    //   method = 'put'
-    //   url = `/bundle/${bundle.id}`
-    // }
-    //
-    // this.setState({
-    //   bundle: bundle,
-    //   formFields: bundle.metafield,
-    //   method: method,
-    //   url: url
-    // })
-    //
-    // if (history.pushState) {
-    //   history.pushState('', bundle.title, `${window.location.origin}?id=${bundle.id}`);
-    // }
+    console.log('picker', rate);
+    let method = 'post'
+    let url = `/rates/`
+    let title = 'new'
+    let newRate = true
+
+    if (rate) {
+      console.log('what?', rate);
+      method = 'put'
+      url = `/rates/${rate.id}`
+      title = rate.title
+      newRate = false
+    } else {
+      rate = {}
+    }
+
+    this.setState({
+      rate: rate,
+      method: method,
+      url: url,
+      newRate: newRate
+    })
+
+    if (history.pushState) {
+      history.pushState('', title, url);
+    }
+  }
+
+  handleDelete(rate) {
+    $.ajax({
+       type: "DELETE",
+       url: `/rates/${rate.id}`,
+       success: function (result) {
+         this.setState({
+           rate: {},
+           method: 'post',
+           url: '/rates/',
+           newRate: true
+         })
+       },
+       error: function (){
+         window.alert("something wrong!");
+       }
+    });
   }
 
 

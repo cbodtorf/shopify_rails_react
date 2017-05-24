@@ -1,35 +1,48 @@
 class RatesController < ShopifyApp::AuthenticatedController
   def index
     @rates = shop.rates.includes(:conditions, :product_specific_prices).order(:name)
-    @rate = shop.rates.find(params[:id])
+    if params[:id]
+      @rate = shop.rates.find(params[:id])
+    else
+      @rate = {}
+    end
   end
 
   def new
+    # TODO: need to figure out how new rates work!
     @rate = shop.rates.build
   end
 
   def update
     rate = shop.rates.find(params[:id])
+    rate.update_attributes(rate_params)
+    redirect_to action: 'index', id: params[:id]
   end
 
   def destroy
     rate = shop.rates.find(params[:id])
+
+    if rate.destroy
+      redirect_to action: 'index'
+    else
+      redirect_to action: 'index', id: rate.id
+    end
   end
 
   def create
     @rate = shop.rates.build(rate_params)
 
-    # if @rate.save
-    #   redirect_to(rates_path)
-    # else
-    #   render('new')
-    # end
+    if @rate.save
+      redirect_to action: 'index', id: @rate.id
+    else
+      redirect_to action: 'index'
+    end
   end
 
   private
 
   def rate_params
-    params.require(:rate).permit(
+    params.permit(
       :name,
       :price,
       :price_weight_modifier,
