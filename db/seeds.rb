@@ -9,3 +9,8 @@
   Rate.create!(name: "Next Day", description: "free shipping.", price: 100, shop_id: 1)
   Rate.create!(name: "Next Morning Early", description: "Delivered before 9am", price: 1500, shop_id: 1)
   Rate.create!(name: "In Store Pickup", description: "Free to Pickup.", price: 100, shop_id: 1)
+
+  # Need to figure out the rate ids
+  # Condition.create!(rate_id: 1, field: "postal_code", verb: "equal", value: "30076")
+  # Condition.create!(rate_id: 2, field: "postal_code", verb: "equal", value: "30076")
+  # Condition.create!(rate_id: 3, field: "postal_code", verb: "equal", value: "30076")

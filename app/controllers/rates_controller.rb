@@ -1,6 +1,17 @@
 class RatesController < ShopifyApp::AuthenticatedController
   def index
     @rates = shop.rates.includes(:conditions, :product_specific_prices).order(:name)
+
+    # TODO: need to make sure this works with complicated condition scenarios
+    # @conditions = []
+    # @rates.each do |rate|
+    #   Rails.logger.debug("My res: #{rate.conditions.inspect}")
+    #   if rate.conditions.present?
+    #     @conditions.concat(rate.conditions.each {|c| c})
+    #   end
+    # end
+    # Rails.logger.debug("My conditions: #{@conditions}")
+
     if params[:id]
       @rate = shop.rates.find(params[:id])
     else
@@ -42,7 +53,7 @@ class RatesController < ShopifyApp::AuthenticatedController
   private
 
   def rate_params
-    params.permit(
+    params.require(:rate).permit(
       :name,
       :price,
       :price_weight_modifier,

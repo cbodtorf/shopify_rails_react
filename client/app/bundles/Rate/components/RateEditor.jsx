@@ -1,6 +1,9 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
+import Condition from './Condition'
+
+import uuid from 'uuid'
 
 class RateEditor extends React.Component {
   constructor(props) {
@@ -11,7 +14,8 @@ class RateEditor extends React.Component {
       method: '',
       url: '',
       newRate: false,
-      deleteAlertOpen: false
+      deleteAlertOpen: false,
+      conditions: []
     }
   }
 
@@ -21,13 +25,14 @@ class RateEditor extends React.Component {
     let url = `/rates`
     let rate = {}
     let newRate = true
+    let conditions = []
 
-    if (this.props.rate.id) {
-      console.log('meh');
+    if (this.props.rate.rate.id) {
       method = 'put'
-      url = `/rates/${this.props.rate.id}`
-      rate = this.props.rate
+      url = `/rates/${this.props.rate.rate.id}`
+      rate = this.props.rate.rate
       newRate = false
+      conditions = this.props.rate.conditions
     } else {
       rate = {}
     }
@@ -36,28 +41,42 @@ class RateEditor extends React.Component {
       rate: rate,
       method: method,
       url: url,
-      newRate: newRate
+      newRate: newRate,
+      conditions: conditions
     })
   }
 
   render() {
     console.log("render", this.state);
 
-    let rates = this.props.rates.map(rate => {
+    const rates = this.props.rates.map(rate => {
       return (
         {
           media: <Icon
             source={'notes'}
+            color={this.state.rate.id === rate.rate.id ? 'blue' : 'black'}
           />,
-          attributeOne: `${rate.name} - ${rate.price / 100.0} ${this.props.shop.currency}`,
-          attributeTwo: <TextStyle variation="subdued">{rate.description}</TextStyle>,
+          attributeOne: `${rate.rate.name} - ${rate.rate.price / 100.0} ${this.props.shop.currency}`,
+          attributeTwo: <TextStyle variation="subdued">{rate.rate.description}</TextStyle>,
           actions: [
             {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, rateToDelete: rate}) }},
+            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, rateToDelete: rate.rate}) }},
           ],
           persistActions: true,
         }
       )
+    })
+    const self = this
+    const conditions = this.state.conditions.map(function(data, i){
+      return (
+        <Condition
+          key={i}
+          id={i + 1}
+          updateCondition={(field, id) => self.handleConditionUpdate(field, id)}
+          deleteCondition={(id) => self.handleConditionDelete(id)}
+          condition={data} matcher={self.props.matcher}
+          />
+      );
     })
 
     return (
@@ -86,14 +105,14 @@ class RateEditor extends React.Component {
                         <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
                         <TextField
                           label="Name"
-                          name="name"
+                          name="rate[name]"
                           type="text"
                           value={this.state.rate.name}
                           onChange={this.valueUpdater('name')}
                           connectedRight={
                             <TextField
                               label="Price"
-                              name="price"
+                              name="rate[price]"
                               type="number"
                               labelHidden
                               prefix={<TextStyle variation="strong">Price: </TextStyle>}
@@ -105,12 +124,17 @@ class RateEditor extends React.Component {
                           />
                           <TextField
                             label="Description"
-                            name="description"
+                            name="rate[description]"
                             type="text"
                             value={this.state.rate.description}
                             onChange={this.valueUpdater('description')}
                             multiline
                           />
+                          <Subheading>Conditions </Subheading>
+                          <Button size="slim" icon="add" onClick={ this.addCondition() }>New Condition</Button>
+                          <div data-condition-list>
+                            { conditions }
+                          </div>
                     </FormLayout>
                   </form>
                 </Card>
@@ -166,18 +190,20 @@ class RateEditor extends React.Component {
   }
 
   handleEdit(rate) {
-    console.log('picker', rate);
     let method = 'post'
     let url = `/rates/`
     let title = 'new'
     let newRate = true
+    let conditions = []
 
     if (rate) {
       console.log('what?', rate);
       method = 'put'
-      url = `/rates/${rate.id}`
-      title = rate.title
+      url = `/rates/${rate.rate.id}`
+      title = rate.rate.title
       newRate = false
+      conditions = rate.conditions
+      rate = rate.rate
     } else {
       rate = {}
     }
@@ -186,7 +212,8 @@ class RateEditor extends React.Component {
       rate: rate,
       method: method,
       url: url,
-      newRate: newRate
+      newRate: newRate,
+      conditions: conditions
     })
 
     if (history.pushState) {
@@ -210,6 +237,42 @@ class RateEditor extends React.Component {
          window.alert("something wrong!");
        }
     });
+  }
+
+  handleConditionUpdate(field, id) {
+    return (value) => {
+      let conditions = this.state.conditions.map(function(condition, i) {
+        if (condition.id !== id) {
+          return condition
+        } else {
+          condition[field] = value
+          return condition
+        }
+      })
+      this.setState({conditions: conditions})
+    };
+  }
+
+  handleConditionDelete(id) {
+    console.log('id:', id, 'state', this.state);
+    let conditions = this.state.conditions.filter(function(condition, i) {
+      return Number(condition.id) !== Number(id)
+    })
+
+    this.setState({conditions: conditions})
+  }
+
+  addCondition() {
+    let arr = this.state.conditions.slice()
+    arr.push({
+      id: Date.now(),
+      rate_id: this.state.rate.id,
+      field: '',
+      verb: '',
+      value: ''
+    })
+
+    return () => this.setState({conditions: arr});
   }
 
 
