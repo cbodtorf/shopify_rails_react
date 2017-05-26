@@ -47,8 +47,8 @@ class RatesController < ShopifyApp::AuthenticatedController
     if @rate.save
       # Need this because the rate couldn't save because ["Conditions rate must exist"]
       # TODO: need another conditions for product_specific_prices if we need it.
-      if params[:conditions_attributes].present?
-        self.update({id: @rate[:id], conditions_attributes: params[:conditions_attributes]})
+      if params[:rate][:conditions_attributes].present?
+        @rate.update_attributes(rate_params)
       end
       redirect_to action: 'index', id: @rate.id
     else
