@@ -15,7 +15,8 @@ class RateEditor extends React.Component {
       url: '',
       newRate: false,
       deleteAlertOpen: false,
-      conditions: []
+      conditions: [],
+      conditionsToDelete: []
     }
   }
 
@@ -30,8 +31,8 @@ class RateEditor extends React.Component {
     let newRate = true
     let conditions = []
 
-    if (this.props.rate.id) {
-      method = 'put'
+    if (this.props.rate.id || this.props.rate !== null) {
+      method = 'patch'
       url = `/rates/${this.props.rate.id}`
       rate = this.props.rate
       newRate = false
@@ -70,17 +71,30 @@ class RateEditor extends React.Component {
       )
     })
     const self = this
-    const conditions = this.state.conditions.map(function(data, i){
+    const conditions = this.state.conditions.map((data, i) => {
+      data['index'] = i + 1
       return (
         <Condition
           key={i}
-          id={i + 1}
+          id={data.newCondition ? data.id : i + 1}
           updateCondition={(field, id) => self.handleConditionUpdate(field, id)}
           deleteCondition={(id) => self.handleConditionDelete(id)}
           condition={data} matcher={self.props.matcher}
           />
       );
     })
+
+    const conditionsToDelete = this.state.conditionsToDelete.map((data, i) => {
+      if (data.created_at) {
+        return (
+          <div key={i} style={{'display': 'none'}}>
+            <input value={1} type="hidden" name={`rate[conditions_attributes][${data.index}][_destroy]`}/>
+            <input value={data.id} type="hidden" name={`rate[conditions_attributes][${data.index}][id]`}/>
+          </div>
+        )
+      }
+    })
+
 
     return (
       <EmbeddedApp
@@ -137,6 +151,7 @@ class RateEditor extends React.Component {
                           <Button size="slim" icon="add" onClick={ this.addCondition() }>New Condition</Button>
                           <div data-condition-list>
                             { conditions }
+                            { conditionsToDelete }
                           </div>
                     </FormLayout>
                   </form>
@@ -166,7 +181,7 @@ class RateEditor extends React.Component {
             open={this.state.deleteAlertOpen}
             confirmContent="Delete"
             onConfirm={() => {
-              this.handleDelete(this.state.rateToDelete)
+              this.handleDelete(this.state.rateToDelete).bind(this)
               this.setState({deleteAlertOpen: false, rateToDelete: null})
               }}
             cancelContent="Continue editing"
@@ -195,14 +210,16 @@ class RateEditor extends React.Component {
   handleEdit(rate) {
     let method = 'post'
     let url = `/rates/`
+    let windowUrl = '/rates/'
     let title = 'new'
     let newRate = true
     let conditions = []
 
     if (rate) {
       console.log('what?', rate);
-      method = 'put'
+      method = 'patch'
       url = `/rates/${rate.id}`
+      windowUrl = `/rates?id=${rate.id}`
       title = rate.title
       newRate = false
       conditions = rate.conditions
@@ -220,16 +237,17 @@ class RateEditor extends React.Component {
     })
 
     if (history.pushState) {
-      history.pushState('', title, url);
+      history.pushState('', title, windowUrl);
     }
   }
 
   handleDelete(rate) {
+    let self = this
     $.ajax({
        type: "DELETE",
        url: `/rates/${rate.id}`,
        success: function (result) {
-         this.setState({
+         self.setState({
            rate: {},
            method: 'post',
            url: '/rates/',
@@ -258,11 +276,19 @@ class RateEditor extends React.Component {
 
   handleConditionDelete(id) {
     console.log('id:', id, 'state', this.state);
+
+    let conditionsToDelete = []
     let conditions = this.state.conditions.filter(function(condition, i) {
+      if (Number(condition.id) === Number(id)) {
+        conditionsToDelete.push(condition)
+      }
       return Number(condition.id) !== Number(id)
     })
 
-    this.setState({conditions: conditions})
+    this.setState({
+      conditions: conditions,
+      conditionsToDelete: conditionsToDelete
+    })
   }
 
   addCondition() {
@@ -272,7 +298,8 @@ class RateEditor extends React.Component {
       rate_id: this.state.rate.id,
       field: '',
       verb: '',
-      value: ''
+      value: '',
+      newCondition: true
     })
 
     return () => this.setState({conditions: arr});
