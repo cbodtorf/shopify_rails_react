@@ -32,6 +32,7 @@ class RatesController < ShopifyApp::AuthenticatedController
   end
 
   def destroy
+    # TODO: there is an issue where sometimes Can't verify CSRF token authenticity.
     rate = shop.rates.find(params[:id])
 
     if rate.destroy

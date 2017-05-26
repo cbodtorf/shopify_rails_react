@@ -2,6 +2,7 @@ class HomeController < ShopifyApp::AuthenticatedController
   include Haltable
 
   def index
+    Rails.logger.debug("shop index: #{Shop.all}")
     @rates = shop.rates.order(:name)
     @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
 
@@ -32,6 +33,7 @@ class HomeController < ShopifyApp::AuthenticatedController
   end
 
   def undo_onboarding
+    Rails.logger.debug("undo_onboarding")
     shop.update_attributes(
       shipping_carrier_id: nil,
       currency: nil,
@@ -40,18 +42,21 @@ class HomeController < ShopifyApp::AuthenticatedController
   end
 
   def ensure_shipping_carrier_created
+    Rails.logger.debug("ensure_shipping_carrier_created")
     return if shop.shipping_carrier_created?
     CreateShippingCarrierJob.perform_later(shop_domain: shop.shopify_domain)
     onboarding!
   end
 
   def ensure_shop_updated
+    Rails.logger.debug("ensure_shop_updated")
     return if shop.has_details?
     ShopUpdateJob.perform_later(shop_domain: shop.shopify_domain)
     onboarding!
   end
 
   def handle_onboarding_if_required
+    Rails.logger.debug("handle_onboarding_if_required")
     return unless onboarding?
     render('onboarding')
     halt
@@ -59,21 +64,25 @@ class HomeController < ShopifyApp::AuthenticatedController
   end
 
   def handle_unsuccessful_onboarding
+    Rails.logger.debug("handle_unsuccessful_onboarding")
     return unless shop.shipping_carrier_error?
     render('error')
     halt
   end
 
   def handle_successful_onboarding
+    Rails.logger.debug("handle_successful_onboarding")
     render('home')
     halt
   end
 
   def onboarding!
+    Rails.logger.debug("onboarding")
     @onboarding = true
   end
 
   def onboarding?
+    Rails.logger.debug("onboarding")
     @onboarding
   end
 

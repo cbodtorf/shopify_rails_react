@@ -14,7 +14,7 @@ class Condition extends Component {
   }
 
   render() {
-    let newCondition = 'false'
+    let newCondition = ''
     if (this.props.condition.newCondition !== true) {
       newCondition = <input style={{'display': 'none'}} value={this.props.condition.id} type="hidden" name={`rate[conditions_attributes][${this.props.id}][id]`}/>
     }

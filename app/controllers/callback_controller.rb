@@ -30,7 +30,9 @@ class CallbackController < ApplicationController
   private
 
   def shop
-    @shop ||= Shop.find(params[:id])
+    # TODO: hacking cause i don't understand why this isn't working. Need to update shop object with proper shop_id
+    # @shop ||= Shop.find(params[:id])
+    @shop ||= Shop.first
   end
 
 end
