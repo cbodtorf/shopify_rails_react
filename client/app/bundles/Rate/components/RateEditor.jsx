@@ -277,7 +277,7 @@ class RateEditor extends React.Component {
   handleConditionDelete(id) {
     console.log('id:', id, 'state', this.state);
 
-    let conditionsToDelete = []
+    let conditionsToDelete = this.state.conditionsToDelete
     let conditions = this.state.conditions.filter(function(condition, i) {
       if (Number(condition.id) === Number(id)) {
         conditionsToDelete.push(condition)
