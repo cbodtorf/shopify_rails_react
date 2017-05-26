@@ -20,6 +20,9 @@ class RateEditor extends React.Component {
   }
 
   componentWillMount() {
+    /**
+    * @TODO: need to refactor componentWillMount & handleEdit. A little redundant.
+    */
     console.log("this", this);
     let method = 'post'
     let url = `/rates`
@@ -27,10 +30,10 @@ class RateEditor extends React.Component {
     let newRate = true
     let conditions = []
 
-    if (this.props.rate.rate.id) {
+    if (this.props.rate.id) {
       method = 'put'
-      url = `/rates/${this.props.rate.rate.id}`
-      rate = this.props.rate.rate
+      url = `/rates/${this.props.rate.id}`
+      rate = this.props.rate
       newRate = false
       conditions = this.props.rate.conditions
     } else {
@@ -54,13 +57,13 @@ class RateEditor extends React.Component {
         {
           media: <Icon
             source={'notes'}
-            color={this.state.rate.id === rate.rate.id ? 'blue' : 'black'}
+            color={this.state.rate.id === rate.id ? 'blue' : 'black'}
           />,
-          attributeOne: `${rate.rate.name} - ${rate.rate.price / 100.0} ${this.props.shop.currency}`,
-          attributeTwo: <TextStyle variation="subdued">{rate.rate.description}</TextStyle>,
+          attributeOne: `${rate.name} - ${rate.price / 100.0} ${this.props.shop.currency}`,
+          attributeTwo: <TextStyle variation="subdued">{rate.description}</TextStyle>,
           actions: [
             {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, rateToDelete: rate.rate}) }},
+            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, rateToDelete: rate}) }},
           ],
           persistActions: true,
         }
@@ -199,11 +202,11 @@ class RateEditor extends React.Component {
     if (rate) {
       console.log('what?', rate);
       method = 'put'
-      url = `/rates/${rate.rate.id}`
-      title = rate.rate.title
+      url = `/rates/${rate.id}`
+      title = rate.title
       newRate = false
       conditions = rate.conditions
-      rate = rate.rate
+      rate = rate
     } else {
       rate = {}
     }

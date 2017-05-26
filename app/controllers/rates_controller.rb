@@ -1,19 +1,20 @@
 class RatesController < ShopifyApp::AuthenticatedController
   def index
     @rates = shop.rates.includes(:conditions, :product_specific_prices).order(:name)
-
     # TODO: need to make sure this works with complicated condition scenarios
-    # @conditions = []
-    # @rates.each do |rate|
-    #   Rails.logger.debug("My res: #{rate.conditions.inspect}")
-    #   if rate.conditions.present?
-    #     @conditions.concat(rate.conditions.each {|c| c})
-    #   end
-    # end
-    # Rails.logger.debug("My conditions: #{@conditions}")
+
+    # This is for Front End
+    @ratesWithConditions = @rates.map do |rate|
+      rateC = rate.attributes
+      rateC[:conditions] = rate.conditions.each{|c| c}
+      rateC
+    end
 
     if params[:id]
       @rate = shop.rates.find(params[:id])
+      # This is for Front End
+      @rateWithConditions = @rate.attributes
+      @rateWithConditions[:conditions] = @rate.conditions.each {|el| el}
     else
       @rate = {}
     end

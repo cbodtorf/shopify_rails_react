@@ -8,11 +8,8 @@
         debug: Rails.env.development? ? 'true' : 'false',
         forceRedirect: true,
         shop_session: @shop_session,
-        rate: {
-          rate: @rate,
-          conditions: @rate.conditions
-          },
-        rates: @rates.map {|rate| {rate: rate, conditions: rate.conditions}},
+        rate: @rateWithConditions,
+        rates: @ratesWithConditions,
         shop: @shop,
         matcher: {
           productFields: Matcher::PRODUCT_FIELDS,
