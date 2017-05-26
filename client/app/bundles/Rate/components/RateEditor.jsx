@@ -31,7 +31,8 @@ class RateEditor extends React.Component {
     let newRate = true
     let conditions = []
 
-    if (this.props.rate.id || this.props.rate !== null) {
+    if (this.props.rate) {
+      console.log('meh');
       method = 'patch'
       url = `/rates/${this.props.rate.id}`
       rate = this.props.rate

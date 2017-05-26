@@ -49,7 +49,7 @@ class Condition extends Component {
         }]}
         >
         <div data-condition>
-        <input style={{'display': 'none'}} value={false} type="hidden" name={`rate[conditions_attributes][${this.props.id}][_destroy]`}/>
+        <input style={{'display': 'none'}} value={this.props.condition.newCondition ? 0 : false} type="hidden" name={`rate[conditions_attributes][${this.props.id}][_destroy]`}/>
         { newCondition }
         <FormLayout>
           <FormLayout.Group condensed>

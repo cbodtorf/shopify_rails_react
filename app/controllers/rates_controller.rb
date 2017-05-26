@@ -42,11 +42,18 @@ class RatesController < ShopifyApp::AuthenticatedController
   end
 
   def create
-    @rate = shop.rates.build(rate_params)
+    @rate = shop.rates.build(rate_params_create)
 
     if @rate.save
+      # Need this because the rate couldn't save because ["Conditions rate must exist"]
+      # TODO: need another conditions for product_specific_prices if we need it.
+      if params[:conditions_attributes].present?
+        self.update({id: @rate[:id], conditions_attributes: params[:conditions_attributes]})
+      end
       redirect_to action: 'index', id: @rate.id
     else
+      rate_params
+      Rails.logger.debug("hmmm #{@rate.errors.full_messages}")
       redirect_to action: 'index'
     end
   end
@@ -68,6 +75,22 @@ class RatesController < ShopifyApp::AuthenticatedController
       :notes,
       conditions_attributes: condition_params,
       product_specific_prices_attributes: product_specific_price_params
+    )
+  end
+
+  def rate_params_create
+    params.require(:rate).permit(
+      :name,
+      :price,
+      :price_weight_modifier,
+      :price_weight_modifier_starter,
+      :description,
+      :min_price,
+      :max_price,
+      :min_grams,
+      :max_grams,
+      :code,
+      :notes
     )
   end
 
