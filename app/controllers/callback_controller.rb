@@ -14,7 +14,7 @@ class CallbackController < ApplicationController
     Rails.logger.info("[ORDER NOTES] #{@order_notes.inspect}")
 
     rates = shop.rates.includes(:conditions, :product_specific_prices).map do |rate|
-      ContextualRate.new(rate, items, addrs)
+      ContextualRate.new(rate, items, addrs, @order_notes)
     end.select do |rate_instance|
       rate_instance.valid?
     end

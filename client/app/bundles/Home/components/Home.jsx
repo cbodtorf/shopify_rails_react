@@ -119,7 +119,12 @@ class Home extends React.Component {
     return (
       <Layout.AnnotatedSection
         title="Delivery Rates"
-        description="Create custom rules to simplify complex shipping requirements."
+        description={
+          <div>Create custom rules to simplify complex shipping requirements.
+          <br />
+          <Link url="/rates">Add new Rate.</Link>
+          </div>
+        }
       >
         <AccountConnection
           action={{

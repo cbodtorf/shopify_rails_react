@@ -148,6 +148,18 @@ class RateEditor extends React.Component {
                             onChange={this.valueUpdater('description')}
                             multiline
                           />
+                          <Select
+                            label="Delivery Method"
+                            name="rate[delivery_method]"
+                            options={[
+                              'Pickup',
+                              'Delivery',
+                              'Shipping'
+                            ]}
+                            value={this.state.rate.delivery_method}
+                            onChange={this.valueUpdater('delivery_method')}
+                            placeholder="Select"
+                          />
                           <Subheading>Conditions </Subheading>
                           <Button size="slim" icon="add" onClick={ this.addCondition() }>New Condition</Button>
                           <div data-condition-list>

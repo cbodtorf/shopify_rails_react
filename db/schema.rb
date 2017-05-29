@@ -41,6 +41,7 @@ ActiveRecord::Schema.define(version: 20170523193709) do
     t.integer  "shop_id"
     t.string   "name"
     t.text     "description"
+    t.string   "delivery_method"
     t.integer  "price"
     t.integer  "min_grams"
     t.integer  "max_grams"

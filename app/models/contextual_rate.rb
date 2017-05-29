@@ -1,10 +1,11 @@
 class ContextualRate
-  attr_accessor :rate, :items, :addrs
+  attr_accessor :rate, :items, :addrs, :order_notes
 
-  def initialize(rate, items, addrs)
+  def initialize(rate, items, addrs, order_notes)
     @rate = rate
     @items = items
     @addrs = addrs
+    @order_notes = order_notes
   end
 
   def to_hash
@@ -21,6 +22,7 @@ class ContextualRate
     return false unless valid_price?
     return false unless valid_grams?
     return false unless valid_conditions?
+    return false unless valid_delivery_method?
 
     true
   end
@@ -88,5 +90,11 @@ class ContextualRate
        condition.valid_for?(addrs[condition.field])
      end
    end
+  end
+
+  def valid_delivery_method?
+    Rails.logger.debug("checkout_method: #{order_notes.checkout_method.inspect}")
+    Rails.logger.debug("delivery_method: #{rate.inspect}")
+    rate.delivery_method == order_notes.checkout_method
   end
 end

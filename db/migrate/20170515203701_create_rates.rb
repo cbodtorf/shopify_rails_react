@@ -4,6 +4,7 @@ class CreateRates < ActiveRecord::Migration[5.0]
       t.references :shop, index: true, foreign_key: true
       t.string :name
       t.text :description
+      t.string :delivery_method
       t.integer :price
       t.integer  "min_grams"
       t.integer  "max_grams"
