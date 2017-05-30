@@ -5,9 +5,11 @@ Rails.application.routes.draw do
 
   root :to => 'home#index'
 
+  get 'app_proxy', to: 'app_proxy#index'
+
   get 'home', to: 'home#home'
   get 'retry', to: 'home#retry'
-  
+
   get 'error', to: 'home#error'
   get 'onboarding', to: 'home#onboarding'
 

@@ -6,6 +6,7 @@ class HomeController < ShopifyApp::AuthenticatedController
     @rates = shop.rates.order(:name)
     @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
 
+
     @bundles.each do |bundle|
       bundle.metafields = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
     end

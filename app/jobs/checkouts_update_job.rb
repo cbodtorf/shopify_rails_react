@@ -1,5 +1,6 @@
 class CheckoutsUpdateJob < ApplicationJob
   @@order_notes = nil
+  @@customer = nil
 
   def perform(shop_domain:, webhook:)
     shop = Shop.find_by(shopify_domain: shop_domain)
@@ -7,15 +8,29 @@ class CheckoutsUpdateJob < ApplicationJob
     shop.with_shopify_session do
       @@order_notes = OrderNote.new(webhook[:note_attributes])
       Rails.logger.info("[Order Notes] #{@@order_notes.inspect}")
-      Rails.logger.info("[Shipping Address] #{webhook[:shipping_address].inspect}")
-      @product = ShopifyAPI::Variant.find(:first, :params => {:product_id => 7896754117})
+      # Rails.logger.info("[Shipping Address] #{webhook[:shipping_address].inspect}")
+      Rails.logger.info("[Shipping Address] #{webhook[:email].inspect}")
+
+
+      @customer = ShopifyAPI::Customer.find(:first, params: {id: webhook[:customer][:id]})
+      @@customer = @customer
+      Rails.logger.debug("[Customer Address] #{@customer.attributes[:addresses].inspect}")
+
+      if @customer.attributes[:addresses][0].attributes[:company] == nil
+        @customer.attributes[:addresses][0].attributes[:company] = '_'
+      else
+        @customer.attributes[:addresses][0].attributes[:company] = @customer.attributes[:addresses][0].attributes[:company] + '-'
+      end
+      Rails.logger.debug("[Customer Company] #{@customer.attributes[:addresses][0].attributes[:company].inspect}")
+      @customer.save
+
+      @product = ShopifyAPI::Variant.find(:all, params: {id: webhook[:line_items][0].variant_id})
+      Rails.logger.debug("[Product Variant 1] #{webhook[:line_items][0].variant_id.inspect}")
       if ((@product.weight >= 0) and (@product.weight < 1.0))
-        @product.weight = @product.weight + 0.1
+        @product.weight = @product.weight + 0.001
       elsif ((@product.weight > 0) and (@product.weight <= 1.0))
         @product.weight = @product.weight - 0.9
       end
-
-      Rails.logger.info("[Product] #{@product.attributes}")
       @product.save
 
       # TODO: need to figure out how to update checkout and clear the cache
@@ -25,6 +40,9 @@ class CheckoutsUpdateJob < ApplicationJob
 
   def self.getOrderNotes
     return @@order_notes
+  end
+  def self.getCustomer
+    return @@customer
   end
 
 end

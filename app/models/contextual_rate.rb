@@ -93,8 +93,12 @@ class ContextualRate
   end
 
   def valid_delivery_method?
-    Rails.logger.debug("checkout_method: #{order_notes.checkout_method.inspect}")
-    Rails.logger.debug("delivery_method: #{rate.inspect}")
-    rate.delivery_method == order_notes.checkout_method
+    if order_notes != nil
+      Rails.logger.debug("checkout_method: #{order_notes.checkout_method.inspect}")
+      Rails.logger.debug("delivery_method: #{rate.inspect}")
+      rate.delivery_method == order_notes.checkout_method
+    else
+      true
+    end
   end
 end
