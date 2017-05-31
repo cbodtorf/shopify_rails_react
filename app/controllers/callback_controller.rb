@@ -6,6 +6,9 @@ class CallbackController < ApplicationController
 
   def search
     @order_notes = CheckoutsUpdateJob.getOrderNotes()
+    # if @order_notes == nil
+    #   @order_notes = AppProxyController.getOrderNotes()
+    # end
 
     value = params.fetch('rate', {})
     addrs = value.fetch('destination', {})

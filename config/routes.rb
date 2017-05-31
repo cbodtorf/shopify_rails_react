@@ -6,6 +6,8 @@ Rails.application.routes.draw do
   root :to => 'home#index'
 
   get 'app_proxy', to: 'app_proxy#index'
+  post 'app_proxy', to: 'app_proxy#index'
+  put 'app_proxy', to: 'app_proxy#index'
 
   get 'home', to: 'home#home'
   get 'retry', to: 'home#retry'
