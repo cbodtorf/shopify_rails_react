@@ -5,16 +5,15 @@ class CallbackController < ApplicationController
   # runs if the cart info is the same, but just the order notes change.
 
   def search
+    # TODO: need to have destination address in order note rather than a class variable
     @order_notes = CheckoutsUpdateJob.getOrderNotes()
-    # if @order_notes == nil
-    #   @order_notes = AppProxyController.getOrderNotes()
-    # end
 
     value = params.fetch('rate', {})
     addrs = value.fetch('destination', {})
     items = value.fetch('items', [])
 
     Rails.logger.info("[ORDER NOTES] #{@order_notes.inspect}")
+    Rails.logger.info("[params] #{@order_notes.inspect}")
 
     rates = shop.rates.includes(:conditions, :product_specific_prices).map do |rate|
       ContextualRate.new(rate, items, addrs, @order_notes)

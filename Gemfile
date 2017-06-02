@@ -5,6 +5,7 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
+gem 'httparty'
 # postgres sql
 gem 'pg'
 # respond_to rule for json
