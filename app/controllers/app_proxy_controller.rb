@@ -8,12 +8,14 @@ class AppProxyController < ApplicationController
     Rails.logger.debug("[Shop] #{shop.inspect}")
     ShopifyAPI::Base.activate_session(shop)
 
+    # Need to figure out if I should iterate over this or if my Order Notes woudl be better
+    # It might be resource intensive iterating over a ton of checkouts.
+    @checkout = ShopifyAPI::Checkout.find(:all)
+    @checkout = @checkout.select {|c| c.attributes[:cart_token] == params[:cart_token]}.first
+    Rails.logger.debug("[Checkout] #{@checkout.inspect}")
 
-    @checkout = ShopifyAPI::Checkout.find(params[:checkout_token])
-
-    Rails.logger.debug("[Checkout] #{@checkout.attributes[:shipping_address].attributes.inspect}")
-    if OrderNote.exists?(checkout_token: params[:checkout_token])
-      @order_notes = OrderNote.where(checkout_token: params[:checkout_token]).first
+    if OrderNote.exists?(checkout_token: @checkout.attributes[:token])
+      @order_notes = OrderNote.where(checkout_token: @checkout.attributes[:token]).first
       Rails.logger.debug("[Order Note Exists] #{@order_notes.inspect}")
 
       if @order_notes.update_attributes(order_note_params)
