@@ -11,6 +11,11 @@ ShopifyApp.configure do |config|
     format: 'json'
   },
   {
+    topic: 'checkouts/create',
+    address: "#{Rails.configuration.application_url}/webhooks/checkouts_create/",
+    format: 'json'
+  },
+  {
     topic: 'shop/update',
     address: "#{Rails.application.config.application_url}/webhooks/shop_update",
     format: 'json'

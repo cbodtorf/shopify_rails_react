@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170602171700) do
+ActiveRecord::Schema.define(version: 20170605195345) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -28,6 +28,7 @@ ActiveRecord::Schema.define(version: 20170602171700) do
 
   create_table "order_notes", force: :cascade do |t|
     t.string   "checkout_token",  null: false
+    t.string   "cart_token",      null: false
     t.string   "checkout_method", null: false
     t.string   "postal_code",     null: false
     t.string   "delivery_time",   null: false
@@ -64,6 +65,28 @@ ActiveRecord::Schema.define(version: 20170602171700) do
     t.index ["shop_id"], name: "index_rates_on_shop_id", using: :btree
   end
 
+  create_table "shipping_addresses", force: :cascade do |t|
+    t.integer  "order_note_id"
+    t.string   "first_name"
+    t.text     "address1"
+    t.text     "phone"
+    t.text     "city"
+    t.text     "zip"
+    t.text     "province"
+    t.string   "country"
+    t.text     "last_name"
+    t.text     "address2"
+    t.text     "company"
+    t.decimal  "latitude",      precision: 10, scale: 6
+    t.decimal  "longitude",     precision: 10, scale: 6
+    t.text     "name"
+    t.string   "country_code"
+    t.string   "province_code"
+    t.datetime "created_at",                             null: false
+    t.datetime "updated_at",                             null: false
+    t.index ["order_note_id"], name: "index_shipping_addresses_on_order_note_id", using: :btree
+  end
+
   create_table "shops", force: :cascade do |t|
     t.string   "shopify_domain",                     null: false
     t.string   "shopify_token",                      null: false
@@ -79,4 +102,5 @@ ActiveRecord::Schema.define(version: 20170602171700) do
   add_foreign_key "conditions", "rates"
   add_foreign_key "product_specific_prices", "rates"
   add_foreign_key "rates", "shops"
+  add_foreign_key "shipping_addresses", "order_notes"
 end
