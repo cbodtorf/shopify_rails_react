@@ -10,6 +10,7 @@ class Onboarding extends React.Component {
         shopOrigin={this.props.shopOrigin}
       >
         <Page title="Onboarding">
+          <meta httpEquiv="refresh" content="1; url=/"/>
           <Banner status="success" title="Onboarding">
             <p>We're currently syncing up with your Shopify shop. Please sit tight, it shouldn't take long (we hope so!).</p>
           </Banner>

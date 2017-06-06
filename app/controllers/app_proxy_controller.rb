@@ -5,7 +5,6 @@ class AppProxyController < ApplicationController
 
     shop = Shop.find_by(shopify_domain: params[:shop])
     shop = ShopifyApp::SessionRepository.retrieve(shop.id)
-    Rails.logger.debug("[Shop] #{shop.inspect}")
     ShopifyAPI::Base.activate_session(shop)
 
     #iterate over order notes
@@ -71,7 +70,7 @@ class AppProxyController < ApplicationController
           "first_name": "Caleb",
           "last_name": "Bodtorf",
           "phone": nil,
-          "company": @checkout.attributes[:shipping_address].attributes[:company] += " !",
+          "company": @checkout.attributes[:shipping_address].attributes[:company] += " ",
           "address1": "1234 test",
           "address2": "",
           "city": "Atlanta",
