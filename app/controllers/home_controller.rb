@@ -3,7 +3,7 @@ class HomeController < ShopifyApp::AuthenticatedController
 
   def index
     Rails.logger.debug("shop index: #{Shop.all}")
-    @rates = shop.rates.order(:name)
+    @rates = shop.rates.order(:title)
     @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
 
 

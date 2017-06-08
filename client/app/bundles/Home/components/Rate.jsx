@@ -19,7 +19,7 @@ class Rate extends Component {
   render() {
     return (
       <Card.Section
-        title={ `${this.props.rateData.name} - ${this.props.rateData.price / 100.0} ${this.props.shop.currency}` }
+        title={ `${this.props.rateData.title} - ${this.props.rateData.price / 100.0} ${this.props.shop.currency}` }
         subdued
       >
         <div style={{float: 'right'}}>

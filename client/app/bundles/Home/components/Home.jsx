@@ -14,8 +14,8 @@ import {
   AccountConnection,
 } from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
-import Rate from './Rate'
-import Bundle from './Bundle'
+import Rate from './Rate';
+import Bundle from './Bundle';
 
 class Home extends React.Component {
   constructor(props) {
@@ -50,7 +50,6 @@ class Home extends React.Component {
       >
         <Page
         title={`Home`}
-
         primaryAction={primaryAction}
         secondaryActions={secondaryActions}
         >

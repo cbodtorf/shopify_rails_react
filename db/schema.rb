@@ -48,10 +48,12 @@ ActiveRecord::Schema.define(version: 20170605195345) do
 
   create_table "rates", force: :cascade do |t|
     t.integer  "shop_id"
-    t.string   "name"
+    t.string   "title"
     t.text     "description"
     t.string   "delivery_method"
     t.integer  "price"
+    t.integer  "cutoff_time"
+    t.string   "delivery_type"
     t.integer  "min_grams"
     t.integer  "max_grams"
     t.integer  "min_price"

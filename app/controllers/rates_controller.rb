@@ -1,6 +1,6 @@
 class RatesController < ShopifyApp::AuthenticatedController
   def index
-    @rates = shop.rates.includes(:conditions, :product_specific_prices).order(:name)
+    @rates = shop.rates.includes(:conditions, :product_specific_prices).order(:title)
     # TODO: need to make sure this works with complicated condition scenarios
 
     # This is for Front End
@@ -63,12 +63,14 @@ class RatesController < ShopifyApp::AuthenticatedController
 
   def rate_params
     params.require(:rate).permit(
-      :name,
+      :title,
       :price,
       :price_weight_modifier,
       :price_weight_modifier_starter,
       :description,
+      :cutoff_time,
       :delivery_method,
+      :delivery_type,
       :min_price,
       :max_price,
       :min_grams,
@@ -82,12 +84,14 @@ class RatesController < ShopifyApp::AuthenticatedController
 
   def rate_params_create
     params.require(:rate).permit(
-      :name,
+      :title,
       :price,
       :price_weight_modifier,
       :price_weight_modifier_starter,
       :description,
+      :cutoff_time,
       :delivery_method,
+      :delivery_type,
       :min_price,
       :max_price,
       :min_grams,

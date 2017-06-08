@@ -88,4 +88,13 @@ class AppProxyController < ApplicationController
                              :headers => { "Content-Type" => 'application/json', "Authorization" => token_string})
     puts response.body
   end
+
+  def picker
+    shop = Shop.find_by(shopify_domain: params[:shop])
+    shop = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(shop)
+    rates = Rate.all
+
+    render json: rates, status: 200
+  end
 end

@@ -2,10 +2,12 @@ class CreateRates < ActiveRecord::Migration[5.0]
   def change
     create_table :rates do |t|
       t.references :shop, index: true, foreign_key: true
-      t.string :name
+      t.string :title
       t.text :description
       t.string :delivery_method
       t.integer :price
+      t.integer :cutoff_time
+      t.string :delivery_type
       t.integer  "min_grams"
       t.integer  "max_grams"
       t.integer  "min_price"

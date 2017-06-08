@@ -61,7 +61,7 @@ class RateEditor extends React.Component {
             source={'notes'}
             color={this.state.rate.id === rate.id ? 'blue' : 'black'}
           />,
-          attributeOne: `${rate.name} - ${rate.price / 100.0} ${this.props.shop.currency}`,
+          attributeOne: `${rate.title} - ${rate.price / 100.0} ${this.props.shop.currency}`,
           attributeTwo: <TextStyle variation="subdued">{rate.description}</TextStyle>,
           actions: [
             {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }},
@@ -122,11 +122,11 @@ class RateEditor extends React.Component {
                         <input type="hidden" name="_method" value={this.state.method} />
                         <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
                         <TextField
-                          label="Name"
-                          name="rate[name]"
+                          label="Title"
+                          name="rate[title]"
                           type="text"
-                          value={this.state.rate.name}
-                          onChange={this.valueUpdater('name')}
+                          value={this.state.rate.title}
+                          onChange={this.valueUpdater('title')}
                           connectedRight={
                             <TextField
                               label="Price"
@@ -148,6 +148,17 @@ class RateEditor extends React.Component {
                             onChange={this.valueUpdater('description')}
                             multiline
                           />
+                          <TextField
+                            label="Cutoff Time"
+                            name="rate[cutoff_time]"
+                            type="number"
+                            minLength={4}
+                            maxLength={4}
+                            max={2400}
+                            min={0}
+                            value={this.state.rate.cutoff_time}
+                            onChange={this.valueUpdater('cutoff_time')}
+                          />
                           <Select
                             label="Delivery Method"
                             name="rate[delivery_method]"
@@ -158,6 +169,17 @@ class RateEditor extends React.Component {
                             ]}
                             value={this.state.rate.delivery_method}
                             onChange={this.valueUpdater('delivery_method')}
+                            placeholder="Select"
+                          />
+                          <Select
+                            label="Delivery Type"
+                            name="rate[delivery_type]"
+                            options={[
+                              'same_day',
+                              'next_day'
+                            ]}
+                            value={this.state.rate.delivery_type}
+                            onChange={this.valueUpdater('delivery_type')}
                             placeholder="Select"
                           />
                           <Subheading>Conditions </Subheading>

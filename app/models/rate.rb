@@ -4,7 +4,7 @@ class Rate < ApplicationRecord
   has_many :conditions, dependent: :destroy
   has_many :product_specific_prices, dependent: :destroy
 
-  validates :name, presence: true
+  validates :title, presence: true
   validates :price, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 999_999_999 }
   validates :price_weight_modifier, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 999_999_999 }
   validates :price_weight_modifier_starter, presence: true, numericality: { greater_than_or_equal_to: 0, less_than: 999_999_999 }
