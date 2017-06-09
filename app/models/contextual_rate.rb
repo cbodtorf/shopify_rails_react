@@ -22,7 +22,7 @@ class ContextualRate
     return false unless valid_price?
     return false unless valid_grams?
     return false unless valid_conditions?
-    return false unless valid_delivery_method?
+    return false unless valid_rate?
 
     true
   end
@@ -92,11 +92,12 @@ class ContextualRate
    end
   end
 
-  def valid_delivery_method?
+  def valid_rate?
     if order_notes != nil
       Rails.logger.debug("checkout_method: #{order_notes.checkout_method.inspect}")
       Rails.logger.debug("delivery_method: #{rate.inspect}")
-      rate.delivery_method == order_notes.checkout_method
+      Rails.logger.debug("rate_id: #{order_notes.rate_id.inspect}")
+      rate.id == order_notes.rate_id.to_i
     else
       true
     end

@@ -10,7 +10,7 @@ class CheckoutsUpdateJob < ApplicationJob
     hash[:checkout_token] = webhook[:token]
     hash[:cart_token] = webhook[:cart_token]
     webhook[:note_attributes].map do |note|
-      if note.name === 'postal_code' || note.name === 'delivery_time' || note.name === 'delivery_date' || note.name === 'checkout_method'
+      if note.name === 'postal_code' || note.name === 'delivery_time' || note.name === 'delivery_date' || note.name === 'checkout_method' || note.name === 'rate_id'
         hash[note.name.to_sym] = note.value
       end
     end

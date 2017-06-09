@@ -15,8 +15,9 @@ class CallbackController < ApplicationController
       country_code: addrs[:country],
       address2: addrs[:address2]
       })
-    # Rails.logger.info("[shipping addrs] #{shipping_address.empty?}")
-    # Rails.logger.info("[shipping addrs] #{shipping_address.inspect}")
+    Rails.logger.info("[shipping addrs] #{shipping_address.empty?}")
+    Rails.logger.info("[shipping addrs] #{shipping_address.inspect}")
+    Rails.logger.info("[shipping addrs] #{addrs.inspect}")
     @order_note = OrderNote.find(shipping_address.first[:order_note_id])
 
     # Rails.logger.info("[ORDER NOTES] #{@order_note.inspect}")

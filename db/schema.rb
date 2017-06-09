@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(version: 20170605195345) do
   create_table "order_notes", force: :cascade do |t|
     t.string   "checkout_token",  null: false
     t.string   "cart_token",      null: false
+    t.string   "rate_id",         null: false
     t.string   "checkout_method", null: false
     t.string   "postal_code",     null: false
     t.string   "delivery_time",   null: false
