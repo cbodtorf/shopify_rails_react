@@ -112,12 +112,60 @@ class AppProxyController < ApplicationController
     shop = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(shop)
     rates = Rate.all
-    # rates.map do |rate|
-    #   if p Time.strptime(rate[:cutoff_time].to_s, '%H%M') <= Time.now
-    #     rate[:disabled] = true
-    #   end
-    # end
 
-    render json: rates, status: 200
+    # hour should be a variable maybe held in a config/settings from the admin.
+    end_of_day = DateTime.now.change({ hour: 15 })
+
+    date_from  = Date.current
+    date_to    = date_from + 6
+    date_range = (date_from..date_to).map()
+
+    # TODO: we need to disable on individual rate cutoff times
+    if Time.now < end_of_day # normal
+      pickerData = date_range.map.with_index do |date, i|
+        if date.today?
+          # allow same_day for today
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select {|rate| rate.delivery_type == 'same_day'}
+          }
+        elsif !date.today?
+          # no next day rates today
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select {|rate| rate.delivery_type == 'next_day'}
+          }
+        end
+      end
+    elsif Time.now > end_of_day # shift rates over one day
+      pickerData = date_range.map.with_index do |date, i|
+        if i == 0
+          # disable
+          dateObj = {
+            date: date,
+            disabled: true,
+            rates: []
+          }
+        elsif (date - 1).today?
+          # allow same_day for tomorrow
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select {|rate| rate.delivery_type == 'same_day'}
+          }
+        elsif !date.today? && !(date - 1).today?
+          # no next day rates today or tomorrow
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select {|rate| rate.delivery_type == 'next_day'}
+          }
+        end
+      end
+    end
+
+    render json: pickerData , status: 200
   end
 end
