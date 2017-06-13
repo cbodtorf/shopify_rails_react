@@ -149,12 +149,12 @@ class RateEditor extends React.Component {
                             multiline
                           />
                           <TextField
-                            label="Cutoff Time"
+                            label="Cutoff Time (Hour of day between 0-23)"
                             name="rate[cutoff_time]"
                             type="number"
-                            minLength={4}
-                            maxLength={4}
-                            max={2400}
+                            minLength={2}
+                            maxLength={2}
+                            max={23}
                             min={0}
                             value={this.state.rate.cutoff_time}
                             onChange={this.valueUpdater('cutoff_time')}

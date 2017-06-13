@@ -116,11 +116,14 @@ class AppProxyController < ApplicationController
     # hour should be a variable maybe held in a config/settings from the admin.
     end_of_day = DateTime.now.change({ hour: 15 })
 
+    # black out days = []
+    black_out_days =
+
     date_from  = Date.current
     date_to    = date_from + 6
     date_range = (date_from..date_to).map()
 
-    # TODO: we need to disable on individual rate cutoff times
+    # TODO: black out days
     if Time.now < end_of_day # normal
       pickerData = date_range.map.with_index do |date, i|
         if date.today?
@@ -128,14 +131,14 @@ class AppProxyController < ApplicationController
           dateObj = {
             date: date,
             disabled: false,
-            rates: rates.select {|rate| rate.delivery_type == 'same_day'}
+            rates: rates.select {|rate| rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
           }
         elsif !date.today?
           # no next day rates today
           dateObj = {
             date: date,
             disabled: false,
-            rates: rates.select {|rate| rate.delivery_type == 'next_day'}
+            rates: rates.select {|rate| rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
           }
         end
       end
