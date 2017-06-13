@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 import Condition from './Condition'
 
@@ -103,6 +103,36 @@ class RateEditor extends React.Component {
         shopOrigin={this.props.shopOrigin}
       >
         <Page title={`Edit Rate`}>
+        <Tabs
+          selected={1}
+          fitted
+          tabs={[
+            {
+              id: 'dashboard',
+              title: 'Dashboard',
+              panelID: 'dashboard',
+              url: '/dashboard',
+            },
+            {
+              id: 'rates',
+              title: 'Rates',
+              panelID: 'rates',
+              url: '/rates',
+            },
+            {
+              id: 'bundles',
+              title: 'Bundles',
+              panelID: 'bundles',
+              url: `/bundle?id=${this.props.bundles[0].id}`,
+            },
+            {
+              id: 'settings',
+              title: 'Settings',
+              panelID: 'settings',
+              url: '/settings',
+            },
+          ]}
+        />
           <Layout>
             <Layout.Section>
                 <Card

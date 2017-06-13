@@ -117,58 +117,86 @@ class AppProxyController < ApplicationController
     end_of_day = DateTime.now.change({ hour: 15 })
 
     # black out days = []
-    black_out_days =
+    # Once the db and client are set up to input Settings.
+    # blackout_dates = BlackOutDates.all
+    blackout_dates = [Date.parse("Mon, 19 Jun 2017")]
+    # no sundays
+    blackout_sunday = 0
 
     date_from  = Date.current
+    Rails.logger.debug("[date] #{date_from.inspect}")
     date_to    = date_from + 6
     date_range = (date_from..date_to).map()
 
-    # TODO: black out days
+    # TODO: black out days. This is still being handled on the front end, but we are passing it the dates.
+    # bo = blackout_dates.map do |d|
+    #   if Date.parse(d) == date
+    #   Date.parse(d) == date ? "disable" : "clear"
+    # end
+
     if Time.now < end_of_day # normal
       pickerData = date_range.map.with_index do |date, i|
-        if date.today?
-          # allow same_day for today
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select {|rate| rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
-          }
-        elsif !date.today?
-          # no next day rates today
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select {|rate| rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
-          }
-        end
-      end
-    elsif Time.now > end_of_day # shift rates over one day
-      pickerData = date_range.map.with_index do |date, i|
-        if i == 0
-          # disable
+        # black out sundays
+        if date.wday != 0
+          if date.today?
+            # allow same_day for today
+            dateObj = {
+              date: date,
+              disabled: false,
+              rates: rates.select {|rate| rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
+            }
+          elsif !date.today?
+            # no next day rates today
+            dateObj = {
+              date: date,
+              disabled: false,
+              rates: rates.select {|rate| rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
+            }
+          end
+        else
           dateObj = {
             date: date,
             disabled: true,
             rates: []
           }
-        elsif (date - 1).today?
-          # allow same_day for tomorrow
+        end
+      end
+    elsif Time.now > end_of_day # shift rates over one day
+      pickerData = date_range.map.with_index do |date, i|
+        # black out sundays
+        if date.wday != 0
+          if i == 0
+            # disable
+            dateObj = {
+              date: date,
+              disabled: true,
+              rates: []
+            }
+          elsif (date - 1).today?
+            # allow same_day for tomorrow
+            dateObj = {
+              date: date,
+              disabled: false,
+              rates: rates.select {|rate| rate.delivery_type == 'same_day'}
+            }
+          elsif !date.today? && !(date - 1).today?
+            # no next day rates today or tomorrow
+            dateObj = {
+              date: date,
+              disabled: false,
+              rates: rates.select {|rate| rate.delivery_type == 'next_day'}
+            }
+          end
+        else
           dateObj = {
             date: date,
-            disabled: false,
-            rates: rates.select {|rate| rate.delivery_type == 'same_day'}
-          }
-        elsif !date.today? && !(date - 1).today?
-          # no next day rates today or tomorrow
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select {|rate| rate.delivery_type == 'next_day'}
+            disabled: true,
+            rates: []
           }
         end
       end
     end
 
-    render json: pickerData , status: 200
+    render json: {dates: pickerData, blackout_dates: blackout_dates} , status: 200
   end
 end

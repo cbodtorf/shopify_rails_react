@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner} from '@shopify/polaris';
+import {Page, Card, Banner, Tabs} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 
@@ -27,6 +27,41 @@ class Dashboard extends React.Component {
         shopOrigin={this.props.shopOrigin}
       >
         <Page title="Dashboard">
+        <Tabs
+          selected={0}
+          fitted
+          tabs={[
+            {
+              id: 'dashboard',
+              title: 'Dashboard',
+              panelID: 'dashboard',
+              url: '/dashboard',
+            },
+            {
+              id: 'rates',
+              title: 'Rates',
+              panelID: 'rates',
+              url: '/rates',
+            },
+            {
+              id: 'bundles',
+              title: 'Bundles',
+              panelID: 'bundles',
+              url: `/bundle?id=${this.props.bundles[0].id}`,
+            },
+            {
+              id: 'settings',
+              title: 'Settings',
+              panelID: 'settings',
+              url: '/settings',
+            },
+          ]}
+        />
+          <Card
+            title="Orders/Sales"
+          >
+          
+          </Card>
           <Card
           >
           { orders }

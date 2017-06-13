@@ -2,6 +2,7 @@ class RatesController < ShopifyApp::AuthenticatedController
   def index
     @rates = shop.rates.includes(:conditions, :product_specific_prices).order(:title)
     # TODO: need to make sure this works with complicated condition scenarios
+    @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
 
     # This is for Front End
     @ratesWithConditions = @rates.map do |rate|

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 
 class BundleEditor extends React.Component {
@@ -92,6 +92,36 @@ class BundleEditor extends React.Component {
         shopOrigin={this.props.shopOrigin}
       >
         <Page title={`Edit Bundle`}>
+        <Tabs
+          selected={2}
+          fitted
+          tabs={[
+            {
+              id: 'dashboard',
+              title: 'Dashboard',
+              panelID: 'dashboard',
+              url: '/dashboard',
+            },
+            {
+              id: 'rates',
+              title: 'Rates',
+              panelID: 'rates',
+              url: '/rates',
+            },
+            {
+              id: 'bundles',
+              title: 'Bundles',
+              panelID: 'bundles',
+              url: '/bundles?0',
+            },
+            {
+              id: 'settings',
+              title: 'Settings',
+              panelID: 'settings',
+              url: '/settings',
+            },
+          ]}
+        />
           <Layout>
             <Layout.Section>
                 <Card
