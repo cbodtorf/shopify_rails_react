@@ -13,3 +13,84 @@
  *= require_tree .
  *= require_self
  */
+
+.dashboard-card-primary .Polaris-Card {
+  color: #5C6AC4;
+  text-align: center;
+}
+.date {
+  background-color: #F4F5FA;
+  /*padding: 8px;*/
+}
+.date h5 {
+  text-align: center;
+  font-size: 24px;
+}
+.date h5:first-of-type {
+  background-color: #B3BCF5;
+  font-size: 1.5rem;
+  color: #FFF;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.date h5:nth-of-type(2) {
+  font-size: 25px;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
+.date h5:last-of-type {
+  font-size: 15px;
+  margin-top: 15px;
+  padding-bottom: 10px;
+}
+
+.revenue h5 {
+  font-size: 24px;
+  margin-top: 15px;
+  color: #108043;
+}
+
+.delivery-wrapper .Polaris-Card {
+  color: #5C6AC4;
+  font-weight: bold;
+  margin-top: 15px;
+  /*background-color: #F9FAFB;*/
+}
+.delivery-wrapper .Polaris-Heading {
+  display: table-caption;
+}
+
+.delivery-wrapper .Polaris-ButtonGroup--segmented .Polaris-ButtonGroup__Item {
+  flex: 1;
+}
+
+.delivery-count {
+  font-size: 24px;
+  padding: 10px 0;
+  border-top: 1px solid #B3BCF5;
+  border-bottom: 1px solid #B3BCF5;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.delivery-count .Polaris-Link {
+  font-size: 13px;
+}
+
+.counts .Polaris-Heading {
+  /*color: #5C6AC4;*/
+  /*font-weight: bold;*/
+}
+
+.counts .count-content {
+  font-size: 2.8rem;
+  line-height: 3.2rem;
+  padding: 10px 0;
+  font-weight: 500;
+}
+
+.Polaris-Card__Section .Polaris-Card__Section {
+  padding: 1rem;
+}
