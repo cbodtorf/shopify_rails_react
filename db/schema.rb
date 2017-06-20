@@ -53,6 +53,7 @@ ActiveRecord::Schema.define(version: 20170605195345) do
     t.string   "delivery_method"
     t.integer  "price"
     t.integer  "cutoff_time"
+    t.string   "delivery_time"
     t.string   "delivery_type"
     t.integer  "min_grams"
     t.integer  "max_grams"

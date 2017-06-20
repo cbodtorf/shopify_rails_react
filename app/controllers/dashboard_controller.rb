@@ -10,8 +10,33 @@ class DashboardController < ShopifyApp::AuthenticatedController
     Rails.logger.debug("Time - 1: #{sixDaysAgo.inspect}")
     @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
 
-    @allOrders = ShopifyAPI::Order.find(:all, params: { limit: 10 })
-    Rails.logger.debug("orders: #{@orders.inspect}")
+    date_from  = Date.current
+    date_to    = date_from + 4
+    date_range = (date_from..date_to).map()
+    @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: []}}
+
+    @orders.each do |order|
+      # Isolate Delivery Date
+      dates = order.attributes[:note_attributes].select do |note|
+        note.attributes[:name] === "delivery_date"
+      end
+      # Isolate Delivery Rate
+      rates = order.attributes[:note_attributes].select do |note|
+        note.attributes[:name] === "rate_id"
+      end
+      if dates[0] != nil
+        @fiveDayOrders.map do |date|
+          if (date[:date] == Date.parse(dates[0].attributes[:value]))
+            Rails.logger.debug("rate time: #{order.inspect}")
+            date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
+          end
+        end
+        # @fiveDayOrders.push(dateObj)
+        # Rails.logger.debug("notes rate: #{Rate.find(rates[0].attributes[:value]).inspect}")
+        # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
+      end
+    end
+    Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
 
 
     # Subscriber Count (tagged with Active Subscriber)

@@ -200,6 +200,17 @@ class RateEditor extends React.Component {
                             onChange={this.valueUpdater('cutoff_time')}
                           />
                           <Select
+                            label="Delivery Time"
+                            name="rate[delivery_time]"
+                            options={[
+                              'Morning',
+                              'Afternoon'
+                            ]}
+                            value={this.state.rate.delivery_time}
+                            onChange={this.valueUpdater('delivery_time')}
+                            placeholder="Select"
+                          />
+                          <Select
                             label="Delivery Method"
                             name="rate[delivery_method]"
                             options={[

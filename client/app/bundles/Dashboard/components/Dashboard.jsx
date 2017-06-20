@@ -24,6 +24,9 @@ class Dashboard extends React.Component {
         }
       }
     console.log('dates: ', dateArray)
+
+    console.log('props: ', this.props)
+
     this.setState({
       orders: this.props.orders,
       dates: dateArray
