@@ -13,7 +13,7 @@ class AppProxyController < ApplicationController
     if order_note
       Rails.logger.debug("[Order Note Exists] #{order_note.inspect}")
       @checkout = ShopifyAPI::Checkout.find(order_note[:checkout_token])
-      Rails.logger.debug("[Checkout] #{@checkout.inspect}")
+      # Rails.logger.debug("[Checkout] #{@checkout.inspect}")
 
       if order_note.update_attributes(order_note_params)
         order_note.shipping_address.update_attributes(company: @checkout.attributes[:shipping_address].attributes[:company] += " ")
@@ -25,23 +25,27 @@ class AppProxyController < ApplicationController
     else
       Rails.logger.debug("[Order Note does not exist] #{order_note.inspect}")
       # this shouldn't run, order note should already be created
-      checkouts = ShopifyAPI::Checkout.all
-      @checkout = checkouts.select do |checkout|
-        checkout.attributes[:cart_token] == params[:cart_token]
-      end.first
-      Rails.logger.debug("[Checkout no note] #{@checkout.inspect}")
+      # Shouldn't need to breakCarrierCache either.
 
-      @order_note = OrderNote.create(order_note_params)
-      @order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address].attributes)
+      # checkouts = ShopifyAPI::Checkout.all
+      # Rails.logger.debug("[Checkouts] #{checkouts.inspect}")
+      # @checkout = checkouts.select do |checkout|
+      #   checkout.attributes[:cart_token] == params[:cart_token]
+      # end.first
+      # Rails.logger.debug("[Checkout no note] #{@checkout.inspect}")
 
-      if @order_note.save
-        breakCarrierCache()
-        render json: @order_note, status: 200
-      else
-        # This just for reference if I wanted to render a page
-        # render layout: false, content_type: 'application/liquid'
-        render json: { errors: @order_note.errors }, status: 422
-      end
+      # @order_note = OrderNote.create(order_note_params)
+      # @order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address].attributes)
+
+      # if @order_note.save
+      #   # breakCarrierCache()
+      #   render json: @order_note, status: 200
+      # else
+      #   # This just for reference if I wanted to render a page
+      #   # render layout: false, content_type: 'application/liquid'
+      #   render json: { errors: @order_note.errors }, status: 422
+      # end
+      render json: @order_note, status: 200
     end
 
 
@@ -56,7 +60,6 @@ class AppProxyController < ApplicationController
       :rate_id,
       :checkout_method,
       :postal_code,
-      :delivery_time,
       :delivery_date
     )
   end

@@ -6,6 +6,8 @@ class CallbackController < ApplicationController
     addrs = value.fetch('destination', {})
     items = value.fetch('items', [])
 
+    Rails.logger.info("[Shipping?] #{ShippingAddress.all.inspect}")
+
     shipping_address = ShippingAddress.where({
       address1: addrs[:address1],
       phone: addrs[:phone],

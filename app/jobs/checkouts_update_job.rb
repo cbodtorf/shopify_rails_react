@@ -8,7 +8,7 @@ class CheckoutsUpdateJob < ApplicationJob
     hash[:checkout_token] = webhook[:token]
     hash[:cart_token] = webhook[:cart_token]
     webhook[:note_attributes].select do |note|
-      if note[:name] === 'postal_code' || note[:name] === 'delivery_time' || note[:name] === 'delivery_date' || note[:name] === 'checkout_method' || note[:name] === 'rate_id'
+      if note[:name] === 'postal_code' || note[:name] === 'delivery_date' || note[:name] === 'checkout_method' || note[:name] === 'rate_id'
         Rails.logger.info("[hash Note]: #{note.inspect}")
         hash[note[:name].to_sym] = note[:value]
       end
@@ -23,7 +23,10 @@ class CheckoutsUpdateJob < ApplicationJob
       if @order_note == nil
         # If one doesn't exist we need to create one.
         @order_note = OrderNote.create(hash)
+        Rails.logger.info("[Order Note nil to new]: #{@order_note.inspect}")
         @order_note.shipping_address = ShippingAddress.create(webhook[:shipping_address])
+        Rails.logger.info("[Order Note shipping?]: #{@order_note.shipping_address.inspect}")
+
 
         if @order_note.save
           Rails.logger.info("[Order Note] - Saving: #{@order_note.inspect}")

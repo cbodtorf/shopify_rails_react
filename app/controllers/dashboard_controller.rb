@@ -1,7 +1,7 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
     # Shopify requires time to be iso8601 format
-    # Order Information 7 day range (limit for which orders )
+    # Order Information 7 day range ( limit for which orders )
     # TODO: make sure this range is right,
     t = Time.now
     t8601 = t.iso8601

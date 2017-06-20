@@ -14,6 +14,13 @@
  *= require_self
  */
 
+/* Navigation TODO: should use Tabs, but they are autofocusing on render */
+.bamboo-nav {
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .dashboard-card-primary .Polaris-Card {
   color: #5C6AC4;
   text-align: center;
