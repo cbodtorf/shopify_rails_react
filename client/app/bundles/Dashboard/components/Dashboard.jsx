@@ -7,29 +7,14 @@ class Dashboard extends React.Component {
   constructor(props) {
     super(props)
 
-    this.state = {
-      dates: []
-    }
+    this.state = {}
   }
 
   componentWillMount() {
-    var date = new Date();
-    const DAY = 1000 * 60 * 60 * 24;
-    var dateArray = [];
-    for (var i = 0; i < 5; i++) {
-        if (i === 0) {
-          dateArray.push(new Date(date.setTime(date.getTime())))
-        } else {
-          dateArray.push(new Date(date.setTime(date.getTime() + DAY)))
-        }
-      }
-    console.log('dates: ', dateArray)
-
     console.log('props: ', this.props)
 
     this.setState({
-      orders: this.props.orders,
-      dates: dateArray
+      fiveDayOrders: this.props.fiveDayOrders
     })
   }
 
@@ -37,10 +22,11 @@ class Dashboard extends React.Component {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 
-    let dates = this.state.dates.map((date, i) => {
-      var m = monthNames[date.getMonth()]
-      var w = weekNames[date.getDay()]
-      var d = date.getDate()
+    let dates = this.state.fiveDayOrders.map((date, i) => {
+      var formatedDate = new Date(date.date.split('-').join('/'))
+      var m = monthNames[formatedDate.getMonth()]
+      var w = weekNames[formatedDate.getDay()]
+      var d = formatedDate.getDate()
       return (
         <div key={i} className="dashboard-card-primary">
           <Card sectioned subdued={i != 0 ? true : false} >
@@ -50,46 +36,57 @@ class Dashboard extends React.Component {
               <h5>{w}</h5>
             </div>
             <div className="revenue">
-              <h5>$24,003</h5>
+              <h5>${date.revenue.toFixed(2)}</h5>
             </div>
 
-            <div className="delivery-wrapper morning">
-              <Card sectioned title="Morning">
-                <div className="delivery-count">
-                  <h5>10</h5>
-                  <Link url=''>Orders</Link>
+            <div className="delivery-wrapper">
+              <Card sectioned title="Deliveries">
+                <div className="title-line">
                 </div>
-
-                <ButtonGroup segmented>
-                  <Button fullWidth icon="view"></Button>
-                  <Button fullWidth icon="notes"></Button>
-                </ButtonGroup>
+                <div className="delivery-count">
+                  <h5>{date.morning.length}</h5>
+                  <Link url=''>Orders</Link>
+                  <h3 className="delivery-time">AM</h3>
+                </div>
+                <div className="delivery-count">
+                  <h5>{date.afternoon.length}</h5>
+                  <Link url=''>Orders</Link>
+                  <h3 className="delivery-time">PM</h3>
+                </div>
               </Card>
             </div>
-
-            <div className="delivery-wrapper afternoon">
-              <Card sectioned title="Afternoon">
-                <div className="delivery-count">
-                  <h5>8</h5>
-                  <Link url=''>Orders</Link>
-                </div>
-
-                <ButtonGroup segmented>
-                  <Button fullWidth icon="view"></Button>
-                  <Button fullWidth icon="notes"></Button>
-                </ButtonGroup>
-              </Card>
-            </div>
-
             <div className="delivery-wrapper pickup">
-              <Card sectioned title="Pickups">
-                <div className="delivery-count">
-                  <h5>2</h5>
+              <Card sectioned title="Pickup">
+              <div className="title-line">
+              </div>
+                <div className="pickup-count">
+                  <h5>{date.pickup.length}</h5>
                   <Link url=''>Orders</Link>
                 </div>
-
               </Card>
             </div>
+
+            <div className="delivery-wrapper spreadsheet morning">
+              <Card sectioned>
+                <Heading>Morning</Heading>
+                <Heading>Spreadsheets</Heading>
+                <ButtonGroup segmented>
+                  <Button fullWidth icon="view"></Button>
+                  <Button fullWidth icon="notes"></Button>
+                </ButtonGroup>
+              </Card>
+            </div>
+            <div className="delivery-wrapper spreadsheet afternoon">
+              <Card sectioned>
+                <Heading>Afternoon</Heading>
+                <Heading>Spreadsheets</Heading>
+                <ButtonGroup segmented>
+                  <Button fullWidth icon="view"></Button>
+                  <Button fullWidth icon="notes"></Button>
+                </ButtonGroup>
+              </Card>
+            </div>
+
           </Card>
         </div>
       );

@@ -21,13 +21,17 @@
   width: 100%;
 }
 
+/* Dashboard */
 .dashboard-card-primary .Polaris-Card {
   color: #5C6AC4;
   text-align: center;
 }
-.date {
+/*.dashboard-card-primary .Polaris-Card:first-child {
   background-color: #F4F5FA;
-  /*padding: 8px;*/
+}*/
+
+.date {
+  /*background-color: #F4F5FA;*/
 }
 .date h5 {
   text-align: center;
@@ -56,17 +60,17 @@
 .revenue h5 {
   font-size: 24px;
   margin-top: 15px;
-  color: #108043;
+  color: #173630;
 }
 
 .delivery-wrapper .Polaris-Card {
   color: #5C6AC4;
   font-weight: bold;
   margin-top: 15px;
-  /*background-color: #F9FAFB;*/
 }
 .delivery-wrapper .Polaris-Heading {
   display: table-caption;
+  text-align: center;
 }
 
 .delivery-wrapper .Polaris-ButtonGroup--segmented .Polaris-ButtonGroup__Item {
@@ -76,19 +80,32 @@
 .delivery-count {
   font-size: 24px;
   padding: 10px 0;
+  margin-bottom: 2rem;
+  text-align: center;
+  display: inline-block;
+  padding: 5px;
+}
+
+.delivery-count:last-of-type {
+  border-left: 2px solid #B3BCF5;
+}
+
+.pickup-count {
+  font-size: 24px;
+  padding: 10px 0;
   border-top: 1px solid #B3BCF5;
   border-bottom: 1px solid #B3BCF5;
   margin-bottom: 2rem;
   text-align: center;
 }
 
-.delivery-count .Polaris-Link {
+.delivery-count .Polaris-Link, .pickup-count .Polaris-Link {
   font-size: 13px;
 }
 
-.counts .Polaris-Heading {
-  /*color: #5C6AC4;*/
-  /*font-weight: bold;*/
+.delivery-time {
+  margin-top: 10px;
+  font-size: 15px;
 }
 
 .counts .count-content {
@@ -100,4 +117,8 @@
 
 .Polaris-Card__Section .Polaris-Card__Section {
   padding: 1rem;
+}
+
+.spreadsheet .Polaris-Heading:last-of-type {
+  margin-bottom: 10px;
 }

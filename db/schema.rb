@@ -33,6 +33,8 @@ ActiveRecord::Schema.define(version: 20170605195345) do
     t.string   "checkout_method", null: false
     t.string   "postal_code",     null: false
     t.datetime "delivery_date",   null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
   create_table "product_specific_prices", force: :cascade do |t|

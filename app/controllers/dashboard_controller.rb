@@ -36,6 +36,24 @@ class DashboardController < ShopifyApp::AuthenticatedController
         # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
       end
     end
+    @fiveDayOrders.map do |date|
+      date[:revenue] = 0
+      if date[:afternoon].size > 0
+        date[:afternoon].each do |order|
+          date[:revenue] += order.attributes[:total_price].to_f
+        end
+      end
+      if date[:morning].size > 0
+        date[:morning].each do |order|
+          date[:revenue] += order.attributes[:total_price].to_f
+        end
+      end
+      if date[:pickup].size > 0
+        date[:pickup].each do |order|
+          date[:revenue] += order.attributes[:total_price].to_f
+        end
+      end
+    end
     Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
 
 

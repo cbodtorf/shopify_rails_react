@@ -20,7 +20,16 @@ class CallbackController < ApplicationController
     Rails.logger.info("[shipping addrs] #{shipping_address.empty?}")
     Rails.logger.info("[shipping addrs] #{shipping_address.inspect}")
     Rails.logger.info("[shipping addrs] #{addrs.inspect}")
-    @order_note = OrderNote.find(shipping_address.first[:order_note_id])
+
+    if shipping_address.empty?
+      # Gotta find order note (maybe most recently created?)
+      @order_note = OrderNote.all.sort_by(&:updated_at).last
+
+      Rails.logger.info("[no shipping, all order notes] #{@order_note.inspect}")
+    else
+      @order_note = OrderNote.find(shipping_address.first[:order_note_id])
+    end
+
 
     # Rails.logger.info("[ORDER NOTES] #{@order_note.inspect}")
 
@@ -32,7 +41,8 @@ class CallbackController < ApplicationController
 
 
     Rails.logger.info("[#{self.class.name}] #{rates.size} rates found")
-
+    # delete shipping address so we don't get repeats.
+    # @order_note.shipping_address.delete
     render json: { rates: rates.map { |rate| rate.to_hash } }
   rescue JSON::ParserError
     nil

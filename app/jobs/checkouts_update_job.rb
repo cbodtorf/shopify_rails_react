@@ -22,6 +22,7 @@ class CheckoutsUpdateJob < ApplicationJob
 
       if @order_note == nil
         # If one doesn't exist we need to create one.
+        # debugger
         @order_note = OrderNote.create(hash)
         Rails.logger.info("[Order Note nil to new]: #{@order_note.inspect}")
         @order_note.shipping_address = ShippingAddress.create(webhook[:shipping_address])

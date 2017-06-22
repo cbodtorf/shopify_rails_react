@@ -13,10 +13,18 @@ class AppProxyController < ApplicationController
     if order_note
       Rails.logger.debug("[Order Note Exists] #{order_note.inspect}")
       @checkout = ShopifyAPI::Checkout.find(order_note[:checkout_token])
-      # Rails.logger.debug("[Checkout] #{@checkout.inspect}")
+      Rails.logger.debug("[Checkout] #{@checkout.inspect}")
 
       if order_note.update_attributes(order_note_params)
-        order_note.shipping_address.update_attributes(company: @checkout.attributes[:shipping_address].attributes[:company] += " ")
+        if order_note.shipping_address
+          if @checkout.attributes[:shipping_address].attributes[:company] == nil
+            @checkout.attributes[:shipping_address].attributes[:company] = "_"
+          else
+            order_note.shipping_address.update_attributes(company: @checkout.attributes[:shipping_address].attributes[:company] += " ")
+          end
+        else
+          order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address])
+        end
         breakCarrierCache()
         render json: order_note, status: 200
       else
