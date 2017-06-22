@@ -2,9 +2,14 @@ class BundleController < ShopifyApp::AuthenticatedController
 
   def index
     # TODO: Need to have conditional if product is not a bundle right now is handled on Client
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
 
-    @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
+    @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
+    @products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
+
+    @bundles = @products.select do |product|
+      product.attributes[:tags].include?("bundle")
+    end
+
     @bundles.each do |bundle|
       bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
       if bundle.metafield != nil
@@ -16,11 +21,14 @@ class BundleController < ShopifyApp::AuthenticatedController
       end
     end
 
-    @bundle = @bundles.select do |bundle|
-      bundle.id.to_i == params[:id].to_i
+    # If id select bundle else show welcome
+    if params[:id]
+      @bundle = @bundles.select do |bundle|
+        bundle.id.to_i == params[:id].to_i
+      end.first
+    else
+      @bundle = nil
     end
-    # Gotta get it out of the array
-    @bundle = @bundle[0]
 
     # Rails.logger.debug("My res: #{@bundle.inspect}")
   end

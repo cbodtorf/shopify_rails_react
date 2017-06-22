@@ -4,7 +4,10 @@ class HomeController < ShopifyApp::AuthenticatedController
   def index
     Rails.logger.debug("shop index: #{Shop.all}")
     @rates = shop.rates.order(:title)
-    @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
+    @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
+    @bundles = @products.select do |product|
+      product.attributes[:tags].include?("bundle")
+    end
 
 
     @bundles.each do |bundle|

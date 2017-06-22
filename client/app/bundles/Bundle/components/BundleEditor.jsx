@@ -18,10 +18,9 @@ class BundleEditor extends React.Component {
 
   componentWillMount() {
     console.log("props", this.props);
-    console.log("meta", this.props.bundle.metafield);
     let metafield = []
     let method = 'post'
-    let url = `/bundle?id=${this.props.bundle.id}`
+    let url = this.props.bundle === null ? '/bundle' : `/bundle?id=${this.props.bundle.id}`
 
     let bundleItems = this.props.bundles.map(bundle => {
       return (
@@ -38,20 +37,23 @@ class BundleEditor extends React.Component {
         }
       )
     })
-
-    if (this.props.bundle.metafield.length !== 0) {
-      method = 'put'
-      url = `/bundle/${this.props.bundle.id}`
+    if (this.props.bundle) {
+      if (this.props.bundle.metafield.length !== 0) {
+        method = 'put'
+        url = `/bundle/${this.props.bundle.id}`
+      }
     }
 
     this.setState({
       bundle: this.props.bundle,
       bundleItems: bundleItems,
-      formFields: this.props.bundle.metafield,
+      formFields: this.props.bundle === null ? '' : this.props.bundle.metafield,
       method: method,
       url: url
     })
   }
+
+
 
   render() {
     const productOptions = this.props.products.filter(product => {
@@ -62,6 +64,7 @@ class BundleEditor extends React.Component {
     }).map(product => {
       return product.title
     })
+
 
     let existingMetafields = []
     console.log('state', this.state);
@@ -82,6 +85,56 @@ class BundleEditor extends React.Component {
     } else {
       existingMetafields = (
         <p>No associated products yet.</p>
+      )
+    }
+
+    let mainContainer = ''
+    if (this.state.bundle !== null) {
+      mainContainer = (
+        <Card
+          sectioned
+          title={this.state.bundle.title}
+          primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() } }}
+          secondaryFooterAction={{content: 'Cancel', onAction: () => { this.handleCancel() } }}
+          actions={[{content: 'Add bundle item', onAction: () => { this.addFormField() } }]}
+          >
+        <FormLayout>
+          <FormLayout.Group>
+            { existingMetafields }
+            <form
+              action={this.state.url}
+              acceptCharset="UTF-8" method="post"
+              ref={(form) => {this.metaForm = form}}
+              style={{'display': 'none'}}
+              >
+              <input name="utf8" type="hidden" value="✓" />
+              <input type="hidden" name="_method" value={this.state.method} />
+              <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
+              <label htmlFor="metafield">Search for:</label>
+              <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
+              <input type="submit" name="commit" value="submit" data-disable-with="submit" />
+            </form>
+          </FormLayout.Group>
+        </FormLayout>
+        </Card>
+      )
+    } else {
+
+      mainContainer = (
+        <Card
+          sectioned
+          title={"Welcome"}
+          primaryFooterAction={{content: 'New', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
+          secondaryFooterAction={{content: 'Cancel', onAction: () => { this.handleCancel() } }}
+          >
+          <div>
+            In order to create a bundle and add product to it, The listing must have a tag called 'bundle'.
+            <br />
+            The next step is to choose it from the list below.
+            <br />
+            Once selected, bundle items can be added, and product can be selected from a drop down menu.
+          </div>
+        </Card>
       )
     }
 
@@ -124,32 +177,8 @@ class BundleEditor extends React.Component {
         />
           <Layout>
             <Layout.Section>
-                <Card
-                  sectioned
-                  title={this.state.bundle.title}
-                  primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() } }}
-                  secondaryFooterAction={{content: 'Cancel', onAction: () => { this.handleCancel() } }}
-                  actions={[{content: 'Add bundle item', onAction: () => { this.addFormField() } }]}
-                  >
-                <FormLayout>
-                  <FormLayout.Group>
-                    { existingMetafields }
-                    <form
-                      action={this.state.url}
-                      acceptCharset="UTF-8" method="post"
-                      ref={(form) => {this.metaForm = form}}
-                      style={{'display': 'none'}}
-                      >
-                      <input name="utf8" type="hidden" value="✓" />
-                      <input type="hidden" name="_method" value={this.state.method} />
-                      <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
-                      <label htmlFor="metafield">Search for:</label>
-                      <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
-                      <input type="submit" name="commit" value="submit" data-disable-with="submit" />
-                    </form>
-                  </FormLayout.Group>
-                </FormLayout>
-                </Card>
+              {mainContainer}
+
                 <Card
                   title="Other Bundles"
                 >
@@ -218,7 +247,7 @@ class BundleEditor extends React.Component {
     })
 
     if (history.pushState) {
-      history.pushState('', bundle.title, `${window.location.origin}?id=${bundle.id}`);
+      history.pushState('', bundle.title, `${window.location.origin}/bundle/?id=${bundle.id}`);
     }
   }
 
