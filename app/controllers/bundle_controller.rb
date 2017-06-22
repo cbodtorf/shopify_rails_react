@@ -4,9 +4,10 @@ class BundleController < ShopifyApp::AuthenticatedController
     # TODO: Need to have conditional if product is not a bundle right now is handled on Client
 
     @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
-    @products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
+    products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
+    @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
 
-    @bundles = @products.select do |product|
+    @bundles = products.select do |product|
       product.attributes[:tags].include?("bundle")
     end
 

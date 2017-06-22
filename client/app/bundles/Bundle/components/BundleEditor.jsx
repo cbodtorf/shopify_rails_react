@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 
 class BundleEditor extends React.Component {
@@ -31,7 +31,13 @@ class BundleEditor extends React.Component {
             alt={bundle.image.alt}
           />,
           attributeOne: bundle.title,
-          attributeTwo: <TextStyle variation="subdued">{`${bundle.metafield.length} associated products`}</TextStyle>,
+          attributeTwo: <div className="resource-badge">{
+            bundle.metafield.map((item, i) => {
+              return (
+                <Badge key={i} status="default">{item.title}</Badge>
+              )
+          })
+        }</div>,
           actions: [{content: 'Edit listing', onAction: () => { this.handleEdit(bundle) }}],
           persistActions: true,
         }
@@ -60,7 +66,7 @@ class BundleEditor extends React.Component {
       /**
       * @TODO: need a stricter filter for removing unwanted product like auto renew and bundles.
       */
-      return product.product_type !== 'bundle' && product.title.toLowerCase().indexOf('auto') === -1
+      return product.product_type !== 'Cleanse' || product.product_type !== 'Juice Kit' && product.title.toLowerCase().indexOf('auto') === -1
     }).map(product => {
       return product.title
     })
@@ -71,8 +77,8 @@ class BundleEditor extends React.Component {
     if (this.state.formFields.length !== 0 ) {
       existingMetafields = this.state.formFields.map((item, i) => {
         return (
+          <div key={i} className="bundle-input">
           <Select
-            key={i}
             label="Bundle Item"
             value={item.title}
             options={productOptions}
@@ -80,6 +86,7 @@ class BundleEditor extends React.Component {
             onChange={this.valueUpdater(item.id)}
             labelAction={{content: 'remove', onAction: () => { this.removeFormField(item.id) }}}
           />
+          </div>
         )
       })
     } else {
@@ -144,7 +151,10 @@ class BundleEditor extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Edit Bundle`}>
+        <Page
+          title={`Edit Bundle`}
+          primaryAction={{content: 'New Product', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
+          >
         <Tabs
           selected={2}
           fitted

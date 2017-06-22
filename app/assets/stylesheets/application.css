@@ -122,3 +122,12 @@
 .spreadsheet .Polaris-Heading:last-of-type {
   margin-bottom: 10px;
 }
+
+/* Bundle Editor */
+.resource-badge {
+  max-width: 500px;
+}
+.bundle-input {
+  display: inline-block;
+  max-width: 297px;
+}
