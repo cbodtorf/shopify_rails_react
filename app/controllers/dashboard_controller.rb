@@ -24,14 +24,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
       rates = order.attributes[:note_attributes].select do |note|
         note.attributes[:name] === "rate_id"
       end
+      Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
       if dates[0] != nil
         @fiveDayOrders.map do |date|
           if (date[:date] == Date.parse(dates[0].attributes[:value]))
-            Rails.logger.debug("rate time: #{order.inspect}")
+            Rails.logger.debug("rate time: #{Rate.find(rates[0].attributes[:value])[:delivery_time].inspect}")
             date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
           end
         end
-        # @fiveDayOrders.push(dateObj)
         # Rails.logger.debug("notes rate: #{Rate.find(rates[0].attributes[:value]).inspect}")
         # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
       end
@@ -54,7 +54,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
         end
       end
     end
-    Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
+    # Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
 
 
     # Subscriber Count (tagged with Active Subscriber)

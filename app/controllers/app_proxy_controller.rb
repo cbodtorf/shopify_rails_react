@@ -7,8 +7,21 @@ class AppProxyController < ApplicationController
     shop = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(shop)
 
-    #iterate over order notes
-    order_note = OrderNote.where(cart_token: params[:cart_token]).first
+    # iterate over order notes
+    # Choose the one that was created most recently or double check checkout_token and delete if completed
+    order_note = OrderNote.where(cart_token: params[:cart_token])
+    order_note = order_note.select do |order|
+      checkout = ShopifyAPI::Checkout.find(order[:checkout_token])
+      Rails.logger.debug("[token?] #{order[:checkout_token].inspect}")
+      Rails.logger.debug("[checkout? expired?] #{checkout.attributes[:completed_at].inspect}")
+      if checkout.attributes[:completed_at] == nil
+        Rails.logger.debug("[order note?] #{checkout.inspect}")
+        order
+      end
+    end
+    Rails.logger.debug("[order note?] #{order_note.inspect}")
+    order_note = order_note.first
+    # order_note = OrderNote.where(cart_token: params[:cart_token]).first
 
     if order_note
       Rails.logger.debug("[Order Note Exists] #{order_note.inspect}")
@@ -73,9 +86,9 @@ class AppProxyController < ApplicationController
   end
 
   def breakCarrierCache
-    api_token='04d6df28f940fada763b693b89c71d9e'
-    id=params[:checkout_token]
-    endpoint="https://bamboojuices.myshopify.com/admin/checkouts/#{id}.json"
+    api_token = '04d6df28f940fada763b693b89c71d9e'
+    checkout_token = @checkout.attributes[:token]
+    endpoint = "https://bamboojuices.myshopify.com/admin/checkouts/#{checkout_token}.json"
     # TODO: need to encode Base64.encode64('username:password')
     # Should also look into whether or not I can use the App's credentials and not the private app.
     # ** note on editing company: Must use a character, just a space does not register as a change, probably trimming space at some point.
@@ -84,7 +97,7 @@ class AppProxyController < ApplicationController
 
     data = {
       "checkout": {
-        "token": params[:checkout_token],
+        "token": checkout_token,
         "shipping_address": {
           "id": 6757311429,
           "first_name": "Caleb",

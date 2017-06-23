@@ -23,10 +23,12 @@ class CallbackController < ApplicationController
 
     if shipping_address.empty?
       # Gotta find order note (maybe most recently created?)
-      @order_note = OrderNote.all.sort_by(&:updated_at).last
+      @order_note = OrderNote.all.sort_by(&:created_at).last
 
       Rails.logger.info("[no shipping, all order notes] #{@order_note.inspect}")
     else
+      # are we getting multiple shipping addresses?
+      Rails.logger.info("[yar shipping] #{shipping_address.inspect}")
       @order_note = OrderNote.find(shipping_address.first[:order_note_id])
     end
 

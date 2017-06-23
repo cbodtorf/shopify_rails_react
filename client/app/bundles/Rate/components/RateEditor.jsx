@@ -109,7 +109,7 @@ class RateEditor extends React.Component {
               <div className="bamboo-nav">
                 <Link url="/dashboard">Dashboard</Link>
                 <Link url="/rates">Rates</Link>
-                <Link url={`/bundle?id=${this.props.bundles[0].id}`}>Bundles</Link>
+                <Link url="/bundle">Bundles</Link>
                 <Link url="/settings">Settings</Link>
               </div>
               {/* <Tabs
@@ -132,7 +132,7 @@ class RateEditor extends React.Component {
                     id: 'bundles',
                     title: 'Bundles',
                     panelID: 'bundles',
-                    url: `/bundle?id=${this.props.bundles[0].id}`,
+                    url: `/bundle`,
                   },
                   {
                     id: 'settings',

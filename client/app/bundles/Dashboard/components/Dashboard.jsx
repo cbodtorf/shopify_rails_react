@@ -89,7 +89,7 @@ class Dashboard extends React.Component {
 
           </Card>
         </div>
-      );
+      )
     })
 
     return (
@@ -120,7 +120,7 @@ class Dashboard extends React.Component {
                     id: 'bundles',
                     title: 'Bundles',
                     panelID: 'bundles',
-                    url: `/bundle?id=${this.props.bundles[0].id}`,
+                    url: `/bundle`,
                   },
                   {
                     id: 'settings',

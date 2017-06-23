@@ -79,15 +79,16 @@
 
 .delivery-count {
   font-size: 24px;
-  padding: 10px 0;
   margin-bottom: 2rem;
   text-align: center;
   display: inline-block;
-  padding: 5px;
+  padding-right: 10px;
 }
 
 .delivery-count:last-of-type {
-  border-left: 2px solid #B3BCF5;
+  border-left: 1px solid #B3BCF5;
+  padding-left: 10px;
+  padding-right: 0px;
 }
 
 .pickup-count {
