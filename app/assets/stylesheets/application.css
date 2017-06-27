@@ -132,3 +132,18 @@
   display: inline-block;
   max-width: 297px;
 }
+
+/* Settings */
+/* TODO: be more specific with this styling */
+.Polaris-ChoiceList__Choices li {
+  display: inline-block;
+  padding: 5px;
+}
+
+.Polaris-ResourceList__AttributeTwo {
+  width: 400px;
+}
+
+.Polaris-ResourceList__Item--persistActions .Polaris-ResourceList__AttributeThree {
+  width: 100%;
+}

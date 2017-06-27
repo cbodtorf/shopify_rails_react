@@ -28,6 +28,10 @@ Rails.application.routes.draw do
 
   get 'dashboard', to: 'dashboard#index'
 
+  get 'settings', to: 'settings#index'
+  post 'create_pickup_location', to: 'settings#create_pickup_location'
+  delete 'destroy_pickup_location', to: 'settings#destroy_pickup_location'
+
   resources :bundle, only: [:index, :update, :create]
   resources :rates, only: [:index, :update, :create, :destroy]
 
