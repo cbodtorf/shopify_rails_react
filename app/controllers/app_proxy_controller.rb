@@ -28,8 +28,9 @@ class AppProxyController < ApplicationController
       @checkout = ShopifyAPI::Checkout.find(order_note[:checkout_token])
       Rails.logger.debug("[Checkout] #{@checkout.inspect}")
 
-      if order_note.update_attributes(order_note_params)
+      if order_note.update_attributes(order_note_params) && @checkout.attributes[:shipping_address]
         if order_note.shipping_address
+          Rails.logger.debug("[sa] #{order_note.shipping_address.inspect}")
           if @checkout.attributes[:shipping_address].attributes[:company] == nil
             @checkout.attributes[:shipping_address].attributes[:company] = "_"
           else
@@ -41,7 +42,9 @@ class AppProxyController < ApplicationController
         breakCarrierCache()
         render json: order_note, status: 200
       else
-        render json: { errors: order_note.errors }, status: 422
+        # render json: { errors: order_note.errors }, status: 422
+        # TODO: might need to handle some errors, but right now this is when a shipping address is not entered on checkout initially.
+        render json: order_note, status: 200
       end
     else
       Rails.logger.debug("[Order Note does not exist] #{order_note.inspect}")
@@ -133,15 +136,19 @@ class AppProxyController < ApplicationController
 
   def picker
     shop = Shop.find_by(shopify_domain: params[:shop])
-    shop = ShopifyApp::SessionRepository.retrieve(shop.id)
-    ShopifyAPI::Base.activate_session(shop)
-    rates = Rate.all
+    session = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(session)
+
+    rates = shop.rates.where(delivery_method: "Delivery")
+    pickupRate = shop.rates.where(delivery_method: "Pickup")
+
+    pickup_locations = shop.pickup_locations.all
 
     # hour should be a variable maybe held in a config/settings from the admin.
     end_of_day = DateTime.now.change({ hour: 15 })
 
     # black out days = []
-    # Once the db and client are set up to input Settings.
+    # TODO: Once the db and client are set up to input Settings.
     # blackout_dates = BlackOutDates.all
     blackout_dates = [Date.parse("Mon, 19 Jun 2017")]
     # no sundays
@@ -221,6 +228,19 @@ class AppProxyController < ApplicationController
       end
     end
 
-    render json: {dates: pickerData, blackout_dates: blackout_dates} , status: 200
+    date_from  = Date.current + 1
+    date_to    = date_from + 6
+    pickup_range = (date_from..date_to).map()
+
+    pickupData = pickup_range.map do |date|
+      dateObj = {
+        date: date,
+        disabled: false,
+        locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
+        rates: pickupRate
+      }
+    end
+
+    render json: {deliveryDates: pickerData, pickupDates: pickupData, blackout_dates: blackout_dates} , status: 200
   end
 end

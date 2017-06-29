@@ -187,6 +187,7 @@ class Settings extends React.Component {
                   <Icon source="calendar" />
                   <DatePicker
                     disableDatesBefore={new Date()}
+                    onMonthChange
                     month={5}
                     year={2017}
                   />
