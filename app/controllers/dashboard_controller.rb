@@ -6,8 +6,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
-    Rails.logger.debug("Time: #{t8601.inspect}")
-    Rails.logger.debug("Time - 1: #{sixDaysAgo.inspect}")
     @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
 
     date_from  = Date.current
@@ -28,14 +26,20 @@ class DashboardController < ShopifyApp::AuthenticatedController
       if dates[0] != nil
         @fiveDayOrders.map do |date|
           if (date[:date] == Date.parse(dates[0].attributes[:value]))
-            Rails.logger.debug("rate time: #{Rate.find(rates[0].attributes[:value])[:delivery_time].inspect}")
-            date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
+            if Rate.find(rates[0].attributes[:value])[:delivery_method].downcase === "pickup"
+              # return pickup orders
+              date[Rate.find(rates[0].attributes[:value])[:delivery_method].downcase.to_sym].push(order)
+            else
+              # return deliveries am + pm
+              date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
+            end
           end
         end
         # Rails.logger.debug("notes rate: #{Rate.find(rates[0].attributes[:value]).inspect}")
         # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
       end
     end
+
     @fiveDayOrders.map do |date|
       date[:revenue] = 0
       if date[:afternoon].size > 0

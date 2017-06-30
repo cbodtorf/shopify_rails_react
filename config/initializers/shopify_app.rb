@@ -6,6 +6,11 @@ ShopifyApp.configure do |config|
   config.embedded_app = true
   config.webhooks = [
   {
+    topic: 'orders/create',
+    address: "#{Rails.configuration.application_url}/webhooks/orders_create/",
+    format: 'json'
+  },
+  {
     topic: 'checkouts/update',
     address: "#{Rails.configuration.application_url}/webhooks/checkouts_update/",
     format: 'json'

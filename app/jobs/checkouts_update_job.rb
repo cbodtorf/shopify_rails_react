@@ -4,11 +4,12 @@ class CheckoutsUpdateJob < ApplicationJob
     shop = Shop.find_by(shopify_domain: shop_domain)
 
     # create order_note params
+    # TODO: might be an issue with postal_code. We don't really need it so we may want to consider axing it.
     hash = {}
     hash[:checkout_token] = webhook[:token]
     hash[:cart_token] = webhook[:cart_token]
     webhook[:note_attributes].select do |note|
-      if note[:name] === 'postal_code' || note[:name] === 'delivery_date' || note[:name] === 'checkout_method' || note[:name] === 'rate_id'
+      if note[:name] === 'delivery_date' || note[:name] === 'checkout_method' || note[:name] === 'rate_id'
         Rails.logger.info("[hash Note]: #{note.inspect}")
         hash[note[:name].to_sym] = note[:value]
       end

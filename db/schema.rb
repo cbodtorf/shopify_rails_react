@@ -31,7 +31,7 @@ ActiveRecord::Schema.define(version: 20170627185344) do
     t.string   "cart_token",      null: false
     t.string   "rate_id",         null: false
     t.string   "checkout_method", null: false
-    t.string   "postal_code",     null: false
+    t.string   "postal_code"
     t.datetime "delivery_date",   null: false
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
