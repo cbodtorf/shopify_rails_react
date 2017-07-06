@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 
 class BundleEditor extends React.Component {
@@ -27,14 +27,14 @@ class BundleEditor extends React.Component {
         {
           url: bundle.url,
           media: <Thumbnail
-            source={bundle.image.src}
-            alt={bundle.image.alt}
+            source={bundle.image ? bundle.image.src : ''}
+            alt={bundle.image ? bundle.image.alt : ''}
           />,
           attributeOne: bundle.title,
           attributeTwo: <div className="resource-badge">{
             bundle.metafield.map((item, i) => {
               return (
-                <Badge key={i} status="default">{item.title}</Badge>
+                <Badge key={i} status="default">{item.title + ' x' + item.quantity}</Badge>
               )
           })
         }</div>,
@@ -85,6 +85,13 @@ class BundleEditor extends React.Component {
             placeholder="Select"
             onChange={this.valueUpdater(item.id)}
             labelAction={{content: 'remove', onAction: () => { this.removeFormField(item.id) }}}
+          />
+          <TextField
+            prefix="QTY: "
+            value={item.quantity}
+            type="number"
+            name="quantity"
+            onChange={this.quantityUpdater(item.id)}
           />
           </div>
         )
@@ -175,7 +182,7 @@ class BundleEditor extends React.Component {
               id: 'bundles',
               title: 'Bundles',
               panelID: 'bundles',
-              url: '/bundles?0',
+              url: '/bundle',
             },
             {
               id: 'settings',
@@ -221,6 +228,21 @@ class BundleEditor extends React.Component {
       }
 
   }
+  quantityUpdater(id) {
+
+    return (value) => {
+      let metafield = this.state.formFields.map((field, i) => {
+        if (field.id !== id) {
+          return field
+        } else {
+          field.quantity = value
+          return field
+        }
+        })
+        this.setState({formFields: metafield})
+      }
+
+  }
 
   formUpdater(field) {
     return (value) => this.setState({[field]: value});
@@ -228,7 +250,7 @@ class BundleEditor extends React.Component {
 
   handleSave() {
     let dataString = this.state.formFields.map(field => {
-      return field.title
+      return field.title + ' x' + field.quantity
     }).join(',')
 
     this.metaInput.value = dataString

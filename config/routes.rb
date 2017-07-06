@@ -27,6 +27,7 @@ Rails.application.routes.draw do
   get 'onboarding', to: 'home#onboarding'
 
   get 'dashboard', to: 'dashboard#index'
+  get 'generateCSV', to: 'dashboard#generateCSV'
 
   get 'settings', to: 'settings#index'
   post 'create_pickup_location', to: 'settings#create_pickup_location'

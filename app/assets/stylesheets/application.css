@@ -129,8 +129,9 @@
   max-width: 500px;
 }
 .bundle-input {
-  display: inline-block;
+  display: inline-flex;
   max-width: 297px;
+  align-items: flex-end;
 }
 
 /* Settings */

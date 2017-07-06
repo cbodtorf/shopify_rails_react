@@ -7,6 +7,7 @@ class BundleController < ShopifyApp::AuthenticatedController
     products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
     @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
 
+    # bundles are designated by 'bundle' tag
     @bundles = products.select do |product|
       product.attributes[:tags].include?("bundle")
     end
@@ -15,7 +16,8 @@ class BundleController < ShopifyApp::AuthenticatedController
       bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
       if bundle.metafield != nil
         bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
-          {title: item, id: index}
+          item = item.split(' x')
+          {title: item.first, quantity: item.last.to_i, id: index}
         end
       else
         bundle.metafield = []

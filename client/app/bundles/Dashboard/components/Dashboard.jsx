@@ -27,6 +27,16 @@ class Dashboard extends React.Component {
       var m = monthNames[formatedDate.getMonth()]
       var w = weekNames[formatedDate.getDay()]
       var d = formatedDate.getDate()
+
+      var morningOrderIds = date.morning.concat(date.pickup).map(function(order) {
+        return order.id
+      }).join(',')
+      var afternoonOrderIds = date.afternoon.map(function(order) {
+        return order.id
+      }).join(',')
+      console.log('mo', morningOrderIds);
+      console.log('af', afternoonOrderIds);
+
       return (
         <div key={i} className="dashboard-card-primary">
           <Card sectioned subdued={i != 0 ? true : false} >
@@ -71,8 +81,8 @@ class Dashboard extends React.Component {
                 <Heading>Morning</Heading>
                 <Heading>Spreadsheets</Heading>
                 <ButtonGroup segmented>
-                  <Button fullWidth icon="view"></Button>
-                  <Button fullWidth icon="notes"></Button>
+                  <Button fullWidth icon="view" url={`/generateCSV.csv?ttribute=items&time=morning&ids=${morningOrderIds}`}></Button>
+                  <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&ids=${morningOrderIds}`}></Button>
                 </ButtonGroup>
               </Card>
             </div>
@@ -81,8 +91,8 @@ class Dashboard extends React.Component {
                 <Heading>Afternoon</Heading>
                 <Heading>Spreadsheets</Heading>
                 <ButtonGroup segmented>
-                  <Button fullWidth icon="view"></Button>
-                  <Button fullWidth icon="notes"></Button>
+                  <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=afternoon&ids=${afternoonOrderIds}`}></Button>
+                  <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&ids=${afternoonOrderIds}`}></Button>
                 </ButtonGroup>
               </Card>
             </div>

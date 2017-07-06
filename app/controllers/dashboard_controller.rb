@@ -78,4 +78,25 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Product Information
     @productCount = ShopifyAPI::Product.count
   end
+
+  def generateCSV
+    t = Time.now
+    t8601 = t.iso8601
+    sixDaysAgo = (t - 6.day).iso8601
+    @orders = ShopifyAPI::Order.find(:all, params: {created_at_min: sixDaysAgo})
+    # We are grabbing all of the orders that would appear on the dash and
+    # are filtering based on the id's that are being passed
+    @orders = @orders.select do |order|
+      params[:ids].split(',').include?(order.attributes[:id].to_s)
+    end
+    Rails.logger.debug("order 4 csv: #{@orders.inspect}")
+
+    respond_to do |format|
+      format.html
+      format.csv {
+        send_data params[:attribute] == "item" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders),
+        filename: "#{Date.today}_#{params[:time]}-#{params[:attribute]}.csv"
+      }
+    end
+  end
 end
