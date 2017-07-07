@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Link} from '@shopify/polaris';
+import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Link, Tooltip} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 
@@ -81,8 +81,12 @@ class Dashboard extends React.Component {
                 <Heading>Morning</Heading>
                 <Heading>Spreadsheets</Heading>
                 <ButtonGroup segmented>
-                  <Button fullWidth icon="view" url={`/generateCSV.csv?ttribute=items&time=morning&ids=${morningOrderIds}`}></Button>
-                  <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&ids=${morningOrderIds}`}></Button>
+                  <Tooltip content="morning items">
+                    <Button fullWidth icon="view" url={`/generateCSV.csv?ttribute=items&time=morning&ids=${morningOrderIds}`}></Button>
+                  </Tooltip>
+                  <Tooltip content="morning addresses">
+                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&ids=${morningOrderIds}`}></Button>
+                  </Tooltip>
                 </ButtonGroup>
               </Card>
             </div>
@@ -91,8 +95,12 @@ class Dashboard extends React.Component {
                 <Heading>Afternoon</Heading>
                 <Heading>Spreadsheets</Heading>
                 <ButtonGroup segmented>
-                  <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=afternoon&ids=${afternoonOrderIds}`}></Button>
-                  <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&ids=${afternoonOrderIds}`}></Button>
+                  <Tooltip content="afternoon items">
+                    <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=afternoon&ids=${afternoonOrderIds}`}></Button>
+                  </Tooltip>
+                  <Tooltip content="afternoon addresses">
+                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&ids=${afternoonOrderIds}`}></Button>
+                  </Tooltip>
                 </ButtonGroup>
               </Card>
             </div>

@@ -64,7 +64,7 @@ class HomeController < ShopifyApp::AuthenticatedController
     return unless onboarding?
     render('onboarding')
     halt
-    render('home')
+    redirect_to(dashboard_path)
   end
 
   def handle_unsuccessful_onboarding
@@ -76,7 +76,7 @@ class HomeController < ShopifyApp::AuthenticatedController
 
   def handle_successful_onboarding
     Rails.logger.debug("handle_successful_onboarding")
-    render('home')
+    redirect_to(dashboard_path)
     halt
   end
 
