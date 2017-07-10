@@ -1,13 +1,13 @@
 class CSVGenerator
   def self.generateItemCSV(orders)
-    # Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
+    Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
 
     attributes = %w{product quantity}
     itemsArray = []
     orders.each do |order|
       order.attributes[:line_items].each do |item|
 
-        if item.attributes[:properties].any?{|prop| prop.attributes["name"].split(" ").first === "item"}
+        if item.attributes[:properties].any?{|prop| prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != "" }
           # account for bundle line items properties
           item.attributes[:properties].each do |prop|
             # make sure we get the correct properties
@@ -28,9 +28,7 @@ class CSVGenerator
       result[item.first] += item.last
       result
     end.to_a
-
-    # Rails.logger.debug("items (model): #{itemsArray.inspect}")
-    # Rails.logger.debug("reduced items (model): #{reducedItems.inspect}")
+    Rails.logger.debug("reduceed 4 csv (model): #{reducedItems.inspect}")
 
     CSV.generate(headers: true) do |csv|
       csv << attributes
@@ -46,7 +44,6 @@ class CSVGenerator
     attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Notes}
     shippingAddressArray = []
     orders.each do |order|
-      Rails.logger.debug("order address: #{order.attributes.inspect}")
       s_a = order.attributes[:shipping_address].attributes
       shippingAddressArray.push({
         customer_last_name: s_a[:last_name],
@@ -64,7 +61,6 @@ class CSVGenerator
       csv << attributes
 
       shippingAddressArray.each do |address|
-        Rails.logger.debug("address (model): #{address.inspect}")
         csv << attributes.map{ |attr| address[attr.parameterize.underscore.to_sym] }
       end
     end

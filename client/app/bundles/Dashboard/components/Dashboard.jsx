@@ -82,10 +82,10 @@ class Dashboard extends React.Component {
                 <Heading>Spreadsheets</Heading>
                 <ButtonGroup segmented>
                   <Tooltip content="morning items">
-                    <Button fullWidth icon="view" url={`/generateCSV.csv?ttribute=items&time=morning&ids=${morningOrderIds}`}></Button>
+                    <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}></Button>
                   </Tooltip>
                   <Tooltip content="morning addresses">
-                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&ids=${morningOrderIds}`}></Button>
+                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}></Button>
                   </Tooltip>
                 </ButtonGroup>
               </Card>
@@ -96,10 +96,10 @@ class Dashboard extends React.Component {
                 <Heading>Spreadsheets</Heading>
                 <ButtonGroup segmented>
                   <Tooltip content="afternoon items">
-                    <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=afternoon&ids=${afternoonOrderIds}`}></Button>
+                    <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}></Button>
                   </Tooltip>
                   <Tooltip content="afternoon addresses">
-                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&ids=${afternoonOrderIds}`}></Button>
+                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}></Button>
                   </Tooltip>
                 </ButtonGroup>
               </Card>

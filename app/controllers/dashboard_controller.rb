@@ -3,42 +3,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Shopify requires time to be iso8601 format
     # Order Information 7 day range ( limit for which orders )
     # TODO: make sure this range is right,
-    t = Time.now
-    t8601 = t.iso8601
-    sixDaysAgo = (t - 6.day).iso8601
-    @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
-
-    date_from  = Date.current
-    date_to    = date_from + 4
-    date_range = (date_from..date_to).map()
-    @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: []}}
-
-    @orders.each do |order|
-      # Isolate Delivery Date
-      dates = order.attributes[:note_attributes].select do |note|
-        note.attributes[:name] === "delivery_date"
-      end
-      # Isolate Delivery Rate
-      rates = order.attributes[:note_attributes].select do |note|
-        note.attributes[:name] === "rate_id"
-      end
-      Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
-      if dates[0] != nil
-        @fiveDayOrders.map do |date|
-          if (date[:date] == Date.parse(dates[0].attributes[:value]))
-            if Rate.find(rates[0].attributes[:value])[:delivery_method].downcase === "pickup"
-              # return pickup orders
-              date[Rate.find(rates[0].attributes[:value])[:delivery_method].downcase.to_sym].push(order)
-            else
-              # return deliveries am + pm
-              date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
-            end
-          end
-        end
-        # Rails.logger.debug("notes rate: #{Rate.find(rates[0].attributes[:value]).inspect}")
-        # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
-      end
-    end
+    @fiveDayOrders = self.formatOrders
 
     @fiveDayOrders.map do |date|
       date[:revenue] = 0
@@ -80,23 +45,67 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def generateCSV
-    t = Time.now
-    t8601 = t.iso8601
-    sixDaysAgo = (t - 6.day).iso8601
-    @orders = ShopifyAPI::Order.find(:all, params: {created_at_min: sixDaysAgo})
-    # We are grabbing all of the orders that would appear on the dash and
-    # are filtering based on the id's that are being passed
-    @orders = @orders.select do |order|
-      params[:ids].split(',').include?(order.attributes[:id].to_s)
-    end
-    Rails.logger.debug("order 4 csv: #{@orders.inspect}")
+    dates = self.formatOrders
+    selectedDate = dates.select do |order|
+      order[:date] == Date.parse(params[:date])
+    end.first
 
+    # Morning Cooks consist of morning deliveries and pickup orders. Addresses don't need pickup orders
+    if params[:time] == 'morning' && params[:attribute] == 'items'
+      @orders = selectedDate[:morning].concat(selectedDate[:pickup])
+    elsif params[:time] == 'morning' && params[:attribute] == 'addresses'
+      @orders = selectedDate[:morning]
+    elsif params[:time] == 'afternoon'
+      @orders = selectedDate[:afternoon]
+    end
+    Rails.logger.debug("order check?: #{@orders.inspect}")
     respond_to do |format|
       format.html
       format.csv {
-        send_data params[:attribute] == "item" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders),
-        filename: "#{Date.today}_#{params[:time]}-#{params[:attribute]}.csv"
+        send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders),
+        filename: "#{Date.parse(params[:date])}_#{params[:time]}-#{params[:attribute]}.csv"
       }
     end
+  end
+
+  def formatOrders
+    t = Time.now
+    t8601 = t.iso8601
+    sixDaysAgo = (t - 6.day).iso8601
+    @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
+
+    date_from  = Date.current
+    date_to    = date_from + 4
+    date_range = (date_from..date_to).map()
+    @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: []}}
+
+    @orders.each do |order|
+      # Isolate Delivery Date
+      dates = order.attributes[:note_attributes].select do |note|
+        note.attributes[:name] === "delivery_date"
+      end
+      # Isolate Delivery Rate
+      rates = order.attributes[:note_attributes].select do |note|
+        note.attributes[:name] === "rate_id"
+      end
+      Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
+      if dates[0] != nil
+        @fiveDayOrders.map do |date|
+          if (date[:date] == Date.parse(dates[0].attributes[:value]))
+            if Rate.find(rates[0].attributes[:value])[:delivery_method].downcase === "pickup"
+              # return pickup orders
+              date[Rate.find(rates[0].attributes[:value])[:delivery_method].downcase.to_sym].push(order)
+            else
+              # return deliveries am + pm
+              date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
+            end
+          end
+        end
+        # Rails.logger.debug("notes rate: #{Rate.find(rates[0].attributes[:value]).inspect}")
+        # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
+      end
+    end
+
+    return @fiveDayOrders
   end
 end
