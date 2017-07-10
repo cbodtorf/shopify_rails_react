@@ -1,8 +1,5 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
-    # Shopify requires time to be iso8601 format
-    # Order Information 7 day range ( limit for which orders )
-    # TODO: make sure this range is right,
     @fiveDayOrders = self.formatOrders
 
     @fiveDayOrders.map do |date|
@@ -24,7 +21,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
       end
     end
     # Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
-
 
     # Subscriber Count (tagged with Active Subscriber)
     # http://support.rechargepayments.com/article/191-shopify-order-tags
@@ -59,6 +55,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = selectedDate[:afternoon]
     end
     Rails.logger.debug("order check?: #{@orders.inspect}")
+
     respond_to do |format|
       format.html
       format.csv {
@@ -68,7 +65,20 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
   end
 
+  def showOrders
+    dates = self.formatOrders
+    selectedDate = dates.select do |order|
+      order[:date] == Date.parse(params[:date])
+    end.first
+
+    @orders = selectedDate[params[:attribute].to_sym]
+
+  end
+
   def formatOrders
+    # Shopify requires time to be iso8601 format
+    # Order Information 7 day range ( limit for which orders )
+    # TODO: make sure this range is right,
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
@@ -101,8 +111,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
             end
           end
         end
-        # Rails.logger.debug("notes rate: #{Rate.find(rates[0].attributes[:value]).inspect}")
-        # Rails.logger.debug("notes time: #{Time.parse(dates[0].attributes[:value]).inspect}")
+
       end
     end
 

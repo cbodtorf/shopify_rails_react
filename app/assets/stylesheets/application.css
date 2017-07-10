@@ -136,15 +136,20 @@
 
 /* Settings */
 /* TODO: be more specific with this styling */
-.Polaris-ChoiceList__Choices li {
+.bamboo-settings .Polaris-ChoiceList__Choices li {
   display: inline-block;
   padding: 5px;
 }
 
-.Polaris-ResourceList__AttributeTwo {
+.bamboo-settings .Polaris-ResourceList__AttributeTwo {
   width: 400px;
 }
 
-.Polaris-ResourceList__Item--persistActions .Polaris-ResourceList__AttributeThree {
+.bamboo-settings .Polaris-ResourceList__Item--persistActions .Polaris-ResourceList__AttributeThree {
   width: 100%;
+}
+
+/* OrderList */
+.bamboo-orderList .Polaris-ResourceList__Container {
+  pointer-events: auto;
 }

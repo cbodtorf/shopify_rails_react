@@ -4,6 +4,7 @@ import Home from '../Home/components/Home';
 import Error from '../Home/components/Error';
 import Onboarding from '../Home/components/Onboarding';
 import Dashboard from '../Dashboard/components/Dashboard';
+import OrderList from '../Dashboard/components/OrderList';
 import BundleEditor from '../Bundle/components/BundleEditor';
 import RateEditor from '../Rate/components/RateEditor';
 import Settings from '../Settings/components/Settings';
@@ -14,6 +15,7 @@ ReactOnRails.register({
   Error,
   Onboarding,
   Dashboard,
+  OrderList,
   BundleEditor,
   RateEditor,
   Settings,

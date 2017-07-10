@@ -28,15 +28,6 @@ class Dashboard extends React.Component {
       var w = weekNames[formatedDate.getDay()]
       var d = formatedDate.getDate()
 
-      var morningOrderIds = date.morning.concat(date.pickup).map(function(order) {
-        return order.id
-      }).join(',')
-      var afternoonOrderIds = date.afternoon.map(function(order) {
-        return order.id
-      }).join(',')
-      console.log('mo', morningOrderIds);
-      console.log('af', afternoonOrderIds);
-
       return (
         <div key={i} className="dashboard-card-primary">
           <Card sectioned subdued={i != 0 ? true : false} >
@@ -55,12 +46,12 @@ class Dashboard extends React.Component {
                 </div>
                 <div className="delivery-count">
                   <h5>{date.morning.length}</h5>
-                  <Link url=''>Orders</Link>
+                  <Link url={`/showOrders?attribute=morning&date=${formatedDate}`}>Orders</Link>
                   <h3 className="delivery-time">AM</h3>
                 </div>
                 <div className="delivery-count">
                   <h5>{date.afternoon.length}</h5>
-                  <Link url=''>Orders</Link>
+                  <Link url={`/showOrders?attribute=afternoon&date=${formatedDate}`}>Orders</Link>
                   <h3 className="delivery-time">PM</h3>
                 </div>
               </Card>
@@ -71,7 +62,7 @@ class Dashboard extends React.Component {
               </div>
                 <div className="pickup-count">
                   <h5>{date.pickup.length}</h5>
-                  <Link url=''>Orders</Link>
+                  <Link url={`/showOrders?attribute=pickup&date=${formatedDate}`}>Orders</Link>
                 </div>
               </Card>
             </div>

@@ -54,6 +54,7 @@ class Settings extends React.Component {
     })
 
     return (
+      <div className="bamboo-settings">
       <EmbeddedApp
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
@@ -216,6 +217,7 @@ class Settings extends React.Component {
           </Alert>
         </Page>
       </EmbeddedApp>
+      </div>
     );
   }
   valueUpdater(field) {
