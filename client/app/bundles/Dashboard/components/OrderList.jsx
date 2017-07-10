@@ -29,7 +29,7 @@ class OrderList extends React.Component {
             {content: createdAtDate.toLocaleDateString()},
             {content: deliveryMethod[0].value },
           ],
-          actions: [{content: 'log listing', onAction: () => { console.log('order', order) }}],
+          actions: [{content: 'order details', onAction: () => { window.location.href = `https://bamboojuices.myshopify.com/admin/orders/${order.id}` }}],
           persistActions: true,
         }
       )
