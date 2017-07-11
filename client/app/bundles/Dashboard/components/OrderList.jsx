@@ -22,14 +22,14 @@ class OrderList extends React.Component {
 
       return (
         {
-          attributeOne: <Link url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link>,
-          attributeTwo: <Link url={`https://bamboojuices.myshopify.com/admin/customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name}</Link>,
+          attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link>,
+          attributeTwo: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name}</Link>,
           attributeThree: order.currency + ' ' + order.total_price,
           badges: [
             {content: createdAtDate.toLocaleDateString()},
             {content: deliveryMethod[0].value },
           ],
-          actions: [{content: 'order details', onAction: () => { window.location.href = `https://bamboojuices.myshopify.com/admin/orders/${order.id}` }}],
+          actions: [{content: 'order details', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/orders/${order.id}`, '_blank').focus() }}],
           persistActions: true,
         }
       )
