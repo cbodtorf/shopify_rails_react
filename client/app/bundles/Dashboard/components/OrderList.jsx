@@ -35,6 +35,18 @@ class OrderList extends React.Component {
       )
     })
 
+    orderItems.unshift({
+              attributeOne: 'Order #',
+              attributeTwo: 'Customer',
+              attributeThree: 'Total Price',
+              badges: [
+                {content: 'Created At'},
+                {content: 'Method' },
+              ],
+              actions: [{content: 'details link'}],
+              persistActions: true,
+            })
+
     this.setState({
       orders: orderItems
     })

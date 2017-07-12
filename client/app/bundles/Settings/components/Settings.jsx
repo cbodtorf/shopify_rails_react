@@ -12,6 +12,8 @@ class Settings extends React.Component {
       pickupLocation: {},
       pickupLocations: [],
       blackoutDates: [],
+      month: 6,
+      year: 2017
     }
   }
 
@@ -189,8 +191,8 @@ class Settings extends React.Component {
                   <DatePicker
                     disableDatesBefore={new Date()}
                     onMonthChange
-                    month={5}
-                    year={2017}
+                    month={this.state.month}
+                    year={this.state.year}
                   />
                 </FormLayout>
                 <ResourceList
