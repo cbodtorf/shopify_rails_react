@@ -2,12 +2,25 @@ class OrdersCreateJob < ApplicationJob
 
   def perform(shop_domain:, webhook:)
     shop = Shop.find_by(shopify_domain: shop_domain)
-    Rails.logger.info("[Order Create - params]: #{shop.inspect}")
 
     shop.with_shopify_session do
-      # delivery_date = webhook[:note_attributes].select do |note|
-      #   note.attributes[:name] === "delivery_date"
-      # end
+      Rails.logger.info("[Order tags]: #{webhook[:tags].split(', ').inspect}")
+      # Re-adjusting the delivery date on subsequent subscription orders.
+      # Delivery Date == Charge Date + 1
+      if webhook[:tags].split(', ').include?('Subscription Recurring Order')
+        delivery_date = Date.parse(webhook[:created_at]) + 1
+
+        recurringSubscriptionOrder = ShopifyAPI::Order.find(webhook[:id])
+        Rails.logger.info("[Recurring Sub Order]: #{recurringSubscriptionOrder.attributes[:note_attributes].inspect}")
+        recurringSubscriptionOrder.attributes[:note_attributes].each do |note|
+          if note.attributes[:name] == "delivery_date"
+            note.attributes[:value] = delivery_date
+            Rails.logger.info("[change delivery date?]: #{note.attributes[:value].inspect} -vs- #{delivery_date}")
+          end
+        end
+        Rails.logger.info("[Recurring delivery date]: #{recurringSubscriptionOrder.attributes[:note_attributes].inspect}")
+        recurringSubscriptionOrder.save
+      end
 
       order_note = OrderNote.where(checkout_token: webhook[:checkout_token]).first
       Rails.logger.info("[Order Create - note]: #{order_note.inspect}")
