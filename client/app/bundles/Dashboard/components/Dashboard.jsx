@@ -164,6 +164,13 @@ class Dashboard extends React.Component {
                 </Stack>
               </div>
             </Layout.Section>
+            <Layout.Section>
+              <div className="upcomingSubscriptions">
+                <Heading>Upcoming Subscription Orders</Heading>
+                <Card>
+                </Card>
+              </div>
+            </Layout.Section>
           </Layout>
         </Page>
       </EmbeddedApp>
