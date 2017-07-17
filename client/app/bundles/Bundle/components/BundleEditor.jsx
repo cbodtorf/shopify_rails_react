@@ -55,7 +55,8 @@ class BundleEditor extends React.Component {
       bundleItems: bundleItems,
       formFields: this.props.bundle === null ? '' : this.props.bundle.metafield,
       method: method,
-      url: url
+      url: url,
+      authenticity_token: this.props.authenticity_token
     })
   }
 
@@ -66,9 +67,9 @@ class BundleEditor extends React.Component {
       /**
       * @TODO: need a stricter filter for removing unwanted product like auto renew and bundles.
       */
-      return product.product_type !== 'Cleanse' || product.product_type !== 'Juice Kit' && product.title.toLowerCase().indexOf('auto') === -1
+      return product.product_type.toLowerCase() !== 'cleanse' || product.product_type.toLowerCase() !== 'juice kit' && product.title.toLowerCase().indexOf('auto') === -1
     }).map(product => {
-      return product.title
+      return {label: product.title, value: product.title + '_' + (this.state.formFields.length + 1)}
     })
 
 
@@ -77,7 +78,7 @@ class BundleEditor extends React.Component {
     if (this.state.formFields.length !== 0 ) {
       existingMetafields = this.state.formFields.map((item, i) => {
         return (
-          <div key={i} className="bundle-input">
+          <div key={item.id} className="bundle-input">
           <Select
             label="Bundle Item"
             value={item.title}
@@ -115,19 +116,6 @@ class BundleEditor extends React.Component {
         <FormLayout>
           <FormLayout.Group>
             { existingMetafields }
-            <form
-              action={this.state.url}
-              acceptCharset="UTF-8" method="post"
-              ref={(form) => {this.metaForm = form}}
-              style={{'display': 'none'}}
-              >
-              <input name="utf8" type="hidden" value="✓" />
-              <input type="hidden" name="_method" value={this.state.method} />
-              <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
-              <label htmlFor="metafield">Search for:</label>
-              <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
-              <input type="submit" name="commit" value="submit" data-disable-with="submit" />
-            </form>
           </FormLayout.Group>
         </FormLayout>
         </Card>
@@ -194,6 +182,20 @@ class BundleEditor extends React.Component {
         />
           <Layout>
             <Layout.Section>
+              <form
+                action={this.state.url}
+                acceptCharset="UTF-8" method="post"
+
+                ref={(form) => {this.metaForm = form}}
+                style={{'display': 'none'}}
+                >
+                <input name="utf8" type="hidden" value="✓" />
+                <input type="hidden" name="_method" value={this.state.method} />
+                <input type="hidden" name="authenticity_token" value={this.state.authenticity_token} />
+                <label htmlFor="metafield">Search for:</label>
+                <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
+                <input type="submit" name="commit" value="submit" data-disable-with="submit" />
+              </form>
               {mainContainer}
 
                 <Card
@@ -202,7 +204,7 @@ class BundleEditor extends React.Component {
                   <ResourceList
                     items={this.state.bundleItems}
                     renderItem={(item, index) => {
-                      return <ResourceList.Item key={index} {...item} />;
+                      return <ResourceList.Item key={item.id} {...item} />;
                     }}
                   />
                 </Card>
@@ -250,7 +252,7 @@ class BundleEditor extends React.Component {
 
   handleSave() {
     let dataString = this.state.formFields.map(field => {
-      return field.title + ' x' + field.quantity
+      return field.title.split('_')[0] + ' x' + field.quantity
     }).join(',')
 
     this.metaInput.value = dataString
@@ -286,7 +288,7 @@ class BundleEditor extends React.Component {
   addFormField() {
     console.log('formFields', this.state.formFields);
     let formFields = this.state.formFields
-    formFields.push({title: this.props.products[0].title, id: this.state.formFields.length + 1})
+    formFields.push({title: this.props.products[0].title, id: this.state.bundle.id + "_" + (this.state.formFields.length + 1)})
 
     this.setState({formFields: formFields})
   }

@@ -46,7 +46,7 @@ class BundleController < ShopifyApp::AuthenticatedController
       metafield.update_attributes(:value => params[:metafield])
     end
 
-    redirect_to(root_path)
+    redirect_to('/bundle')
   end
 
   def create
@@ -59,6 +59,6 @@ class BundleController < ShopifyApp::AuthenticatedController
        :value_type => 'string'
     }))
 
-    redirect_to(root_path)
+    redirect_to('/bundle')
   end
 end
