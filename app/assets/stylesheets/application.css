@@ -22,6 +22,18 @@
 }
 
 /* Dashboard */
+.upcomingSubscriptions .Polaris-ResourceList__AttributeOne, .upcomingSubscriptions .Polaris-ResourceList__AttributeTwo {
+  flex: 0.4;
+}
+.upcomingSubscriptions .Polaris-Heading tr {
+  display: flex;
+  cursor: default;
+}
+.upcomingSubscriptions .Polaris-Heading tr th {
+  flex: 1;
+  cursor: default;
+}
+
 .dashboard-card-primary .Polaris-Card {
   color: #5C6AC4;
   text-align: center;
@@ -153,3 +165,63 @@
 .bamboo-orderList .Polaris-ResourceList__Container {
   pointer-events: auto;
 }
+
+/* Tables
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+table {
+  width: 100%; }
+  table tbody tr:nth-child(odd) {
+    background: #fafbfc; }
+  table tbody tr:last-child td {
+    border-bottom-width: 0; }
+  table th,
+  table td {
+    padding: 1.2rem 1.5rem;
+    text-align: left; }
+  table th {
+    font-weight: normal;
+    border-bottom: .1rem solid #d3dbe2; }
+    table th:hover {
+      cursor: pointer; }
+    table th:empty:hover {
+      cursor: default; }
+  table td .icon-image {
+    float: left;
+    display: inline-block;
+    min-width: 2.4rem;
+    min-height: 2.4rem; }
+    table td .icon-image:after {
+      min-width: 2.4rem;
+      min-height: 2.4rem;
+      background-size: 24px 24px;
+      /* IE requires pixels. Using cover/contain/rem values cause blurry edges */
+      vertical-align: middle;
+      display: inline-block; }
+  table.results tr td {
+    padding-top: .8rem;
+    padding-bottom: .8rem; }
+  table.summary th {
+    padding: 0 0 2.0rem 0;
+    border: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase; }
+    table.summary th:hover {
+      cursor: auto;
+      background-color: transparent;
+      color: inherit; }
+    table.summary th span {
+      float: right;
+      color: #707070;
+      text-transform: none;
+      font-weight: 300; }
+  table.summary tr:hover {
+    background-color: transparent; }
+  table.summary tr td {
+    padding: .4rem 0;
+    border: 0; }
+    table.summary tr td:first-child {
+      width: 67%; }
+    table.summary tr td:last-child {
+      text-align: right;
+      color: #95a7b7; }

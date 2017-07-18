@@ -1,8 +1,10 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
-    # @rechargeSubscriptions = self.getRechargeSubscriptions
-    # Rails.logger.debug("sub: #{@rechargeSubscriptions.inspect}")
-    @rechargeSubscriptions = self.getRechargeSubscriptions["subscriptions"]
+
+    @rechargeSubscriptions = self.getRechargeSubscriptions["subscriptions"].each do |sub|
+      sub["customer"] = self.getRechargeCustomer(sub["customer_id"])["customer"]
+    end
+
     @fiveDayOrders = self.formatOrders
 
     @fiveDayOrders.map do |date|
@@ -125,6 +127,25 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Access Recharge API
     api_token = '9ddfc399771643169db06e1b162a5b73'
     endpoint = "https://api.rechargeapps.com/subscriptions?status=ACTIVE&limit=250"
+
+    response = HTTParty.get(endpoint,
+                             :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})
+   case response.code
+      when 200
+        puts "All good!"
+      when 404
+        puts "O noes not found!"
+      when 500...600
+        puts "ZOMG ERROR #{response.code}"
+    end
+    # Rails.logger.debug("[httparty] #{response.inspect}")
+    response.parsed_response
+
+  end
+  def getRechargeCustomer(customer_id)
+    # Access Recharge API
+    api_token = '9ddfc399771643169db06e1b162a5b73'
+    endpoint = "https://api.rechargeapps.com/customers/#{customer_id}"
 
     response = HTTParty.get(endpoint,
                              :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})

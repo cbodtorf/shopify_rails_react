@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Link, Tooltip} from '@shopify/polaris';
+import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 
@@ -12,9 +12,21 @@ class Dashboard extends React.Component {
 
   componentWillMount() {
     console.log('props: ', this.props)
+    let subscriptionList = this.props.subscriptions.map(sub => {
+      return ({
+        attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.email}</Link>,
+        attributeTwo: new Date(sub.next_charge_scheduled_at).toLocaleDateString(),
+        attributeThree: new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString(),
+        actions: [
+          {content: 'edit', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/addresses/${sub.address_id}`, '_blank').focus() }},
+        ],
+        persistActions: true,
+      })
+    })
 
     this.setState({
-      fiveDayOrders: this.props.fiveDayOrders
+      fiveDayOrders: this.props.fiveDayOrders,
+      subscriptionList: subscriptionList,
     })
   }
 
@@ -151,6 +163,34 @@ class Dashboard extends React.Component {
               </Stack>
             </Layout.Section>
             <Layout.Section>
+              <div className="upcomingSubscriptions">
+                <Heading>Upcoming Subscription Orders</Heading>
+                <Card sectioned>
+                    <table >
+                      <Heading>
+                        <tr>
+                          <th>Customer</th>
+                          <th>Charge Date</th>
+                          <th>Delivery Date</th>
+                        </tr>
+                      </Heading>
+                        <ResourceList
+                          items={ this.state.subscriptionList }
+                          renderItem={(item, index) => {
+                            return <ResourceList.Item key={index} {...item} />;
+                          }}
+                        />
+                    </table>
+                    <Pagination
+                      hasPrevious
+                      onPrevious={() => {}}
+                      hasNext
+                      onNext={() => {}}
+                    />
+                </Card>
+              </div>
+            </Layout.Section>
+            <Layout.Section>
               <div className="counts">
                 <Heading>Counts</Heading>
                 <Stack
@@ -162,13 +202,6 @@ class Dashboard extends React.Component {
                   <Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card>
                   <Card sectioned title="Number of Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card>
                 </Stack>
-              </div>
-            </Layout.Section>
-            <Layout.Section>
-              <div className="upcomingSubscriptions">
-                <Heading>Upcoming Subscription Orders</Heading>
-                <Card>
-                </Card>
               </div>
             </Layout.Section>
           </Layout>
