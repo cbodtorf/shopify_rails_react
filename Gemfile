@@ -5,6 +5,9 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
+# seed data from current db state.
+gem 'seed_dump'
+# simple http requests
 gem 'httparty'
 # postgres sql
 gem 'pg'

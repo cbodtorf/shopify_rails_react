@@ -1,8 +1,8 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
-
-    @rechargeSubscriptions = self.getRechargeSubscriptions["subscriptions"].each do |sub|
-      sub["customer"] = self.getRechargeCustomer(sub["customer_id"])["customer"]
+    # Retrieves Upcoming Active Subscriptions and attaches customer data to the hash.
+    @rechargeSubscriptions = self.getRechargeData("https://api.rechargeapps.com/subscriptions?status=ACTIVE&limit=250")["subscriptions"].each do |sub|
+      sub["customer"] = self.getRechargeData("https://api.rechargeapps.com/customers/#{sub["customer_id"]}")["customer"]
     end
 
     @fiveDayOrders = self.formatOrders
@@ -95,26 +95,73 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: []}}
 
     @orders.each do |order|
+      Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
       # Isolate Delivery Date
       dates = order.attributes[:note_attributes].select do |note|
         note.attributes[:name] === "delivery_date"
       end
       # Isolate Delivery Rate
-      rates = order.attributes[:note_attributes].select do |note|
-        note.attributes[:name] === "rate_id"
-      end
+      rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+      Rails.logger.debug("notes rate: #{rates.inspect}")
+      rate = Rate.find(rates[0].attributes[:value])
       # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
       if dates[0] != nil
         @fiveDayOrders.map do |date|
-          if (date[:date] == Date.parse(dates[0].attributes[:value]))
-            if Rate.find(rates[0].attributes[:value])[:delivery_method].downcase === "pickup"
-              # return pickup orders
-              date[Rate.find(rates[0].attributes[:value])[:delivery_method].downcase.to_sym].push(order)
+          if rate[:delivery_type].downcase == "subscription"
+            if order.attributes[:tags].include?("Subscription First Order")
+              # if same day cook morning or
+              # else cook afternoon before
+            elsif order.attributes[:tags].include?("Subscription Recurring Order")
+              # cook afternoon before
             else
-              # return deliveries am + pm
-              date[Rate.find(rates[0].attributes[:value])[:delivery_time].downcase.to_sym].push(order)
+              # hopefully nothing
             end
+          elsif rate[:delivery_method].downcase == "pickup"
+            # TODO: find out where pickup subscriptions are cooked
+            # standard pickups are cooked the morning of
+            # but all subscriptions typically cooked afternoon before
+          elsif rate[:delivery_method].downcase == "shipping"
+            # These do not go into the standard csv
+          elsif rate[:delivery_method].downcase == "delivery"
+            # if same day cook morning of
+            # if next day cook afternoon before
+          else
+            # hopefully nothing
           end
+          # need to refactor this logic
+
+          # if date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time] == "afternoon" && rate[:delivery_type].downcase == "subscription"
+          #   if rate[:delivery_type].downcase === "subscription" && order.attributes[:tags].include?("Subscription First Order")
+          #     # if same day must be done morning of order. SKIP
+          #   elsif rate[:delivery_type].downcase === "subscription" && order.attributes[:tags].include?("Subscription Recurring Order")
+          #     date[rate[:cook_time].downcase.to_sym].push(order)
+          #   end
+          # elsif date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time] == "afternoon" && rate[:delivery_type].downcase != "subscription"
+          #   # afternoon cook happens day before delivery
+          #   # return deliveries pm
+          #   date[rate[:cook_time].downcase.to_sym].push(order)
+          # elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time] == "afternoon" && rate[:delivery_type].downcase == "subscription"
+          #   if rate[:delivery_method].downcase == "pickup"
+          #     # return pickup orders
+          #     date[rate[:delivery_method].downcase.to_sym].push(order)
+          #   elsif rate[:delivery_type].downcase == "subscription" && order.attributes[:tags].include?("Subscription First Order")
+          #     # if same day must be done morning of order.
+          #     date[:morning].push(order)
+          #   elsif rate[:delivery_type].downcase == "subscription" && order.attributes[:tags].include?("Subscription Recurring Order")
+          #     # if same day must be done morning of order. SKIP
+          #   end
+          # elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time] == "morning"
+          #   if rate[:delivery_method].downcase == "pickup"
+          #     # return pickup orders
+          #     date[rate[:delivery_method].downcase.to_sym].push(order)
+          #   elsif rate[:delivery_type].downcase == "subscription"
+          #     # return first time subscription orders
+          #     date[:morning].push(order)
+          #   else
+          #     # return deliveries am
+          #     date[rate[:cook_time].downcase.to_sym].push(order)
+          #   end
+          # end
         end
 
       end
@@ -123,10 +170,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
     return @fiveDayOrders
   end
 
-  def getRechargeSubscriptions
+  def getRechargeData(endpoint)
     # Access Recharge API
     api_token = '9ddfc399771643169db06e1b162a5b73'
-    endpoint = "https://api.rechargeapps.com/subscriptions?status=ACTIVE&limit=250"
 
     response = HTTParty.get(endpoint,
                              :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})
@@ -138,27 +184,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       when 500...600
         puts "ZOMG ERROR #{response.code}"
     end
-    # Rails.logger.debug("[httparty] #{response.inspect}")
+
     response.parsed_response
-
-  end
-  def getRechargeCustomer(customer_id)
-    # Access Recharge API
-    api_token = '9ddfc399771643169db06e1b162a5b73'
-    endpoint = "https://api.rechargeapps.com/customers/#{customer_id}"
-
-    response = HTTParty.get(endpoint,
-                             :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})
-   case response.code
-      when 200
-        puts "All good!"
-      when 404
-        puts "O noes not found!"
-      when 500...600
-        puts "ZOMG ERROR #{response.code}"
-    end
-    # Rails.logger.debug("[httparty] #{response.inspect}")
-    response.parsed_response
-
   end
 end

@@ -166,21 +166,23 @@ class Dashboard extends React.Component {
               <div className="upcomingSubscriptions">
                 <Heading>Upcoming Subscription Orders</Heading>
                 <Card sectioned>
-                    <table >
-                      <Heading>
-                        <tr>
-                          <th>Customer</th>
-                          <th>Charge Date</th>
-                          <th>Delivery Date</th>
-                        </tr>
-                      </Heading>
-                        <ResourceList
-                          items={ this.state.subscriptionList }
-                          renderItem={(item, index) => {
-                            return <ResourceList.Item key={index} {...item} />;
-                          }}
-                        />
-                    </table>
+                    <div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th><Subheading>Customer</Subheading></th>
+                            <th><Subheading>Charge Date</Subheading></th>
+                            <th><Subheading>Delivery Date</Subheading></th>
+                          </tr>
+                        </thead>
+                      </table>
+                      <ResourceList
+                        items={ this.state.subscriptionList }
+                        renderItem={(item, index) => {
+                          return <ResourceList.Item key={index} {...item} />;
+                        }}
+                      />
+                    </div>
                     <Pagination
                       hasPrevious
                       onPrevious={() => {}}

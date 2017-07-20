@@ -2,6 +2,9 @@ import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, DatePicker, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 
+
+const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+
 class Settings extends React.Component {
   constructor(props) {
     super(props)
@@ -11,11 +14,15 @@ class Settings extends React.Component {
       deleteAlertOpen: false,
       pickupLocation: {},
       pickupLocations: [],
+      blackoutDate: {},
       blackoutDates: [],
-      month: 6,
-      year: 2017
     }
   }
+  /**
+  * Helps to format Dates input single d, ouputs dd.
+  * ie. addZ(2) => '02'
+  */
+  addZ(n){return n<10? '0'+n:''+n;}
 
   componentWillMount() {
 
@@ -26,7 +33,6 @@ class Settings extends React.Component {
 
   render() {
     console.log("render", this.state);
-    const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
     const blackoutDates = this.state.blackoutDates.map(date => {
       return (
         {
@@ -124,14 +130,14 @@ class Settings extends React.Component {
                       name="pickup_location[title]"
                       type="text"
                       value={this.state.pickupLocation.title}
-                      onChange={this.valueUpdater('title')}
+                      onChange={this.valueUpdater('title', 'pickupLocation')}
                     />
                     <TextField
                       label="Address"
                       name="pickup_location[address]"
                       type="text"
                       value={this.state.pickupLocation.address}
-                      onChange={this.valueUpdater('address')}
+                      onChange={this.valueUpdater('address', 'pickupLocation')}
                     />
                     <ChoiceList
                       allowMultiple
@@ -159,6 +165,7 @@ class Settings extends React.Component {
                           value: 4,
                         },
                         {
+
                           label: 'Fri',
                           value: 5,
                         },
@@ -168,7 +175,7 @@ class Settings extends React.Component {
                         },
                       ]}
                       selected={this.state.pickupLocation.days_available ? this.state.pickupLocation.days_available : []}
-                      onChange={this.valueUpdater('days_available')}
+                      onChange={this.valueUpdater('days_available', 'pickupLocation')}
                     />
                   </FormLayout>
                 </form>
@@ -186,14 +193,14 @@ class Settings extends React.Component {
             >
               <Card sectioned>
                 <FormLayout>
-                <TextField label="Blackout Date" />
-                  <Icon source="calendar" />
-                  <DatePicker
-                    disableDatesBefore={new Date()}
-                    onMonthChange
-                    month={this.state.month}
-                    year={this.state.year}
+                  <TextField
+                  label="Blackout Date"
+                  name="date"
+                  value={`${this.state.blackoutDate.year}-${this.state.blackoutDate.month}-${this.state.blackoutDate.day}`}
+                  onChange={this.blackoutDateUpdater()}
+                  type="date"
                   />
+                  <Icon source="calendar" />
                 </FormLayout>
                 <ResourceList
                   items={blackoutDates}
@@ -222,9 +229,26 @@ class Settings extends React.Component {
       </div>
     );
   }
-  valueUpdater(field) {
-    return (value) => this.setState({ pickupLocation: { ...this.state.pickupLocation, [field]: value } });
+  valueUpdater(field, namespace) {
+    return (value) => this.setState({ [namespace]: { ...this.state[namespace], [field]: value } });
   }
+  blackoutDateUpdater() {
+    return (
+      (value) => {
+        let d = new Date(value.replace('-','/'))
+        this.setState({
+            blackoutDate: {
+              date: d,
+              wday: weekNames[d.getDay()],
+              day: this.addZ(d.getDate()),
+              month: this.addZ(d.getMonth() + 1),
+              year: d.getFullYear()
+            }
+        })
+      }
+    )
+  }
+
 
   handleSave() {
     this.pickupLocationForm.submit()

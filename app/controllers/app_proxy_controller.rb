@@ -139,8 +139,8 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    rates = shop.rates.where(delivery_method: "Delivery")
-    pickupRate = shop.rates.where(delivery_method: "Pickup")
+    rates = shop.rates.where(delivery_method: "delivery")
+    pickupRate = shop.rates.where(delivery_method: "pickup")
 
     pickup_locations = shop.pickup_locations.all
 
@@ -165,6 +165,8 @@ class AppProxyController < ApplicationController
     #   Date.parse(d) == date ? "disable" : "clear"
     # end
 
+    # TODO: add Subscription logic
+
     if Time.now < end_of_day # normal
       pickerData = date_range.map.with_index do |date, i|
         # black out sundays
@@ -174,14 +176,26 @@ class AppProxyController < ApplicationController
             dateObj = {
               date: date,
               disabled: false,
-              rates: rates.select {|rate| rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
+              rates: rates.select do |rate|
+                if  params[:subscriptionPresent] == 'true'
+                  rate.delivery_type == 'subscription' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                else
+                  rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                end
+              end
             }
           elsif !date.today?
             # no next day rates today
             dateObj = {
               date: date,
               disabled: false,
-              rates: rates.select {|rate| rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })}
+              rates: rates.select do |rate|
+                if params[:subscriptionPresent] == 'true'
+                  rate.delivery_type == 'subscription'
+                else
+                  rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                end
+              end
             }
           end
         else

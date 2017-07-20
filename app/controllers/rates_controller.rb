@@ -7,6 +7,7 @@ class RatesController < ShopifyApp::AuthenticatedController
     # This is for Front End
     @ratesWithConditions = @rates.map do |rate|
       rateC = rate.attributes
+      # rateC[:cook_time] == "Morning of delivery" ? 'morning' : 'afternoon'
       rateC[:conditions] = rate.conditions.each{|c| c}
       rateC
     end
@@ -70,7 +71,7 @@ class RatesController < ShopifyApp::AuthenticatedController
       :price_weight_modifier_starter,
       :description,
       :cutoff_time,
-      :delivery_time,
+      :cook_time,
       :delivery_method,
       :delivery_type,
       :min_price,
@@ -92,7 +93,7 @@ class RatesController < ShopifyApp::AuthenticatedController
       :price_weight_modifier_starter,
       :description,
       :cutoff_time,
-      :delivery_time,
+      :cook_time,
       :delivery_method,
       :delivery_type,
       :min_price,

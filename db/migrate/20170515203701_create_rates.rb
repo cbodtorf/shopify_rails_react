@@ -7,7 +7,7 @@ class CreateRates < ActiveRecord::Migration[5.0]
       t.string :delivery_method
       t.integer :price
       t.integer :cutoff_time
-      t.string :delivery_time
+      t.string :cook_time
       t.string :delivery_type
       t.integer  "min_grams"
       t.integer  "max_grams"

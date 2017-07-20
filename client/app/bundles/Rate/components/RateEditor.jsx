@@ -200,23 +200,23 @@ class RateEditor extends React.Component {
                             onChange={this.valueUpdater('cutoff_time')}
                           />
                           <Select
-                            label="Delivery Time"
-                            name="rate[delivery_time]"
+                            label="Cook Time"
+                            name="rate[cook_time]"
                             options={[
-                              'Morning',
-                              'Afternoon'
+                              {label: 'Morning of delivery', value: 'morning'},
+                              {label: 'Afternoon before delivery', value: 'afternoon'}
                             ]}
-                            value={this.state.rate.delivery_time}
-                            onChange={this.valueUpdater('delivery_time')}
+                            value={this.state.rate.cook_time}
+                            onChange={this.valueUpdater('cook_time')}
                             placeholder="Select"
                           />
                           <Select
                             label="Delivery Method"
                             name="rate[delivery_method]"
                             options={[
-                              'Pickup',
-                              'Delivery',
-                              'Shipping'
+                              {label: 'Pickup', value: 'pickup'},
+                              {label: 'Delivery', value: 'delivery'},
+                              {label: 'Shipping', value: 'shipping'}
                             ]}
                             value={this.state.rate.delivery_method}
                             onChange={this.valueUpdater('delivery_method')}
@@ -226,14 +226,15 @@ class RateEditor extends React.Component {
                             label="Delivery Type"
                             name="rate[delivery_type]"
                             options={[
-                              'same_day',
-                              'next_day'
+                              {label: 'Same Day', value: 'same_day'},
+                              {label: 'Next Day', value: 'next_day'},
+                              {label: 'Subscription', value: 'subscription'},
                             ]}
                             value={this.state.rate.delivery_type}
                             onChange={this.valueUpdater('delivery_type')}
                             placeholder="Select"
                           />
-                          <Subheading>Conditions </Subheading>
+                          <Subheading>Conditions</Subheading>
                           <Button size="slim" icon="add" onClick={ this.addCondition() }>New Condition</Button>
                           <div data-condition-list>
                             { conditions }

@@ -3,7 +3,9 @@ class CreateShippingCarrierJob < ApplicationJob
     shop = Shop.find_by(shopify_domain: shop_domain)
 
     shop.with_shopify_session do
+
       ShopifyAPI::CarrierService.find(:all).each do |carrier_service|
+        Rails.logger.debug("[Carrier?] #{carrier_service.inspect}")
         begin
           carrier_service.destroy
         rescue
