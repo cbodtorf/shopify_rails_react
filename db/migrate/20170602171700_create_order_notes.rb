@@ -7,7 +7,7 @@ class CreateOrderNotes < ActiveRecord::Migration[5.0]
       t.string :rate_id, null: false
       t.string :checkout_method, null: false
       t.string :postal_code
-      t.datetime :delivery_date, null: false
+      t.datetime :delivery_date
 
       t.timestamps null: false
     end

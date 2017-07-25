@@ -25,11 +25,28 @@
 .upcomingSubscriptions .Polaris-ResourceList__AttributeOne, .upcomingSubscriptions .Polaris-ResourceList__AttributeTwo {
   flex: 0.4;
 }
-.upcomingSubscriptions .Polaris-Heading tr {
+.upcomingSubscriptions thead tr {
   display: flex;
   cursor: default;
 }
-.upcomingSubscriptions .Polaris-Heading tr th {
+.upcomingSubscriptions thead tr th {
+  flex: 1;
+  cursor: default;
+}
+.pendingShippingOrders .Polaris-ResourceList__AttributeOne, .pendingShippingOrders .Polaris-ResourceList__AttributeTwo {
+  flex: 0.36;
+}
+.pendingShippingOrders .Polaris-ResourceList__Badge {
+  flex: 0.28;
+}
+.pendingShippingOrders .Polaris-ResourceList__AttributeThree {
+  flex: 0.2;
+}
+.pendingShippingOrders thead tr {
+  display: flex;
+  cursor: default;
+}
+.pendingShippingOrders thead tr th {
   flex: 1;
   cursor: default;
 }

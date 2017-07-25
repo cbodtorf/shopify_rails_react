@@ -140,7 +140,8 @@ class AppProxyController < ApplicationController
     ShopifyAPI::Base.activate_session(session)
 
     rates = shop.rates.where(delivery_method: "delivery")
-    pickupRate = shop.rates.where(delivery_method: "pickup")
+    pickup_rate = shop.rates.where(delivery_method: "pickup")
+    shipping_rates = shop.rates.where(delivery_method: "shipping")
 
     pickup_locations = shop.pickup_locations.all
 
@@ -168,7 +169,7 @@ class AppProxyController < ApplicationController
     # TODO: add Subscription logic
 
     if Time.now < end_of_day # normal
-      pickerData = date_range.map.with_index do |date, i|
+      picker_data = date_range.map.with_index do |date, i|
         # black out sundays
         if date.wday != 0
           if date.today?
@@ -207,7 +208,7 @@ class AppProxyController < ApplicationController
         end
       end
     elsif Time.now > end_of_day # shift rates over one day
-      pickerData = date_range.map.with_index do |date, i|
+      picker_data = date_range.map.with_index do |date, i|
         # black out sundays
         if date.wday != 0
           if i == 0
@@ -246,15 +247,15 @@ class AppProxyController < ApplicationController
     date_to    = date_from + 6
     pickup_range = (date_from..date_to).map()
 
-    pickupData = pickup_range.map do |date|
+    pickup_data = pickup_range.map do |date|
       dateObj = {
         date: date,
         disabled: false,
         locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
-        rates: pickupRate
+        rates: pickup_rate
       }
     end
 
-    render json: {deliveryDates: pickerData, pickupDates: pickupData, blackout_dates: blackout_dates} , status: 200
+    render json: {deliveryDates: picker_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates } , status: 200
   end
 end

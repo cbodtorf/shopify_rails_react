@@ -14,7 +14,7 @@ class Dashboard extends React.Component {
     console.log('props: ', this.props)
     let subscriptionList = this.props.subscriptions.map(sub => {
       return ({
-        attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.email}</Link>,
+        attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.first_name + ' ' + sub.customer.last_name}</Link>,
         attributeTwo: new Date(sub.next_charge_scheduled_at).toLocaleDateString(),
         attributeThree: new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString(),
         actions: [
@@ -24,9 +24,35 @@ class Dashboard extends React.Component {
       })
     })
 
+    let shippingList = []
+    this.props.orders.forEach(order => {
+      let checkoutMethod = order.note_attributes.filter(note => note['name'] === 'checkout_method')
+
+      if (checkoutMethod[0].value.toLowerCase() === 'shipping') {
+        console.log('trying filter shipping orders', order);
+        let fullfillmentBadge = {
+          content: order.fulfillment_status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled',
+          status: order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'
+        }
+        shippingList.push({
+          attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link>,
+          attributeTwo: new Date(order.created_at).toLocaleDateString(),
+          attributeThree: 'items csv',
+          badges: [
+            fullfillmentBadge,
+          ],
+          actions: [
+            {content: 'Order Details', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/orders/${order.id}`, '_blank').focus() }},
+          ],
+          persistActions: true,
+        })
+      }
+    })
+
     this.setState({
       fiveDayOrders: this.props.fiveDayOrders,
       subscriptionList: subscriptionList,
+      shippingList: shippingList,
     })
   }
 
@@ -172,6 +198,37 @@ class Dashboard extends React.Component {
                       </table>
                       <ResourceList
                         items={ this.state.subscriptionList }
+                        renderItem={(item, index) => {
+                          return <ResourceList.Item key={index} {...item} />;
+                        }}
+                      />
+                    </div>
+                    <Pagination
+                      hasPrevious
+                      onPrevious={() => {}}
+                      hasNext
+                      onNext={() => {}}
+                    />
+                </Card>
+              </div>
+            </Layout.Section>
+            <Layout.Section>
+              <div className="pendingShippingOrders">
+                <Heading>Pending Shipping Orders</Heading>
+                <Card sectioned>
+                    <div>
+                      <table>
+                        <thead>
+                          <tr>
+                            <th><Subheading>Order #</Subheading></th>
+                            <th><Subheading>Date Created</Subheading></th>
+                            <th><Subheading>Fullfillment Status</Subheading></th>
+                            <th><Subheading>CSV</Subheading></th>
+                          </tr>
+                        </thead>
+                      </table>
+                      <ResourceList
+                        items={ this.state.shippingList }
                         renderItem={(item, index) => {
                           return <ResourceList.Item key={index} {...item} />;
                         }}
