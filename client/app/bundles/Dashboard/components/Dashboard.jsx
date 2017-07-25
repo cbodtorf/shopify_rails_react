@@ -53,18 +53,12 @@ class Dashboard extends React.Component {
             </div>
 
             <div className="delivery-wrapper">
-              <Card sectioned title="Deliveries">
+              <Card sectioned title="Delivery">
                 <div className="title-line">
                 </div>
-                <div className="delivery-count">
-                  <h5>{date.morning.length}</h5>
-                  <Link url={`/showOrders?attribute=morning&date=${formatedDate}`}>Orders</Link>
-                  <h3 className="delivery-time">AM</h3>
-                </div>
-                <div className="delivery-count">
-                  <h5>{date.afternoon.length}</h5>
-                  <Link url={`/showOrders?attribute=afternoon&date=${formatedDate}`}>Orders</Link>
-                  <h3 className="delivery-time">PM</h3>
+                <div className="pickup-count">
+                  <h5>{date.delivery.length}</h5>
+                  <Link url={`/showOrders?attribute=delivery&date=${formatedDate}`}>Orders</Link>
                 </div>
               </Card>
             </div>

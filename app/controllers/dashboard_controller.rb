@@ -88,84 +88,43 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
     @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
+    # Rails.logger.debug("notes order: #{@orders.inspect}")
 
     date_from  = Date.current
     date_to    = date_from + 4
     date_range = (date_from..date_to).map()
-    @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: []}}
-
-    @orders.each do |order|
-      Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
-      # Isolate Delivery Date
-      dates = order.attributes[:note_attributes].select do |note|
-        note.attributes[:name] === "delivery_date"
-      end
-      # Isolate Delivery Rate
-      rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
-      Rails.logger.debug("notes rate: #{rates.inspect}")
-      rate = Rate.find(rates[0].attributes[:value])
-      # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
-      if dates[0] != nil
-        @fiveDayOrders.map do |date|
-          if rate[:delivery_type].downcase == "subscription"
-            if order.attributes[:tags].include?("Subscription First Order")
-              # if same day cook morning or
-              # else cook afternoon before
-            elsif order.attributes[:tags].include?("Subscription Recurring Order")
-              # cook afternoon before
-            else
-              # hopefully nothing
-            end
-          elsif rate[:delivery_method].downcase == "pickup"
-            # TODO: find out where pickup subscriptions are cooked
-            # standard pickups are cooked the morning of
-            # but all subscriptions typically cooked afternoon before
-          elsif rate[:delivery_method].downcase == "shipping"
-            # These do not go into the standard csv
-          elsif rate[:delivery_method].downcase == "delivery"
-            # if same day cook morning of
-            # if next day cook afternoon before
-          else
-            # hopefully nothing
-          end
-          # need to refactor this logic
-
-          # if date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time] == "afternoon" && rate[:delivery_type].downcase == "subscription"
-          #   if rate[:delivery_type].downcase === "subscription" && order.attributes[:tags].include?("Subscription First Order")
-          #     # if same day must be done morning of order. SKIP
-          #   elsif rate[:delivery_type].downcase === "subscription" && order.attributes[:tags].include?("Subscription Recurring Order")
-          #     date[rate[:cook_time].downcase.to_sym].push(order)
-          #   end
-          # elsif date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time] == "afternoon" && rate[:delivery_type].downcase != "subscription"
-          #   # afternoon cook happens day before delivery
-          #   # return deliveries pm
-          #   date[rate[:cook_time].downcase.to_sym].push(order)
-          # elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time] == "afternoon" && rate[:delivery_type].downcase == "subscription"
-          #   if rate[:delivery_method].downcase == "pickup"
-          #     # return pickup orders
-          #     date[rate[:delivery_method].downcase.to_sym].push(order)
-          #   elsif rate[:delivery_type].downcase == "subscription" && order.attributes[:tags].include?("Subscription First Order")
-          #     # if same day must be done morning of order.
-          #     date[:morning].push(order)
-          #   elsif rate[:delivery_type].downcase == "subscription" && order.attributes[:tags].include?("Subscription Recurring Order")
-          #     # if same day must be done morning of order. SKIP
-          #   end
-          # elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time] == "morning"
-          #   if rate[:delivery_method].downcase == "pickup"
-          #     # return pickup orders
-          #     date[rate[:delivery_method].downcase.to_sym].push(order)
-          #   elsif rate[:delivery_type].downcase == "subscription"
-          #     # return first time subscription orders
-          #     date[:morning].push(order)
-          #   else
-          #     # return deliveries am
-          #     date[rate[:cook_time].downcase.to_sym].push(order)
-          #   end
-          # end
+    @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: [], shipping: [], delivery: []}}
+      @orders.each do |order|
+        # TODO: error handling for orders that do NOT have note attributes.
+        Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
+        # Isolate Delivery Date
+        dates = order.attributes[:note_attributes].select do |note|
+          note.attributes[:name] === "delivery_date"
         end
+        # Isolate Delivery Rate
+        rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+        Rails.logger.debug("notes rate: #{rates.inspect}")
+        rate = Rate.find(rates[0].attributes[:value])
+        # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
+        if dates[0] != nil
+          @fiveDayOrders.map do |date|
+            # Organize orders for counts
+            if date[:date] == Date.parse(dates[0].attributes[:value])
+              date[rate[:delivery_method].downcase.to_sym].push(order)
+            end
 
+            # Organize CSV orders
+            if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
+              if date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time] == "afternoon"
+                date[rate[:cook_time].downcase.to_sym].push(order)
+              elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time] == "morning"
+                date[rate[:cook_time].downcase.to_sym].push(order)
+              end
+            end
+          end
+
+        end
       end
-    end
 
     return @fiveDayOrders
   end

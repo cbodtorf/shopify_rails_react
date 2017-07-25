@@ -204,7 +204,8 @@ class RateEditor extends React.Component {
                             name="rate[cook_time]"
                             options={[
                               {label: 'Morning of delivery', value: 'morning'},
-                              {label: 'Afternoon before delivery', value: 'afternoon'}
+                              {label: 'Afternoon before delivery', value: 'afternoon'},
+                              {label: 'N/A', value: null}
                             ]}
                             value={this.state.rate.cook_time}
                             onChange={this.valueUpdater('cook_time')}
