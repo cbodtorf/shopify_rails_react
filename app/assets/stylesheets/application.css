@@ -21,6 +21,22 @@
   width: 100%;
 }
 
+/* Navigation 2.0 sidebar attempt TODO: remove currently not needed */
+.Page-Wrapper__Bamboo {
+  display: inline-flex;
+}
+.Page-Wrapper__Bamboo .Polaris-Page:nth-child(2) {
+  padding-left: 232px;
+  padding-left: calc(200px + 3.2rem);
+}
+.Side-Nav__Bamboo {
+  width: 200px;
+  border-right: 1px solid #dfe4e8;
+  padding-top: 20px;
+  position: fixed;
+  height: 100%;
+}
+
 /* Dashboard */
 .upcomingSubscriptions .Polaris-ResourceList__AttributeOne, .upcomingSubscriptions .Polaris-ResourceList__AttributeTwo {
   flex: 0.4;

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
+import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Icon, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 
@@ -138,7 +138,7 @@ class Dashboard extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title="Dashboard">
+        <Page title="Dashboard" fullWidth>
           <Layout>
             <Layout.Section>
               <Tabs

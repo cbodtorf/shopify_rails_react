@@ -11,7 +11,8 @@ class Settings extends React.Component {
 
     this.state = {
       tab: 3,
-      deleteAlertOpen: false,
+      deleteAlertPickupOpen: false,
+      deleteAlertBlackoutOpen: false,
       pickupLocation: {},
       pickupLocations: [],
       blackoutDate: {},
@@ -41,7 +42,7 @@ class Settings extends React.Component {
           attributeTwo: new Date(date.blackout_date).toLocaleDateString(),
           actions: [
             {content: 'Edit date', onAction: () => { this.handleEdit(date) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, dateToDelete: date}) }},
+            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertBlackoutOpen: true, dateToDelete: date}) }},
           ],
           persistActions: true,
         }
@@ -56,7 +57,7 @@ class Settings extends React.Component {
           attributeThree: location.days_available.map((day, i) => {return (<Badge key={i} status="info">{weekNames[day]}</Badge>)}),
           actions: [
             {content: 'Edit location', onAction: () => { this.handleEdit(location) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, locationToDelete: location}) }},
+            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertPickupOpen: true, locationToDelete: location}) }},
           ],
           persistActions: true,
         }
@@ -234,16 +235,29 @@ class Settings extends React.Component {
           </Layout>
           <Alert
             title="Delete Pickup Location?"
-            open={this.state.deleteAlertOpen}
+            open={this.state.deleteAlertPickupOpen}
             confirmContent="Delete"
             onConfirm={() => {
-              this.handleDelete(this.state.locationToDelete).bind(this)
-              this.setState({deleteAlertOpen: false, locationToDelete: null})
+              this.handleDelete(`/destroy_pickup_location?id=this.state.locationToDelete.id`).bind(this)
+              this.setState({deleteAlertPickupOpen: false, locationToDelete: null})
               }}
             cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertOpen: false})}
+            onCancel={() => this.setState({deleteAlertPickupOpen: false})}
           >
             Are you sure you want to delete this pickup location?
+          </Alert>
+          <Alert
+            title="Delete Blackout Date?"
+            open={this.state.deleteAlertBlackoutOpen}
+            confirmContent="Delete"
+            onConfirm={() => {
+              this.handleDelete(`/destroy_blackout_date?id=${this.state.dateToDelete.id}`).bind(this)
+              this.setState({deleteAlertBlackoutOpen: false, dateToDelete: null})
+              }}
+            cancelContent="Continue editing"
+            onCancel={() => this.setState({deleteAlertBlackoutOpen: false})}
+          >
+            Are you sure you want to delete this blackout date?
           </Alert>
         </Page>
       </EmbeddedApp>
@@ -276,11 +290,11 @@ class Settings extends React.Component {
       formType.submit()
   }
 
-  handleDelete(location) {
+  handleDelete(url) {
     let self = this
     $.ajax({
        type: "DELETE",
-       url: `/destroy_pickup_location?id=${location.id}`,
+       url: url,
        success: function (result) {
        },
        error: function (result){

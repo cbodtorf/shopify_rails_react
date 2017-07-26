@@ -17,6 +17,7 @@ Rails.application.routes.draw do
 
   get 'app_proxy', to: 'app_proxy#index'
   get 'app_proxy/picker', to: 'app_proxy#picker'
+  get 'app_proxy/customerPortal', to: 'app_proxy#customerPortal'
   post 'app_proxy', to: 'app_proxy#index'
   put 'app_proxy', to: 'app_proxy#index'
 
@@ -33,7 +34,7 @@ Rails.application.routes.draw do
   get 'settings', to: 'settings#index'
   post 'create_pickup_location', to: 'settings#create_pickup_location'
   delete 'destroy_pickup_location', to: 'settings#destroy_pickup_location'
-  
+
   post 'create_blackout_date', to: 'settings#create_blackout_date'
   delete 'destroy_blackout_date', to: 'settings#destroy_blackout_date'
 

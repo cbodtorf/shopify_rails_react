@@ -256,4 +256,13 @@ class AppProxyController < ApplicationController
 
     render json: {deliveryDates: picker_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates } , status: 200
   end
+
+  def customerPortal
+    shop = Shop.find_by(shopify_domain: params[:shop])
+    session = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(session)
+
+    blackout_dates = shop.blackout_dates.all
+    render json: { blackoutDates: blackout_dates } , status: 200
+  end
 end
