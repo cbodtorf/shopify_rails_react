@@ -10,10 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170627185344) do
+ActiveRecord::Schema.define(version: 20170726140115) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "blackout_dates", force: :cascade do |t|
+    t.integer  "shop_id"
+    t.text     "title"
+    t.datetime "blackout_date", null: false
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+    t.index ["shop_id"], name: "index_blackout_dates_on_shop_id", using: :btree
+  end
 
   create_table "conditions", force: :cascade do |t|
     t.integer  "rate_id"
@@ -114,6 +123,7 @@ ActiveRecord::Schema.define(version: 20170627185344) do
     t.index ["shopify_domain"], name: "index_shops_on_shopify_domain", unique: true, using: :btree
   end
 
+  add_foreign_key "blackout_dates", "shops"
   add_foreign_key "conditions", "rates"
   add_foreign_key "pickup_locations", "shops"
   add_foreign_key "product_specific_prices", "rates"

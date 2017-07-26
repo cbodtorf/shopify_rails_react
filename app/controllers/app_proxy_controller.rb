@@ -148,10 +148,8 @@ class AppProxyController < ApplicationController
     # hour should be a variable maybe held in a config/settings from the admin.
     end_of_day = DateTime.now.change({ hour: 15 })
 
-    # black out days = []
-    # TODO: Once the db and client are set up to input Settings.
-    # blackout_dates = BlackOutDates.all
-    blackout_dates = [Date.parse("Mon, 19 Jun 2017")]
+
+    blackout_dates = shop.blackout_dates.all
     # no sundays
     blackout_sunday = 0
 

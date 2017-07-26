@@ -27,7 +27,8 @@ class Settings extends React.Component {
   componentWillMount() {
 
     this.setState({
-      pickupLocations: this.props.pickupLocations
+      pickupLocations: this.props.pickupLocations,
+      blackoutDates: this.props.blackoutDates,
     })
   }
 
@@ -36,7 +37,8 @@ class Settings extends React.Component {
     const blackoutDates = this.state.blackoutDates.map(date => {
       return (
         {
-          attributeOne: date.date,
+          attributeOne: date.title,
+          attributeTwo: new Date(date.blackout_date).toLocaleDateString(),
           actions: [
             {content: 'Edit date', onAction: () => { this.handleEdit(date) }},
             {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, dateToDelete: date}) }},
@@ -114,7 +116,7 @@ class Settings extends React.Component {
             >
               <Card
                 sectioned
-                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave() } }}
+                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave(this.pickupLocationForm) } }}
               >
               <form
                 action='/create_pickup_location'
@@ -191,17 +193,36 @@ class Settings extends React.Component {
               title="Blackout Dates"
               description="Customers will be unable to select these dates for their deliveries."
             >
-              <Card sectioned>
-                <FormLayout>
-                  <TextField
-                  label="Blackout Date"
-                  name="date"
-                  value={`${this.state.blackoutDate.year}-${this.state.blackoutDate.month}-${this.state.blackoutDate.day}`}
-                  onChange={this.blackoutDateUpdater()}
-                  type="date"
-                  />
-                  <Icon source="calendar" />
-                </FormLayout>
+              <Card
+                sectioned
+                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave(this.blackoutDateForm) } }}
+                >
+                <form
+                  action='/create_blackout_date'
+                  acceptCharset="UTF-8" method="post"
+                  ref={(form) => {this.blackoutDateForm = form}}
+                  >
+                  <FormLayout>
+                    <input name="utf8" type="hidden" value="✓" />
+                    <input type="hidden" name="_method" value={this.state.blackoutDateMethod} />
+                    <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
+                    <TextField
+                      label="Blackout Date Title"
+                      name="blackout_date[title]"
+                      type="text"
+                      value={this.state.blackoutDate.title}
+                      onChange={this.valueUpdater('title', 'blackoutDate')}
+                    />
+                    <TextField
+                    label="Blackout Date"
+                    name="blackout_date[blackout_date]"
+                    value={`${this.state.blackoutDate.year}-${this.state.blackoutDate.month}-${this.state.blackoutDate.day}`}
+                    onChange={this.blackoutDateUpdater()}
+                    type="date"
+                    />
+                    <Icon source="calendar" />
+                  </FormLayout>
+                </form>
                 <ResourceList
                   items={blackoutDates}
                   renderItem={(item, index) => {
@@ -238,7 +259,8 @@ class Settings extends React.Component {
         let d = new Date(value.replace('-','/'))
         this.setState({
             blackoutDate: {
-              date: d,
+              blackout_date: d,
+              title: this.state.blackoutDate.title,
               wday: weekNames[d.getDay()],
               day: this.addZ(d.getDate()),
               month: this.addZ(d.getMonth() + 1),
@@ -250,8 +272,8 @@ class Settings extends React.Component {
   }
 
 
-  handleSave() {
-    this.pickupLocationForm.submit()
+  handleSave(formType) {
+      formType.submit()
   }
 
   handleDelete(location) {
