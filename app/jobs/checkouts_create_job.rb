@@ -23,8 +23,10 @@ class CheckoutsCreateJob < ApplicationJob
       # @order_note.shipping_address = ShippingAddress.create(webhook[:shipping_address])
       Rails.logger.info("[Order Note b4 save] - Saving: #{@order_note.inspect}")
 
+
       if @order_note.save
         Rails.logger.info("[Order Note] - Saving: #{@order_note.inspect}")
+
       else
         Rails.logger.error("[Order Note] - Error: #{@order_note.inspect}")
       end

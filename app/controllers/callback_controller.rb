@@ -45,6 +45,7 @@ class CallbackController < ApplicationController
     Rails.logger.info("[#{self.class.name}] #{rates.size} rates found")
     # delete shipping address so we don't get repeats.
     # @order_note.shipping_address.delete
+
     render json: { rates: rates.map { |rate| rate.to_hash } }
   rescue JSON::ParserError
     nil

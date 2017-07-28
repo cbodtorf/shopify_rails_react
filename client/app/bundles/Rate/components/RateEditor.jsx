@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 import Condition from './Condition'
+import Navigation from '../../Global/components/Navigation';
 
 import uuid from 'uuid'
 
@@ -106,42 +107,7 @@ class RateEditor extends React.Component {
         <Page title={`Edit Rate`}>
           <Layout>
             <Layout.Section>
-              <div className="bamboo-nav">
-                <Link url="/dashboard">Dashboard</Link>
-                <Link url="/rates">Rates</Link>
-                <Link url="/bundle">Bundles</Link>
-                <Link url="/settings">Settings</Link>
-              </div>
-              {/* <Tabs
-                selected={this.state.tab}
-                fitted
-                tabs={[
-                  {
-                    id: 'dashboard',
-                    title: 'Dashboard',
-                    panelID: 'dashboard',
-                    url: '/dashboard',
-                  },
-                  {
-                    id: 'rates',
-                    title: 'Rates',
-                    panelID: 'rates',
-                    url: '/rates',
-                  },
-                  {
-                    id: 'bundles',
-                    title: 'Bundles',
-                    panelID: 'bundles',
-                    url: `/bundle`,
-                  },
-                  {
-                    id: 'settings',
-                    title: 'Settings',
-                    panelID: 'settings',
-                    url: '/settings',
-                  },
-                ]}
-              /> */}
+              <Navigation selectedTab={3}/>
             </Layout.Section>
 
             <Layout.Section>

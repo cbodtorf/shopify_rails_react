@@ -8,6 +8,7 @@ import OrderList from '../Dashboard/components/OrderList';
 import BundleEditor from '../Bundle/components/BundleEditor';
 import RateEditor from '../Rate/components/RateEditor';
 import Settings from '../Settings/components/Settings';
+import Navigation from '../Global/components/Navigation';
 
 // This is how react_on_rails can see the HelloWorld in the browser.
 ReactOnRails.register({
@@ -19,4 +20,5 @@ ReactOnRails.register({
   BundleEditor,
   RateEditor,
   Settings,
+  Navigation,
 });

@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Icon, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
+import Navigation from '../../Global/components/Navigation';
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -138,39 +139,10 @@ class Dashboard extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title="Dashboard" fullWidth>
+        <Page title="Dashboard" fullWidth ref='dashboard'>
           <Layout>
             <Layout.Section>
-              <Tabs
-                selected={0}
-                fitted
-                tabs={[
-                  {
-                    id: 'dashboard',
-                    title: 'Dashboard',
-                    panelID: 'dashboard',
-                    url: '/dashboard',
-                  },
-                  {
-                    id: 'rates',
-                    title: 'Rates',
-                    panelID: 'rates',
-                    url: '/rates',
-                  },
-                  {
-                    id: 'bundles',
-                    title: 'Bundles',
-                    panelID: 'bundles',
-                    url: `/bundle`,
-                  },
-                  {
-                    id: 'settings',
-                    title: 'Settings',
-                    panelID: 'settings',
-                    url: '/settings',
-                  },
-                ]}
-              />
+              <Navigation selectedTab={0}/>
             </Layout.Section>
 
             <Layout.Section>

@@ -20,22 +20,48 @@
   justify-content: space-between;
   width: 100%;
 }
+.Polaris-Layout .Polaris-Layout__Section:first-child {
+  margin-top: 0;
+}
+.Navigation__Bamboo .Polaris-Tabs {
+  border-bottom: none;
+}
+.Navigation__Bamboo .Polaris-Tabs__Tab {
+  color: #212b36;
+}
+.Navigation__Bamboo .Polaris-Tabs__Tab:visited {
+  color: #212b36;
+}
+.Navigation__Bamboo .Polaris-Tabs__Tab.Polaris-Tabs__Tab--selected {
+  color: #5c6ac4;
+}
+.Navigation__Bamboo .Polaris-Tabs__Tab.Polaris-Tabs__Tab--selected .Polaris-Tabs__Title {
+    border-top: .3rem solid #5c6ac4;
+    border-bottom: none;
+}
+.Navigation__Bamboo .Polaris-Tabs__Title {
+  padding: 2rem 0 2rem;
+  border-top: .3rem solid transparent;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.Navigation__Bamboo .Polaris-Tabs__Tab:hover .Polaris-Tabs__Title {
+  font-weight: 600;
+  color: #5c6ac4;
+  border-top: .3rem solid #dfe3e8;
+  border-bottom: none;
+}
+.Navigation__Bamboo div:first-of-type {
+  position: relative;
+}
+.Navigation__Bamboo .Polaris-Tabs__Panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
 
-/* Navigation 2.0 sidebar attempt TODO: remove currently not needed */
-.Page-Wrapper__Bamboo {
-  display: inline-flex;
-}
-.Page-Wrapper__Bamboo .Polaris-Page:nth-child(2) {
-  padding-left: 232px;
-  padding-left: calc(200px + 3.2rem);
-}
-.Side-Nav__Bamboo {
-  width: 200px;
-  border-right: 1px solid #dfe4e8;
-  padding-top: 20px;
-  position: fixed;
-  height: 100%;
-}
+
+
 
 /* Dashboard */
 .upcomingSubscriptions .Polaris-ResourceList__AttributeOne, .upcomingSubscriptions .Polaris-ResourceList__AttributeTwo {

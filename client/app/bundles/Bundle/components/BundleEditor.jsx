@@ -1,6 +1,7 @@
 import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
+import Navigation from '../../Global/components/Navigation';
 
 class BundleEditor extends React.Component {
   constructor(props) {
@@ -150,37 +151,10 @@ class BundleEditor extends React.Component {
           title={`Edit Bundle`}
           primaryAction={{content: 'New Product', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
           >
-        <Tabs
-          selected={2}
-          fitted
-          tabs={[
-            {
-              id: 'dashboard',
-              title: 'Dashboard',
-              panelID: 'dashboard',
-              url: '/dashboard',
-            },
-            {
-              id: 'rates',
-              title: 'Rates',
-              panelID: 'rates',
-              url: '/rates',
-            },
-            {
-              id: 'bundles',
-              title: 'Bundles',
-              panelID: 'bundles',
-              url: '/bundle',
-            },
-            {
-              id: 'settings',
-              title: 'Settings',
-              panelID: 'settings',
-              url: '/settings',
-            },
-          ]}
-        />
           <Layout>
+            <Layout.Section>
+              <Navigation selectedTab={2}/>
+            </Layout.Section>
             <Layout.Section>
               <form
                 action={this.state.url}

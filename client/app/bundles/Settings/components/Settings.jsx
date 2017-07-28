@@ -1,6 +1,7 @@
 import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, DatePicker, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
+import Navigation from '../../Global/components/Navigation';
 
 
 const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
@@ -10,7 +11,6 @@ class Settings extends React.Component {
     super(props)
 
     this.state = {
-      tab: 3,
       deleteAlertPickupOpen: false,
       deleteAlertBlackoutOpen: false,
       pickupLocation: {},
@@ -20,7 +20,7 @@ class Settings extends React.Component {
     }
   }
   /**
-  * Helps to format Dates input single d, ouputs dd.
+  * Helps to format Dates input single d, outputs dd.
   * ie. addZ(2) => '02'
   */
   addZ(n){return n<10? '0'+n:''+n;}
@@ -70,45 +70,10 @@ class Settings extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Settinhgs`}>
+        <Page title={`Settings`}>
           <Layout>
             <Layout.Section>
-              <div className="bamboo-nav">
-                <Link url="/dashboard">Dashboard</Link>
-                <Link url="/rates">Rates</Link>
-                <Link url="/bundle">Bundles</Link>
-                <Link url="/settings">Settings</Link>
-              </div>
-              {/* <Tabs
-                selected={this.state.tab}
-                fitted
-                tabs={[
-                  {
-                    id: 'dashboard',
-                    title: 'Dashboard',
-                    panelID: 'dashboard',
-                    url: '/dashboard',
-                  },
-                  {
-                    id: 'rates',
-                    title: 'Rates',
-                    panelID: 'rates',
-                    url: '/rates',
-                  },
-                  {
-                    id: 'bundles',
-                    title: 'Bundles',
-                    panelID: 'bundles',
-                    url: `/bundle`,
-                  },
-                  {
-                    id: 'settings',
-                    title: 'Settings',
-                    panelID: 'settings',
-                    url: '/settings',
-                  },
-                ]}
-              /> */}
+              <Navigation selectedTab={null}/>
             </Layout.Section>
 
             <Layout.AnnotatedSection
