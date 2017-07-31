@@ -10,6 +10,7 @@ import RateEditor from '../Rate/components/RateEditor';
 import PickupLocations from '../Settings/components/PickupLocations';
 import BlackoutDates from '../Settings/components/BlackoutDates';
 import Navigation from '../Global/components/Navigation';
+import Subscription from '../Subscription/components/Subscription';
 
 // This is how react_on_rails can see the HelloWorld in the browser.
 ReactOnRails.register({
@@ -23,4 +24,5 @@ ReactOnRails.register({
   BlackoutDates,
   PickupLocations,
   Navigation,
+  Subscription,
 });

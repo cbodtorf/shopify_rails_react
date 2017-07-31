@@ -31,6 +31,8 @@ Rails.application.routes.draw do
   get 'generateCSV', to: 'dashboard#generateCSV'
   get 'showOrders', to: 'dashboard#showOrders'
 
+  get 'subscription', to: 'subscription#index'
+
   get 'settings', to: 'settings#index'
   get 'blackout_dates', to: 'settings#blackout_dates'
   get 'pickup_locations', to: 'settings#pickup_locations'

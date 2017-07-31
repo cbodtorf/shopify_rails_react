@@ -59,7 +59,9 @@
   right: 0;
   top: 0;
 }
-
+.Polaris-PositionedOverlay {
+  z-index: 400 !important;
+}
 
 
 

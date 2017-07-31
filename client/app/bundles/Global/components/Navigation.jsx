@@ -28,10 +28,10 @@ class Navigation extends React.Component {
                 url: '/dashboard',
               },
               {
-                id: 'upcomingSubscriptions',
-                title: 'Upcoming Subscriptions',
-                panelID: 'upcomingSubscriptions',
-                url: '/upcoming_subscriptions',
+                id: 'subscriptions',
+                title: 'Subscriptions',
+                panelID: 'subscriptions',
+                url: '/subscription',
               },
               {
                 id: 'bundles',
@@ -44,6 +44,7 @@ class Navigation extends React.Component {
           >
             <Popover
               active={this.state.popOverActive}
+              sectioned
               activator={<li onClick={this.togglePopOver.bind(this)} role="presentation" className="Polaris-Tabs__TabContainer"><a id="settings" role="tab" tabIndex="-1" className="Polaris-Tabs__Tab" aria-selected="false" aria-controls="bundles" data-polaris-unstyled="true"><span className="Polaris-Tabs__Title">Settings</span></a></li>}
               onClose={this.togglePopOver.bind(this)}
             >

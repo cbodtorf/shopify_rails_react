@@ -1,18 +1,14 @@
 <% @shopOrigin = "https://#{ @shop_session.url }" if @shop_session %>
 
 <%= react_component(
-      "Dashboard",
+      "Subscription",
       props: {
         apiKey: ShopifyApp.configuration.api_key,
         shopOrigin: @shopOrigin,
         debug: Rails.env.development? ? 'true' : 'false',
         forceRedirect: true,
         shop_session: @shop_session,
-        orders: @orders,
         shop: @shop,
-        bundles: @bundles,
-        fiveDayOrders: @fiveDayOrders,
-        productCount: @productCount,
-        customerCount: @customerCount,
+        subscriptions: @rechargeSubscriptions,
         activeSubscriberCount: @activeSubscriberCount,
         }, prerender: false) %>

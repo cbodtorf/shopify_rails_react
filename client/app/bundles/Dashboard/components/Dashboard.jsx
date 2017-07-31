@@ -13,17 +13,6 @@ class Dashboard extends React.Component {
 
   componentWillMount() {
     console.log('props: ', this.props)
-    let subscriptionList = this.props.subscriptions.map(sub => {
-      return ({
-        attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.first_name + ' ' + sub.customer.last_name}</Link>,
-        attributeTwo: new Date(sub.next_charge_scheduled_at).toLocaleDateString(),
-        attributeThree: new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString(),
-        actions: [
-          {content: 'edit', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/addresses/${sub.address_id}`, '_blank').focus() }},
-        ],
-        persistActions: true,
-      })
-    })
 
     let shippingList = []
     this.props.orders.forEach(order => {
@@ -52,7 +41,6 @@ class Dashboard extends React.Component {
 
     this.setState({
       fiveDayOrders: this.props.fiveDayOrders,
-      subscriptionList: subscriptionList,
       shippingList: shippingList,
     })
   }
@@ -153,36 +141,6 @@ class Dashboard extends React.Component {
               >
                 { dates }
               </Stack>
-            </Layout.Section>
-            <Layout.Section>
-              <div className="upcomingSubscriptions">
-                <Heading>Upcoming Subscription Orders</Heading>
-                <Card sectioned>
-                    <div>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th><Subheading>Customer</Subheading></th>
-                            <th><Subheading>Charge Date</Subheading></th>
-                            <th><Subheading>Delivery Date</Subheading></th>
-                          </tr>
-                        </thead>
-                      </table>
-                      <ResourceList
-                        items={ this.state.subscriptionList }
-                        renderItem={(item, index) => {
-                          return <ResourceList.Item key={index} {...item} />;
-                        }}
-                      />
-                    </div>
-                    <Pagination
-                      hasPrevious
-                      onPrevious={() => {}}
-                      hasNext
-                      onNext={() => {}}
-                    />
-                </Card>
-              </div>
             </Layout.Section>
             <Layout.Section>
               <div className="pendingShippingOrders">
