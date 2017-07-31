@@ -150,6 +150,7 @@ class BundleEditor extends React.Component {
         <Page
           title={`Edit Bundle`}
           primaryAction={{content: 'New Product', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
+          fullWidth
           >
           <Layout>
             <Layout.Section>

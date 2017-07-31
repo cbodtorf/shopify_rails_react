@@ -104,7 +104,7 @@ class RateEditor extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Edit Rate`}>
+        <Page title={`Edit Rate`} fullWidth>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={3}/>

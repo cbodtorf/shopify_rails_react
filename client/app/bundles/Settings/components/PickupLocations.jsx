@@ -6,17 +6,14 @@ import Navigation from '../../Global/components/Navigation';
 
 const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
 
-class Settings extends React.Component {
+class pickupLocations extends React.Component {
   constructor(props) {
     super(props)
 
     this.state = {
       deleteAlertPickupOpen: false,
-      deleteAlertBlackoutOpen: false,
       pickupLocation: {},
       pickupLocations: [],
-      blackoutDate: {},
-      blackoutDates: [],
     }
   }
   /**
@@ -29,25 +26,11 @@ class Settings extends React.Component {
 
     this.setState({
       pickupLocations: this.props.pickupLocations,
-      blackoutDates: this.props.blackoutDates,
     })
   }
 
   render() {
     console.log("render", this.state);
-    const blackoutDates = this.state.blackoutDates.map(date => {
-      return (
-        {
-          attributeOne: date.title,
-          attributeTwo: new Date(date.blackout_date).toLocaleDateString(),
-          actions: [
-            {content: 'Edit date', onAction: () => { this.handleEdit(date) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertBlackoutOpen: true, dateToDelete: date}) }},
-          ],
-          persistActions: true,
-        }
-      )
-    })
 
     const pickupLocations = this.state.pickupLocations.map(location => {
       return (
@@ -70,7 +53,7 @@ class Settings extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Settings`}>
+        <Page title={`Pickup Locations`} fullWidth>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={null}/>
@@ -155,48 +138,6 @@ class Settings extends React.Component {
                 />
               </Card>
             </Layout.AnnotatedSection>
-            <Layout.AnnotatedSection
-              title="Blackout Dates"
-              description="Customers will be unable to select these dates for their deliveries."
-            >
-              <Card
-                sectioned
-                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave(this.blackoutDateForm) } }}
-                >
-                <form
-                  action='/create_blackout_date'
-                  acceptCharset="UTF-8" method="post"
-                  ref={(form) => {this.blackoutDateForm = form}}
-                  >
-                  <FormLayout>
-                    <input name="utf8" type="hidden" value="✓" />
-                    <input type="hidden" name="_method" value={this.state.blackoutDateMethod} />
-                    <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
-                    <TextField
-                      label="Blackout Date Title"
-                      name="blackout_date[title]"
-                      type="text"
-                      value={this.state.blackoutDate.title}
-                      onChange={this.valueUpdater('title', 'blackoutDate')}
-                    />
-                    <TextField
-                    label="Blackout Date"
-                    name="blackout_date[blackout_date]"
-                    value={`${this.state.blackoutDate.year}-${this.state.blackoutDate.month}-${this.state.blackoutDate.day}`}
-                    onChange={this.blackoutDateUpdater()}
-                    type="date"
-                    />
-                    <Icon source="calendar" />
-                  </FormLayout>
-                </form>
-                <ResourceList
-                  items={blackoutDates}
-                  renderItem={(item, index) => {
-                    return <ResourceList.Item key={index} {...item} />;
-                  }}
-                />
-              </Card>
-            </Layout.AnnotatedSection>
           </Layout>
           <Alert
             title="Delete Pickup Location?"
@@ -211,19 +152,6 @@ class Settings extends React.Component {
           >
             Are you sure you want to delete this pickup location?
           </Alert>
-          <Alert
-            title="Delete Blackout Date?"
-            open={this.state.deleteAlertBlackoutOpen}
-            confirmContent="Delete"
-            onConfirm={() => {
-              this.handleDelete(`/destroy_blackout_date?id=${this.state.dateToDelete.id}`).bind(this)
-              this.setState({deleteAlertBlackoutOpen: false, dateToDelete: null})
-              }}
-            cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertBlackoutOpen: false})}
-          >
-            Are you sure you want to delete this blackout date?
-          </Alert>
         </Page>
       </EmbeddedApp>
       </div>
@@ -232,24 +160,6 @@ class Settings extends React.Component {
   valueUpdater(field, namespace) {
     return (value) => this.setState({ [namespace]: { ...this.state[namespace], [field]: value } });
   }
-  blackoutDateUpdater() {
-    return (
-      (value) => {
-        let d = new Date(value.replace('-','/'))
-        this.setState({
-            blackoutDate: {
-              blackout_date: d,
-              title: this.state.blackoutDate.title,
-              wday: weekNames[d.getDay()],
-              day: this.addZ(d.getDate()),
-              month: this.addZ(d.getMonth() + 1),
-              year: d.getFullYear()
-            }
-        })
-      }
-    )
-  }
-
 
   handleSave(formType) {
       formType.submit()
@@ -270,4 +180,4 @@ class Settings extends React.Component {
   }
 
 }
-export default Settings
+export default pickupLocations

@@ -32,6 +32,8 @@ Rails.application.routes.draw do
   get 'showOrders', to: 'dashboard#showOrders'
 
   get 'settings', to: 'settings#index'
+  get 'blackout_dates', to: 'settings#blackout_dates'
+  get 'pickup_locations', to: 'settings#pickup_locations'
   post 'create_pickup_location', to: 'settings#create_pickup_location'
   delete 'destroy_pickup_location', to: 'settings#destroy_pickup_location'
 

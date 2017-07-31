@@ -1,10 +1,13 @@
 class SettingsController < ShopifyApp::AuthenticatedController
 
-  def index
+  def blackout_dates
+    # TODO: handle if there are no dates
+    @blackout_dates = shop.blackout_dates.all
+  end
+
+  def pickup_locations
     # TODO: handle if there are no locations
     @pickup_locations = shop.pickup_locations.all
-    @blackout_dates = shop.blackout_dates.all
-    Rails.logger.debug("My res: #{@pickup_locations.inspect}")
   end
 
   def create_pickup_location

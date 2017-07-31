@@ -7,7 +7,8 @@ import Dashboard from '../Dashboard/components/Dashboard';
 import OrderList from '../Dashboard/components/OrderList';
 import BundleEditor from '../Bundle/components/BundleEditor';
 import RateEditor from '../Rate/components/RateEditor';
-import Settings from '../Settings/components/Settings';
+import PickupLocations from '../Settings/components/PickupLocations';
+import BlackoutDates from '../Settings/components/BlackoutDates';
 import Navigation from '../Global/components/Navigation';
 
 // This is how react_on_rails can see the HelloWorld in the browser.
@@ -19,6 +20,7 @@ ReactOnRails.register({
   OrderList,
   BundleEditor,
   RateEditor,
-  Settings,
+  BlackoutDates,
+  PickupLocations,
   Navigation,
 });
