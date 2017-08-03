@@ -6,7 +6,7 @@ import Navigation from '../../Global/components/Navigation';
 
 const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
 
-class pickupLocations extends React.Component {
+class PickupLocations extends React.Component {
   constructor(props) {
     super(props)
 
@@ -144,7 +144,7 @@ class pickupLocations extends React.Component {
             open={this.state.deleteAlertPickupOpen}
             confirmContent="Delete"
             onConfirm={() => {
-              this.handleDelete(`/destroy_pickup_location?id=this.state.locationToDelete.id`).bind(this)
+              this.handleDelete(`/destroy_pickup_location?id=${this.state.locationToDelete.id}`).bind(this)
               this.setState({deleteAlertPickupOpen: false, locationToDelete: null})
               }}
             cancelContent="Continue editing"
@@ -180,4 +180,4 @@ class pickupLocations extends React.Component {
   }
 
 }
-export default pickupLocations
+export default PickupLocations

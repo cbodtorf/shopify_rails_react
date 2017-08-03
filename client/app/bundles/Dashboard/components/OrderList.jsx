@@ -1,6 +1,7 @@
 import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge, Link} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
+import Navigation from '../../Global/components/Navigation';
 
 class OrderList extends React.Component {
   constructor(props) {
@@ -64,44 +65,20 @@ class OrderList extends React.Component {
       >
         <Page
           title={`Orders`}
+          fullWidth
           primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
           >
-        <Tabs
-          selected={0}
-          fitted
-          tabs={[
-            {
-              id: 'dashboard',
-              title: 'Dashboard',
-              panelID: 'dashboard',
-              url: '/dashboard',
-            },
-            {
-              id: 'rates',
-              title: 'Rates',
-              panelID: 'rates',
-              url: '/rates',
-            },
-            {
-              id: 'bundles',
-              title: 'Bundles',
-              panelID: 'bundles',
-              url: '/bundle',
-            },
-            {
-              id: 'settings',
-              title: 'Settings',
-              panelID: 'settings',
-              url: '/settings',
-            },
-          ]}
-        />
+          <Layout.Section>
+            <Navigation selectedTab={0}/>
+          </Layout.Section>
+
           <Layout>
             <Layout.Section>
 
                 <Card
                   title="Orders"
                 >
+                  <a href='https://bamboojuices.myshopify.com/admin/apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids%5B%5D=4842083077&ids%5B%5D=4835427589&ids%5B%5D=4835427397' target="_blank">Print Me</a>
                   <ResourceList
                     items={this.state.orders}
                     renderItem={(item, index) => {

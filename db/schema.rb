@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170726140115) do
+ActiveRecord::Schema.define(version: 20170801155131) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -54,6 +54,14 @@ ActiveRecord::Schema.define(version: 20170726140115) do
     t.datetime "created_at",                  null: false
     t.datetime "updated_at",                  null: false
     t.index ["shop_id"], name: "index_pickup_locations_on_shop_id", using: :btree
+  end
+
+  create_table "postal_codes", force: :cascade do |t|
+    t.integer  "shop_id"
+    t.text     "title"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop_id"], name: "index_postal_codes_on_shop_id", using: :btree
   end
 
   create_table "product_specific_prices", force: :cascade do |t|
@@ -126,6 +134,7 @@ ActiveRecord::Schema.define(version: 20170726140115) do
   add_foreign_key "blackout_dates", "shops"
   add_foreign_key "conditions", "rates"
   add_foreign_key "pickup_locations", "shops"
+  add_foreign_key "postal_codes", "shops"
   add_foreign_key "product_specific_prices", "rates"
   add_foreign_key "rates", "shops"
   add_foreign_key "shipping_addresses", "order_notes"

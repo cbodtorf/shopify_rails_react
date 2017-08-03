@@ -18,6 +18,8 @@ Rails.application.routes.draw do
   get 'app_proxy', to: 'app_proxy#index'
   get 'app_proxy/picker', to: 'app_proxy#picker'
   get 'app_proxy/customerPortal', to: 'app_proxy#customerPortal'
+  get 'app_proxy/postal_codes', to: 'app_proxy#postal_codes'
+  get 'app_proxy/delivery_pickup', to: 'app_proxy#delivery_pickup'
   post 'app_proxy', to: 'app_proxy#index'
   put 'app_proxy', to: 'app_proxy#index'
 
@@ -33,14 +35,18 @@ Rails.application.routes.draw do
 
   get 'subscription', to: 'subscription#index'
 
-  get 'settings', to: 'settings#index'
   get 'blackout_dates', to: 'settings#blackout_dates'
   get 'pickup_locations', to: 'settings#pickup_locations'
-  post 'create_pickup_location', to: 'settings#create_pickup_location'
-  delete 'destroy_pickup_location', to: 'settings#destroy_pickup_location'
+  get 'postal_codes', to: 'settings#postal_codes'
 
   post 'create_blackout_date', to: 'settings#create_blackout_date'
   delete 'destroy_blackout_date', to: 'settings#destroy_blackout_date'
+
+  post 'create_pickup_location', to: 'settings#create_pickup_location'
+  delete 'destroy_pickup_location', to: 'settings#destroy_pickup_location'
+
+  post 'create_postal_code', to: 'settings#create_postal_code'
+  delete 'destroy_postal_code', to: 'settings#destroy_postal_code'
 
   resources :bundle, only: [:index, :update, :create]
   resources :rates, only: [:index, :update, :create, :destroy]

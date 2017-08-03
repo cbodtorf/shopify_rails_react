@@ -222,6 +222,11 @@
   width: 100%;
 }
 
+.postalCodes .Polaris-Tag {
+  min-width: 100px;
+  justify-content: space-between;
+}
+
 /* OrderList */
 .bamboo-orderList .Polaris-ResourceList__Container {
   pointer-events: auto;

@@ -16,9 +16,10 @@ class Dashboard extends React.Component {
 
     let shippingList = []
     this.props.orders.forEach(order => {
+      /* TODO: handle orders that may not have note_attributes */
       let checkoutMethod = order.note_attributes.filter(note => note['name'] === 'checkout_method')
 
-      if (checkoutMethod[0].value.toLowerCase() === 'shipping') {
+      if (checkoutMethod[0].value.toLowerCase() === 'shipping' && typeof checkoutMethod[0] !== 'undefined') {
         console.log('trying filter shipping orders', order);
         let fullfillmentBadge = {
           content: order.fulfillment_status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled',

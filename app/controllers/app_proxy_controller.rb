@@ -265,4 +265,23 @@ class AppProxyController < ApplicationController
     blackout_dates = shop.blackout_dates.all
     render json: { blackoutDates: blackout_dates } , status: 200
   end
+
+  def postal_codes
+    shop = Shop.find_by(shopify_domain: params[:shop])
+    session = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(session)
+
+    postal_codes = shop.postal_codes.all
+    render json: { postalCodes: postal_codes } , status: 200
+  end
+
+  def delivery_pickup
+    shop = Shop.find_by(shopify_domain: params[:shop])
+    session = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(session)
+
+    postal_codes = shop.postal_codes.all
+    pickup_locations = shop.pickup_locations.all
+    render json: { postalCodes: postal_codes, pickupLocations: pickup_locations } , status: 200
+  end
 end

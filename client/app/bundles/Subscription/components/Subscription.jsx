@@ -38,7 +38,7 @@ class Subscription extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title="Dashboard" fullWidth ref='dashboard'>
+        <Page title="Subscriptions" fullWidth>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={0}/>

@@ -9,10 +9,11 @@ import BundleEditor from '../Bundle/components/BundleEditor';
 import RateEditor from '../Rate/components/RateEditor';
 import PickupLocations from '../Settings/components/PickupLocations';
 import BlackoutDates from '../Settings/components/BlackoutDates';
+import PostalCodes from '../Settings/components/PostalCodes';
 import Navigation from '../Global/components/Navigation';
 import Subscription from '../Subscription/components/Subscription';
 
-// This is how react_on_rails can see the HelloWorld in the browser.
+// This is how react_on_rails can see the componenets in the browser.
 ReactOnRails.register({
   Home,
   Error,
@@ -23,6 +24,7 @@ ReactOnRails.register({
   RateEditor,
   BlackoutDates,
   PickupLocations,
+  PostalCodes,
   Navigation,
   Subscription,
 });

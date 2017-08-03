@@ -53,6 +53,7 @@ class Navigation extends React.Component {
                   {content: 'Rates', url: '/rates'},
                   {content: 'Blackout Dates', url: '/blackout_dates'},
                   {content: 'Pickup Locations', url: '/pickup_locations'},
+                  {content: 'Postal Codes', url: '/postal_codes'},
                 ]}
               />
             </Popover>
