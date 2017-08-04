@@ -143,6 +143,8 @@ class AppProxyController < ApplicationController
     pickup_rate = shop.rates.where(delivery_method: "pickup")
     shipping_rates = shop.rates.where(delivery_method: "shipping")
 
+    postal_codes = shop.postal_codes.all
+
     pickup_locations = shop.pickup_locations.all
 
     # hour should be a variable maybe held in a config/settings from the admin.
@@ -254,7 +256,7 @@ class AppProxyController < ApplicationController
       }
     end
 
-    render json: {deliveryDates: picker_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates } , status: 200
+    render json: {deliveryDates: picker_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates, postalCodes: postal_codes } , status: 200
   end
 
   def customerPortal

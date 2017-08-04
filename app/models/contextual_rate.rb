@@ -98,6 +98,10 @@ class ContextualRate
       Rails.logger.debug("delivery_method: #{rate.inspect}")
       Rails.logger.debug("rate_id: #{order_notes.rate_id.inspect}")
       rate.id == order_notes.rate_id.to_i
+    elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
+      # return subscription rate
+      # TODO: recharge doesn't intiate checkout through Shopify so no webhook data.
+      rate.delivery_type.downcase == 'subscription'
     else
       true
     end
