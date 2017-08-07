@@ -1,6 +1,6 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge, Link} from '@shopify/polaris';
-import {EmbeddedApp} from '@shopify/polaris/embedded';
+import {Page, Card, Layout, Button, Icon, TextStyle, Badge, Link} from '@shopify/polaris';
+import {EmbeddedApp, Alert} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 
 class OrderList extends React.Component {
@@ -19,34 +19,28 @@ class OrderList extends React.Component {
       let createdAtDate = new Date(order.created_at)
       let processedAtDate = new Date(order.processed_at)
       let deliveryMethod = order.note_attributes.filter(note => note.name === 'checkout_method' ? note.value : null)
-      console.log('meh', deliveryMethod);
+      let fullfillmentBadge = (
+        <Badge
+          children={order.fulfillment_status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled'}
+          status={order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'}
+        />
+      )
 
       return (
-        {
-          attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link>,
-          attributeTwo: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name}</Link>,
-          attributeThree: order.currency + ' ' + order.total_price,
-          badges: [
-            {content: createdAtDate.toLocaleDateString()},
-            {content: deliveryMethod[0].value },
-          ],
-          actions: [{content: 'order details', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/orders/${order.id}`, '_blank').focus() }}],
-          persistActions: true,
-        }
+        <tr>
+          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link></td>
+          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name}</Link></td>
+          <td>{createdAtDate.toLocaleDateString()}</td>
+          <td>{ fullfillmentBadge }</td>
+          <td>${order.total_price}</td>
+          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>Edit</Link></td>
+          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids=${order.id}`}>Print</Link></td>
+          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>Fulfill</Link></td>
+        </tr>
       )
     })
 
-    orderItems.unshift({
-              attributeOne: 'Order #',
-              attributeTwo: 'Customer',
-              attributeThree: 'Total Price',
-              badges: [
-                {content: 'Created At'},
-                {content: 'Method' },
-              ],
-              actions: [{content: 'details link'}],
-              persistActions: true,
-            })
+
 
     this.setState({
       orders: orderItems
@@ -68,23 +62,33 @@ class OrderList extends React.Component {
           fullWidth
           primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
           >
-          <Layout.Section>
-            <Navigation selectedTab={0}/>
-          </Layout.Section>
-
           <Layout>
+            <Layout.Section>
+              <Navigation selectedTab={0}/>
+            </Layout.Section>
             <Layout.Section>
 
                 <Card
-                  title="Orders"
+                  title={`${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`}
+                  sectioned
                 >
-                  <a href='https://bamboojuices.myshopify.com/admin/apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids%5B%5D=4842083077&ids%5B%5D=4835427589&ids%5B%5D=4835427397' target="_blank">Print Me</a>
-                  <ResourceList
-                    items={this.state.orders}
-                    renderItem={(item, index) => {
-                      return <ResourceList.Item key={index} {...item} />;
-                    }}
-                  />
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Order</th>
+                          <th>Customer</th>
+                          <th>Order Created</th>
+                          <th>Status</th>
+                          <th>Total</th>
+                          <th>Edit</th>
+                          <th>Print</th>
+                          <th>Fulfill</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        { this.state.orders }
+                      </tbody>
+                    </table>
                 </Card>
             </Layout.Section>
           </Layout>

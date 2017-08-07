@@ -73,6 +73,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end.first
 
     @orders = selectedDate[params[:attribute].to_sym]
+    @date = params[:date]
+    @attribute = params[:attribute].capitalize
 
   end
 
