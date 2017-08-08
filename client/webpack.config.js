@@ -48,7 +48,7 @@ const config = {
           options: {
             name: '[name][md5:hash].[ext]', // Name of bundled asset
             outputPath: 'webpack-assets/', // Output location for assets. Final: `app/assets/webpack/webpack-assets/`
-            publicPath: '/assets/webpack-assets/' // Endpoint asset can be found at on Rails server
+            publicPath: '/assets' // Endpoint asset can be found at on Rails server
           }
         }
       },

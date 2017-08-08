@@ -3,6 +3,7 @@ import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceLi
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 import Condition from './Condition'
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 import uuid from 'uuid'
 
@@ -104,7 +105,7 @@ class RateEditor extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Edit Rate`} fullWidth>
+        <Page title={`Edit Rate`} fullWidth icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={3}/>

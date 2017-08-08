@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Icon, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 class Subscription extends React.Component {
   constructor(props) {
@@ -13,15 +14,17 @@ class Subscription extends React.Component {
   componentWillMount() {
     console.log('props: ', this.props)
     let subscriptionList = this.props.subscriptions.map(sub => {
-      return ({
-        attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.first_name + ' ' + sub.customer.last_name}</Link>,
-        attributeTwo: new Date(sub.next_charge_scheduled_at).toLocaleDateString(),
-        attributeThree: new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString(),
-        actions: [
-          {content: 'edit', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/addresses/${sub.address_id}`, '_blank').focus() }},
-        ],
-        persistActions: true,
-      })
+      let urlBase = 'https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/'
+      return (
+        <tr key={sub.id}>
+          <td><Link external="true" url={`${urlBase}addresses/${sub.address_id}`}>#{sub.id}</Link></td>
+          <td><Link external="true" url={`${urlBase}customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.first_name + ' ' + sub.customer.last_name}</Link></td>
+          <td>{new Date(sub.next_charge_scheduled_at).toLocaleDateString()}</td>
+          <td>{ new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString() }</td>
+          <td>${sub.price}</td>
+          <td><Link external="true" url={`${urlBase}addresses/${sub.address_id}`}>Edit</Link></td>
+        </tr>
+      )
     })
 
     this.setState({
@@ -32,51 +35,53 @@ class Subscription extends React.Component {
   render() {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
+    const pageTitle = this.props.subscriptions ?
+                      'Upcoming Subscriptions' :
+                      `${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`;
 
     return (
+      <div className="bamboo-orderList">
       <EmbeddedApp
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title="Subscriptions" fullWidth>
+        <Page
+          title={`Subscriptions`}
+          fullWidth
+          icon={bambooIcon}
+          primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
+          >
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={0}/>
             </Layout.Section>
-
             <Layout.Section>
-              <div className="upcomingSubscriptions">
-                <Heading>Upcoming Subscription Orders</Heading>
-                <Card sectioned>
-                    <div>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th><Subheading>Customer</Subheading></th>
-                            <th><Subheading>Charge Date</Subheading></th>
-                            <th><Subheading>Delivery Date</Subheading></th>
-                          </tr>
-                        </thead>
-                      </table>
-                      <ResourceList
-                        items={ this.state.subscriptionList }
-                        renderItem={(item, index) => {
-                          return <ResourceList.Item key={index} {...item} />;
-                        }}
-                      />
-                    </div>
-                    <Pagination
-                      hasPrevious
-                      onPrevious={() => {}}
-                      hasNext
-                      onNext={() => {}}
-                    />
+
+                <Card
+                  title={pageTitle}
+                  sectioned
+                >
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Order</th>
+                          <th>Customer</th>
+                          <th>Charge Date</th>
+                          <th>Delivery Date</th>
+                          <th>Total</th>
+                          <th>Edit</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        { this.state.subscriptionList }
+                      </tbody>
+                    </table>
                 </Card>
-              </div>
             </Layout.Section>
           </Layout>
         </Page>
       </EmbeddedApp>
+      </div>
     );
   }
 }

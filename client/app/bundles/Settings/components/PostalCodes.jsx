@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Layout, Stack, Button, Heading, Tag, FormLayout, TextField} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 class PostalCodes extends React.Component {
   constructor(props) {
@@ -41,7 +42,7 @@ class PostalCodes extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title="Postal Codes" fullWidth>
+        <Page title="Postal Codes" fullWidth icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={0}/>

@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 class BundleEditor extends React.Component {
   constructor(props) {
@@ -149,6 +150,7 @@ class BundleEditor extends React.Component {
       >
         <Page
           title={`Edit Bundle`}
+          icon={bambooIcon}
           primaryAction={{content: 'New Product', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
           fullWidth
           >

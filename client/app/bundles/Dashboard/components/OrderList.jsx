@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Layout, Button, Icon, TextStyle, Badge, Link} from '@shopify/polaris';
 import {EmbeddedApp, Alert} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 class OrderList extends React.Component {
   constructor(props) {
@@ -15,10 +16,11 @@ class OrderList extends React.Component {
   componentWillMount() {
     console.log("props", this.props);
 
-    let orderItems = this.props.orders.map(order => {
+    let orderItems = this.props.orders.map((order) => {
       let createdAtDate = new Date(order.created_at)
       let processedAtDate = new Date(order.processed_at)
       let deliveryMethod = order.note_attributes.filter(note => note.name === 'checkout_method' ? note.value : null)
+      let urlBase = 'https://bamboojuices.myshopify.com/admin/'
       let fullfillmentBadge = (
         <Badge
           children={order.fulfillment_status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled'}
@@ -27,27 +29,23 @@ class OrderList extends React.Component {
       )
 
       return (
-        <tr>
-          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link></td>
-          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name}</Link></td>
+        <tr key={order.id}>
+          <td><Link external="true" url={`${urlBase}orders/${order.id}`}>{order.name}</Link></td>
+          <td><Link external="true" url={`${urlBase}customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name}</Link></td>
           <td>{createdAtDate.toLocaleDateString()}</td>
           <td>{ fullfillmentBadge }</td>
           <td>${order.total_price}</td>
-          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>Edit</Link></td>
-          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids=${order.id}`}>Print</Link></td>
-          <td><Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>Fulfill</Link></td>
+          <td><Link external="true" url={`${urlBase}orders/${order.id}`}>Edit</Link></td>
+          <td><Link external="true" url={`${urlBase}apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids=${order.id}`}>Print</Link></td>
+          <td><Link external="true" url={`${urlBase}orders/${order.id}`}>Fulfill</Link></td>
         </tr>
       )
     })
-
-
 
     this.setState({
       orders: orderItems
     })
   }
-
-
 
   render() {
 
@@ -59,6 +57,7 @@ class OrderList extends React.Component {
       >
         <Page
           title={`Orders`}
+          icon={bambooIcon}
           fullWidth
           primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
           >

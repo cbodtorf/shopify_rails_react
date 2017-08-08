@@ -12,6 +12,7 @@ class SubscriptionController < ShopifyApp::AuthenticatedController
       c.attributes[:tags].split(', ').include?('Active Subscriber')
     end
     @activeSubscriberCount = activeSubscribers.count
+    
 
   end
 

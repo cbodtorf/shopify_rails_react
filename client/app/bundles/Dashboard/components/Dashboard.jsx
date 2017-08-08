@@ -3,6 +3,7 @@ import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, S
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -128,7 +129,7 @@ class Dashboard extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title="Dashboard" fullWidth ref='dashboard'>
+        <Page title="Dashboard" fullWidth ref="dashboard" icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={0}/>

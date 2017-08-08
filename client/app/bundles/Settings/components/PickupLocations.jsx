@@ -2,6 +2,7 @@ import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, DatePicker, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+import bambooIcon from 'assets/green-square.jpg';
 
 
 const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
@@ -53,7 +54,7 @@ class PickupLocations extends React.Component {
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
       >
-        <Page title={`Pickup Locations`} fullWidth>
+        <Page title={`Pickup Locations`} fullWidth icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={null}/>
