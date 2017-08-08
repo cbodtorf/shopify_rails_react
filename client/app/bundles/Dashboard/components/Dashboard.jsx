@@ -144,10 +144,18 @@ class Dashboard extends React.Component {
                 { dates }
               </Stack>
             </Layout.Section>
-            <Layout.Section>
+            <Layout.AnnotatedSection
+              title="Pending Shipping Orders"
+              description="Orders that need to be shipped via FedEx/UPS"
+            >
               <div className="pendingShippingOrders">
-                <Heading>Pending Shipping Orders</Heading>
-                <Card sectioned>
+                <Card
+                  title="Pending Shipping Orders"
+                  sectioned
+                  primaryFooterAction={{content: 'Create CSV', url: `/generateCSV.csv?attribute=shipping`}}
+                  secondaryFooterAction={{content: 'Show Orders'}}
+                >
+                {/*
                     <div>
                       <table>
                         <thead>
@@ -172,9 +180,11 @@ class Dashboard extends React.Component {
                       hasNext
                       onNext={() => {}}
                     />
+                    */}
+                    <h5 className="count-content">{ this.state.shippingList.length } Orders</h5>
                 </Card>
               </div>
-            </Layout.Section>
+            </Layout.AnnotatedSection>
             <Layout.Section>
               <div className="counts">
                 <Heading>Counts</Heading>
