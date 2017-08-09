@@ -52,10 +52,10 @@ class Dashboard extends React.Component {
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 
     let dates = this.state.fiveDayOrders.map((date, i) => {
-      var formatedDate = new Date(date.date.split('-').join('/'))
-      var m = monthNames[formatedDate.getMonth()]
-      var w = weekNames[formatedDate.getDay()]
-      var d = formatedDate.getDate()
+      const formatedDate = new Date(date.date.split('-').join('/'))
+      const m = monthNames[formatedDate.getMonth()]
+      const w = weekNames[formatedDate.getDay()]
+      const d = formatedDate.getDate()
 
       return (
         <div key={i} className="dashboard-card-primary">
@@ -153,7 +153,7 @@ class Dashboard extends React.Component {
                   title="Pending Shipping Orders"
                   sectioned
                   primaryFooterAction={{content: 'Create CSV', url: `/generateCSV.csv?attribute=shipping`}}
-                  secondaryFooterAction={{content: 'Show Orders'}}
+                  secondaryFooterAction={{content: 'Show Orders', url: `/showOrders?attribute=shipping&date=${new Date().toLocaleDateString()}`}}
                 >
                 {/*
                     <div>
@@ -181,7 +181,7 @@ class Dashboard extends React.Component {
                       onNext={() => {}}
                     />
                     */}
-                    <h5 className="count-content">{ this.state.shippingList.length } Orders</h5>
+                    <h5 className="count-content">{ this.props.shippingOrdersCount } Orders</h5>
                 </Card>
               </div>
             </Layout.AnnotatedSection>

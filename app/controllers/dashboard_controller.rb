@@ -33,6 +33,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
     @activeSubscriberCount = activeSubscribers.count
 
+    @ShippingOrdersCount = getShippingOrders.count
+
     # Customer Count:
     @customerCount = ShopifyAPI::Customer.count
 
@@ -44,27 +46,32 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def generateCSV
-    dates = self.formatOrders
-    selectedDate = dates.select do |order|
-      order[:date] == Date.parse(params[:date])
-    end.first
+    if params[:attribute].downcase != 'shipping'
+      dates = self.formatOrders
+      selectedDate = dates.select do |order|
+        order[:date] == Date.parse(params[:date])
+      end.first
 
-    # Morning Cooks consist of morning deliveries and pickup orders. Addresses don't need pickup orders
-    if params[:time] == 'morning' && params[:attribute] == 'items'
-      @orders = selectedDate[:morning].concat(selectedDate[:pickup])
-    elsif params[:time] == 'morning' && params[:attribute] == 'addresses'
-      @orders = selectedDate[:morning]
-    elsif params[:time] == 'afternoon'
-      @orders = selectedDate[:afternoon]
-    end
-    Rails.logger.debug("order check?: #{@orders.inspect}")
+      # Morning Cooks consist of morning deliveries and pickup orders. Addresses don't need pickup orders
+      if params[:time] == 'morning' && params[:attribute] == 'items'
+        @orders = selectedDate[:morning].concat(selectedDate[:pickup])
+      elsif params[:time] == 'morning' && params[:attribute] == 'addresses'
+        @orders = selectedDate[:morning]
+      elsif params[:time] == 'afternoon'
+        @orders = selectedDate[:afternoon]
+      end
+      Rails.logger.debug("order check?: #{@orders.inspect}")
 
-    respond_to do |format|
-      format.html
-      format.csv {
-        send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders),
-        filename: "#{Date.parse(params[:date])}_#{params[:time]}-#{params[:attribute]}.csv"
-      }
+      respond_to do |format|
+        format.html
+        format.csv {
+          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders),
+          filename: "#{Date.parse(params[:date])}_#{params[:time]}-#{params[:attribute]}.csv"
+        }
+      end
+    else
+      # SHIPPING CSV
+      shippingOrders = self.getShippingOrders
     end
   end
 
@@ -127,5 +134,23 @@ class DashboardController < ShopifyApp::AuthenticatedController
       end
 
     return @fiveDayOrders
+  end
+
+  def getShippingOrders
+    orders = ShopifyAPI::Order.find(:all, params: { fulfillment_status: "unshipped", limit: 250 })
+    shippingOrders = []
+    orders.select do |order|
+      order.attributes[:note_attributes].each do |note|
+        if note.attributes[:name] == "checkout_method"
+          if note.attributes[:value].downcase == "shipping"
+             shippingOrders.push(order)
+          end
+        end
+      end
+    end
+    # Rails.logger.debug("shipping orders check?: #{shippingOrders.inspect}")
+    # Rails.logger.debug("shipping orders check?: #{shippingOrders.size}")
+
+    return shippingOrders
   end
 end
