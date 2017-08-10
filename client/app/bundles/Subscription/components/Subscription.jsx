@@ -53,7 +53,7 @@ class Subscription extends React.Component {
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={0}/>
+              <Navigation selectedTab={1}/>
             </Layout.Section>
             <Layout.Section>
 

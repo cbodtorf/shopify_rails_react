@@ -13,12 +13,10 @@ class Navigation extends React.Component {
     })
   }
   render() {
-    console.log("#", this.props.selectedTab)
-    console.log("#", this.props.selectedTab ? this.props.selectedTab : 3)
     return (
       <div className="Navigation__Bamboo">
           <Tabs
-            selected={this.props.selectedTab ? this.props.selectedTab : 3}
+            selected={this.props.selectedTab !== null ? this.props.selectedTab : 3}
             fitted={false}
             tabs={[
               {

@@ -1,9 +1,12 @@
 import React from 'react';
-import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Icon, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
+import {Page, Card, Banner, Layout, Stack, Button, ButtonGroup, Heading, Link, Icon, Tooltip, ResourceList, Pagination, FooterHelp} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
+import packageIcon from 'assets/package.png';
+import customerIcon from 'assets/customer.png';
+import productIcon from 'assets/bottle.png';
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -59,149 +62,172 @@ class Dashboard extends React.Component {
 
       return (
         <div key={i} className="dashboard-card-primary">
-          <Card sectioned subdued={i != 0 ? true : false} >
-            <div className="date">
-              <h5>{m}</h5>
-              <h5>{d}</h5>
-              <h5>{w}</h5>
-            </div>
-            <div className="revenue">
-              <h5>${date.revenue.toFixed(2)}</h5>
-            </div>
+          <Stack
+          spacing="default"
+          distribution="leading"
+          >
+            <Card sectioned subdued>
+              <div className="date">
+                <h5>{w}</h5>
+                <h5>{m + ' ' + d}</h5>
+              </div>
+            </Card>
 
             <div className="delivery-wrapper">
-              <Card sectioned title="Delivery">
-                <div className="title-line">
-                </div>
-                <div className="pickup-count">
-                  <h5>{date.delivery.length}</h5>
-                  <Link url={`/showOrders?attribute=delivery&date=${formatedDate}`}>Orders</Link>
-                </div>
-              </Card>
+              <Link url={`/showOrders?attribute=delivery&date=${formatedDate}`}>
+                <Card sectioned title="Deliveries">
+                  <div className="count-revenue">
+                    <div className="pickup-count">
+                      <h5>{date.delivery.length}</h5>
+                    </div>
+                    <div className="revenue">
+                      <h5>${date.revenue.toFixed(2)}</h5>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
             </div>
             <div className="delivery-wrapper pickup">
-              <Card sectioned title="Pickup">
-              <div className="title-line">
-              </div>
-                <div className="pickup-count">
-                  <h5>{date.pickup.length}</h5>
-                  <Link url={`/showOrders?attribute=pickup&date=${formatedDate}`}>Orders</Link>
-                </div>
-              </Card>
+              <Link url={`/showOrders?attribute=pickup&date=${formatedDate}`}>
+                <Card sectioned title="Pickups">
+                  <div className="count-revenue">
+                    <div className="pickup-count">
+                      <h5>{date.pickup.length}</h5>
+
+                    </div>
+                    <div className="revenue">
+                      <h5>${date.revenue.toFixed(2)}</h5>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
             </div>
 
-            <div className="delivery-wrapper spreadsheet morning">
+            <div className="delivery-wrapper spreadsheet">
               <Card sectioned>
+              <div className="time-button morning">
                 <Heading>Morning</Heading>
-                <Heading>Spreadsheets</Heading>
-                <ButtonGroup segmented>
+                <ButtonGroup>
                   <Tooltip content="morning items">
-                    <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}></Button>
+                    <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}>Items</Button>
                   </Tooltip>
                   <Tooltip content="morning addresses">
-                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}></Button>
+                    <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}>Addresses</Button>
                   </Tooltip>
                 </ButtonGroup>
-              </Card>
-            </div>
-            <div className="delivery-wrapper spreadsheet afternoon">
-              <Card sectioned>
+              </div>
+              <div className="time-button afternoon">
                 <Heading>Afternoon</Heading>
-                <Heading>Spreadsheets</Heading>
-                <ButtonGroup segmented>
+                <ButtonGroup>
                   <Tooltip content="afternoon items">
-                    <Button fullWidth icon="view" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}></Button>
+                    <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}>Items</Button>
                   </Tooltip>
                   <Tooltip content="afternoon addresses">
-                    <Button fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}></Button>
+                    <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}>Addresses</Button>
                   </Tooltip>
                 </ButtonGroup>
+              </div>
               </Card>
             </div>
-
-          </Card>
+          </Stack>
         </div>
       )
     })
 
     return (
-      <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-      >
-        <Page title="Dashboard" fullWidth ref="dashboard" icon={bambooIcon}>
-          <Layout>
-            <Layout.Section>
-              <Navigation selectedTab={0}/>
-            </Layout.Section>
+      <div className="bamboo-dashboard">
+        <EmbeddedApp
+          apiKey={this.props.apiKey}
+          shopOrigin={this.props.shopOrigin}
+        >
+          <Page title="Dashboard" fullWidth ref="dashboard" icon={bambooIcon}>
+            <Layout>
+              <Layout.Section>
+                <Navigation selectedTab={0}/>
+              </Layout.Section>
+              <Layout.Section>
+                <div className="counts">
+                  <Heading>Store Overview</Heading>
+                  <Stack
+                    spacing="default"
+                    distribution="leading"
+                    >
+                    <div className="count-block"><div className="count-icon"><img src={packageIcon}></img></div><Card sectioned title="Active Subscriptions" ><h5 className="count-content">{ this.props.activeSubscriberCount }</h5></Card></div>
+                    <div className="count-block"><div className="count-icon"><img src={customerIcon}></img></div><Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card></div>
+                    <div className="count-block"><div className="count-icon"><img src={productIcon}></img></div><Card sectioned title="Total Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card></div>
+                  </Stack>
+                </div>
+              </Layout.Section>
+              <Layout.Section>
+                <Heading>Delivery and Pickup Information</Heading>
 
-            <Layout.Section>
-              <Stack
-                alignment="fill"
-                distribution="center"
-                spacing="loose"
-              >
-                { dates }
-              </Stack>
-            </Layout.Section>
-            <Layout.AnnotatedSection
-              title="Pending Shipping Orders"
-              description="Orders that need to be shipped via FedEx/UPS"
-            >
-              <div className="pendingShippingOrders">
-                <Card
-                  title="Pending Shipping Orders"
-                  sectioned
-                  primaryFooterAction={{content: 'Create CSV', url: `/generateCSV.csv?attribute=shipping`}}
-                  secondaryFooterAction={{content: 'Show Orders', url: `/showOrders?attribute=shipping&date=${new Date().toLocaleDateString()}`}}
-                >
-                {/*
-                    <div>
-                      <table>
-                        <thead>
-                          <tr>
-                            <th><Subheading>Order #</Subheading></th>
-                            <th><Subheading>Date Created</Subheading></th>
-                            <th><Subheading>Fullfillment Status</Subheading></th>
-                            <th><Subheading>CSV</Subheading></th>
-                          </tr>
-                        </thead>
-                      </table>
-                      <ResourceList
-                        items={ this.state.shippingList }
-                        renderItem={(item, index) => {
-                          return <ResourceList.Item key={index} {...item} />;
-                        }}
-                      />
+                  { dates }
+
+              </Layout.Section>
+              <Layout.Section>
+                <div className="pendingShippingOrders">
+                <Heading>Shipping Information</Heading>
+                <Stack>
+                  <div className="delivery-wrapper">
+                    <Link url={`/showOrders?attribute=shipping&date=${new Date().toLocaleDateString()}`}>
+                      <Card sectioned title="Shipping">
+                        {/*
+                            <div>
+                              <table>
+                                <thead>
+                                  <tr>
+                                    <th><Subheading>Order #</Subheading></th>
+                                    <th><Subheading>Date Created</Subheading></th>
+                                    <th><Subheading>Fullfillment Status</Subheading></th>
+                                    <th><Subheading>CSV</Subheading></th>
+                                  </tr>
+                                </thead>
+                              </table>
+                              <ResourceList
+                                items={ this.state.shippingList }
+                                renderItem={(item, index) => {
+                                  return <ResourceList.Item key={index} {...item} />;
+                                }}
+                              />
+                            </div>
+                            <Pagination
+                              hasPrevious
+                              onPrevious={() => {}}
+                              hasNext
+                              onNext={() => {}}
+                            />
+                            */}
+                        <div className="count-revenue">
+                          <div className="pickup-count">
+                            <h5>{ this.props.shippingOrdersCount }</h5>
+                          </div>
+                          <div className="revenue">
+                            <h5>${0}</h5>
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
+                  </div>
+                  <div className="delivery-wrapper spreadsheet">
+                    <Card sectioned>
+                    <Heading>Spreadsheet</Heading>
+                    <div className="time-button">
+                    <Tooltip content="shipping items">
+                      <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=shipping`}>Items</Button>
+                    </Tooltip>
                     </div>
-                    <Pagination
-                      hasPrevious
-                      onPrevious={() => {}}
-                      hasNext
-                      onNext={() => {}}
-                    />
-                    */}
-                    <h5 className="count-content">{ this.props.shippingOrdersCount } Orders</h5>
-                </Card>
-              </div>
-            </Layout.AnnotatedSection>
-            <Layout.Section>
-              <div className="counts">
-                <Heading>Counts</Heading>
-                <Stack
-                  spacing="loose"
-                  alignment="center"
-                  distribution="center"
-                  >
-                  <Card sectioned title="Active Subscriptions" ><h5 className="count-content">{ this.props.activeSubscriberCount }</h5></Card>
-                  <Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card>
-                  <Card sectioned title="Number of Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card>
-                </Stack>
-              </div>
-            </Layout.Section>
-          </Layout>
-        </Page>
-      </EmbeddedApp>
+                    </Card>
+                  </div>
+                  </Stack>
+                </div>
+              </Layout.Section>
+              <Layout.Section>
+                <FooterHelp>For more details on Bamboo, visit our site:<Link url="https://polaris.shopify.com"> E4 Consulting</Link>.</FooterHelp>
+              </Layout.Section>
+            </Layout>
+          </Page>
+        </EmbeddedApp>
+      </div>
     );
   }
 }
