@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, Layout, Stack, Button, ButtonGroup, Heading, Link, Icon, Tooltip, ResourceList, Pagination, FooterHelp} from '@shopify/polaris';
+import {Page, Card, Banner, Layout, Stack, Button, ButtonGroup, Heading, Link, Icon, ResourceList, Pagination, FooterHelp} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Order from './Order';
 import Navigation from '../../Global/components/Navigation';
@@ -108,23 +108,15 @@ class Dashboard extends React.Component {
               <div className="time-button morning">
                 <Heading>Morning</Heading>
                 <ButtonGroup>
-                  <Tooltip content="morning items">
                     <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}>Items</Button>
-                  </Tooltip>
-                  <Tooltip content="morning addresses">
                     <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}>Addresses</Button>
-                  </Tooltip>
                 </ButtonGroup>
               </div>
               <div className="time-button afternoon">
                 <Heading>Afternoon</Heading>
                 <ButtonGroup>
-                  <Tooltip content="afternoon items">
                     <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}>Items</Button>
-                  </Tooltip>
-                  <Tooltip content="afternoon addresses">
                     <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}>Addresses</Button>
-                  </Tooltip>
                 </ButtonGroup>
               </div>
               </Card>
@@ -212,9 +204,7 @@ class Dashboard extends React.Component {
                     <Card sectioned>
                     <Heading>Spreadsheet</Heading>
                     <div className="time-button">
-                    <Tooltip content="shipping items">
                       <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=shipping`}>Items</Button>
-                    </Tooltip>
                     </div>
                     </Card>
                   </div>
