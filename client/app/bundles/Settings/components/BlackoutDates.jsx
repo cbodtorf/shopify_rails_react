@@ -33,10 +33,12 @@ class BlackoutDates extends React.Component {
   render() {
     console.log("render", this.state);
     const blackoutDates = this.state.blackoutDates.map(date => {
+      let d = new Date(date.blackout_date)
+      let utc = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),  d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds())
       return (
         {
           attributeOne: date.title,
-          attributeTwo: new Date(date.blackout_date).toLocaleDateString(),
+          attributeTwo: utc.toLocaleDateString(),
           actions: [
             {content: 'Edit date', onAction: () => { this.handleEdit(date) }},
             {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertBlackoutOpen: true, dateToDelete: date}) }},

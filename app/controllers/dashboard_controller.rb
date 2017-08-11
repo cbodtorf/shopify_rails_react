@@ -33,7 +33,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
     @activeSubscriberCount = activeSubscribers.count
 
-    @ShippingOrdersCount = getShippingOrders.count
+    @shippingOrdersCount = getShippingOrders.count
+    @shippingOrdersRevenue = 0
+    getShippingOrders.each do |order|
+      @shippingOrdersRevenue += order.attributes[:total_price].to_f
+    end
 
     # Customer Count:
     @customerCount = ShopifyAPI::Customer.count
@@ -60,7 +64,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       elsif params[:time] == 'afternoon'
         @orders = selectedDate[:afternoon]
       end
-      Rails.logger.debug("order check?: #{@orders.inspect}")
+      # Rails.logger.debug("order check?: #{@orders.inspect}")
 
       respond_to do |format|
         format.html
@@ -115,14 +119,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: [], shipping: [], delivery: []}}
       @orders.each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
-        Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
+        # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
         # Isolate Delivery Date
         dates = order.attributes[:note_attributes].select do |note|
           note.attributes[:name] === "delivery_date"
         end
         # Isolate Delivery Rate
         rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
-        Rails.logger.debug("notes rate: #{rates.inspect}")
+        # Rails.logger.debug("notes rate: #{rates.inspect}")
         rate = Rate.find(rates[0].attributes[:value])
         # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
         if dates[0] != nil

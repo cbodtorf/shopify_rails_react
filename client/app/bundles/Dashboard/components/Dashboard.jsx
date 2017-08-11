@@ -134,9 +134,11 @@ class Dashboard extends React.Component {
         >
           <Page title="Dashboard" fullWidth ref="dashboard" icon={bambooIcon}>
             <Layout>
+
               <Layout.Section>
                 <Navigation selectedTab={0}/>
               </Layout.Section>
+
               <Layout.Section>
                 <div className="counts">
                   <Heading>Store Overview</Heading>
@@ -150,12 +152,12 @@ class Dashboard extends React.Component {
                   </Stack>
                 </div>
               </Layout.Section>
+
               <Layout.Section>
                 <Heading>Delivery and Pickup Information</Heading>
-
                   { dates }
-
               </Layout.Section>
+
               <Layout.Section>
                 <div className="pendingShippingOrders">
                 <Heading>Shipping Information</Heading>
@@ -163,38 +165,12 @@ class Dashboard extends React.Component {
                   <div className="delivery-wrapper">
                     <Link url={`/showOrders?attribute=shipping&date=${new Date().toLocaleDateString()}`}>
                       <Card sectioned title="Shipping">
-                        {/*
-                            <div>
-                              <table>
-                                <thead>
-                                  <tr>
-                                    <th><Subheading>Order #</Subheading></th>
-                                    <th><Subheading>Date Created</Subheading></th>
-                                    <th><Subheading>Fullfillment Status</Subheading></th>
-                                    <th><Subheading>CSV</Subheading></th>
-                                  </tr>
-                                </thead>
-                              </table>
-                              <ResourceList
-                                items={ this.state.shippingList }
-                                renderItem={(item, index) => {
-                                  return <ResourceList.Item key={index} {...item} />;
-                                }}
-                              />
-                            </div>
-                            <Pagination
-                              hasPrevious
-                              onPrevious={() => {}}
-                              hasNext
-                              onNext={() => {}}
-                            />
-                            */}
                         <div className="count-revenue">
                           <div className="pickup-count">
                             <h5>{ this.props.shippingOrdersCount }</h5>
                           </div>
                           <div className="revenue">
-                            <h5>${0}</h5>
+                            <h5>${ this.props.shippingOrdersRevenue }</h5>
                           </div>
                         </div>
                       </Card>
@@ -211,9 +187,11 @@ class Dashboard extends React.Component {
                   </Stack>
                 </div>
               </Layout.Section>
+
               <Layout.Section>
                 <FooterHelp>For more details on Bamboo, visit our site:<Link url="https://polaris.shopify.com"> E4 Consulting</Link>.</FooterHelp>
               </Layout.Section>
+
             </Layout>
           </Page>
         </EmbeddedApp>
