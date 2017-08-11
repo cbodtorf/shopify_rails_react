@@ -72,16 +72,28 @@ class DashboardController < ShopifyApp::AuthenticatedController
     else
       # SHIPPING CSV
       shippingOrders = self.getShippingOrders
+
+      respond_to do |format|
+        format.html
+        format.csv {
+          send_data CSVGenerator.generateItemCSV(shippingOrders),
+          filename: "#{Date.parse(params[:date])}-#{params[:attribute]}.csv"
+        }
+      end
     end
   end
 
   def showOrders
-    dates = self.formatOrders
-    selectedDate = dates.select do |order|
-      order[:date] == Date.parse(params[:date])
-    end.first
+    if params[:attribute].downcase != 'shipping'
+      dates = self.formatOrders
+      selectedDate = dates.select do |order|
+        order[:date] == Date.parse(params[:date])
+      end.first
 
-    @orders = selectedDate[params[:attribute].to_sym]
+      @orders = selectedDate[params[:attribute].to_sym]
+    else
+      @orders = self.getShippingOrders
+    end
     @date = params[:date]
     @attribute = params[:attribute].capitalize
 

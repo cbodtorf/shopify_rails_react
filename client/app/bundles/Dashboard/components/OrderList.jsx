@@ -48,7 +48,9 @@ class OrderList extends React.Component {
   }
 
   render() {
-
+    let orderPageTitle = this.props.attribute.toLowerCase() === "shipping" ?
+                         'Pending Shipping Orders' :
+                         `${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`;
     return (
       <div className="bamboo-orderList">
       <EmbeddedApp
@@ -68,7 +70,7 @@ class OrderList extends React.Component {
             <Layout.Section>
 
                 <Card
-                  title={`${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`}
+                  title={orderPageTitle}
                   sectioned
                 >
                     <table>

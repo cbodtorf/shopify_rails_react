@@ -204,7 +204,7 @@ class Dashboard extends React.Component {
                     <Card sectioned>
                     <Heading>Spreadsheet</Heading>
                     <div className="time-button">
-                      <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=shipping`}>Items</Button>
+                      <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=shipping&date=${new Date().toLocaleDateString()}`}>Items</Button>
                     </div>
                     </Card>
                   </div>
