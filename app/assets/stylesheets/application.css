@@ -189,6 +189,8 @@ html body {
 }
 .count-icon {
   display: table-cell;
+  /* TODO: I think I like the purple better */
+  background-color: #5C6AC4;
   background-color: #007ACE;
   border-top-left-radius: 3px;
   border-bottom-left-radius: 3px;

@@ -65,12 +65,10 @@ class BundleEditor extends React.Component {
 
 
   render() {
-    const productOptions = this.props.products.filter(product => {
-      /**
-      * @TODO: need a stricter filter for removing unwanted product like auto renew and bundles.
-      */
-      return product.product_type.toLowerCase() !== 'cleanse' || product.product_type.toLowerCase() !== 'juice kit' && product.title.toLowerCase().indexOf('auto') === -1
-    }).map(product => {
+    /**
+    * Filtering out Bundles, Cleanses, and Subscriptions on the backend.
+    */
+    const productOptions = this.props.products.map(product => {
       return {label: product.title, value: product.title + '_' + (this.state.formFields.length + 1)}
     })
 

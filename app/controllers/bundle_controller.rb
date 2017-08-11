@@ -5,7 +5,13 @@ class BundleController < ShopifyApp::AuthenticatedController
 
     @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
     products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
+
+    # remove bundles, cleanses, subscriptions for a list of bundle worthy products
+    @products = ShopifyAPI::Product.find(:all, params: { limit: 250 }).select do |product|
+      !product.attributes[:title].downcase.include?("auto") ?
+        (!product.attributes[:tags].downcase.include?("bundle") || !product.attributes[:product_type].downcase.include?("cleanse")) :
+        false
+    end
 
     # bundles are designated by 'bundle' tag
     @bundles = products.select do |product|
