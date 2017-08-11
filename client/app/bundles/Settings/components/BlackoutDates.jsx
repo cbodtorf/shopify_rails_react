@@ -1,6 +1,6 @@
 import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, DatePicker, Badge} from '@shopify/polaris';
-import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
+import {EmbeddedApp, Alert, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
@@ -15,6 +15,7 @@ class BlackoutDates extends React.Component {
       deleteAlertBlackoutOpen: false,
       blackoutDate: {},
       blackoutDates: [],
+      editModal: false
     }
   }
   /**
@@ -115,6 +116,20 @@ class BlackoutDates extends React.Component {
           >
             Are you sure you want to delete this blackout date?
           </Alert>
+          <Modal
+            src="/edit_blackout_date"
+            open={this.state.editModal}
+            title="Edit blackout date"
+            primaryAction={{
+              content: 'Update account',
+              onAction: () => this.setState({editModal: false}),
+            }}
+            secondaryActions={[{
+              content: 'Change account',
+              onAction: () => this.setState({editModal: false}),
+            }]}
+            onClose={() => this.setState({editModal: false})}
+          />
         </Page>
       </EmbeddedApp>
       </div>

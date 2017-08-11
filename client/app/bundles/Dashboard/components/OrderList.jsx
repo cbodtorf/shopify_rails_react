@@ -1,6 +1,6 @@
 import React from 'react';
 import {Page, Card, Layout, Button, Icon, TextStyle, Badge, Link} from '@shopify/polaris';
-import {EmbeddedApp, Alert} from '@shopify/polaris/embedded';
+import {EmbeddedApp} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
@@ -9,7 +9,9 @@ class OrderList extends React.Component {
     super(props)
 
     this.state = {
-      orders: []
+      orders: [],
+      fulfillModal: false,
+      fulFillModalOrderId: '',
     }
   }
 
@@ -37,7 +39,7 @@ class OrderList extends React.Component {
           <td>${order.total_price}</td>
           <td><Link external="true" url={`${urlBase}orders/${order.id}`}>Edit</Link></td>
           <td><Link external="true" url={`${urlBase}apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids=${order.id}`}>Print</Link></td>
-          <td><Link external="true" url={`${urlBase}orders/${order.id}`}>Fulfill</Link></td>
+          <td><Link external="true" url={`${urlBase}/orders/${order.id}/fulfill_and_ship`}>Fulfill</Link></td>
         </tr>
       )
     })
