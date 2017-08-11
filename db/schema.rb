@@ -36,6 +36,7 @@ ActiveRecord::Schema.define(version: 20170801155131) do
   end
 
   create_table "order_notes", force: :cascade do |t|
+    t.integer  "shop_id"
     t.string   "checkout_token",  null: false
     t.string   "cart_token",      null: false
     t.string   "rate_id",         null: false
@@ -44,6 +45,7 @@ ActiveRecord::Schema.define(version: 20170801155131) do
     t.datetime "delivery_date"
     t.datetime "created_at",      null: false
     t.datetime "updated_at",      null: false
+    t.index ["shop_id"], name: "index_order_notes_on_shop_id", using: :btree
   end
 
   create_table "pickup_locations", force: :cascade do |t|
@@ -133,6 +135,7 @@ ActiveRecord::Schema.define(version: 20170801155131) do
 
   add_foreign_key "blackout_dates", "shops"
   add_foreign_key "conditions", "rates"
+  add_foreign_key "order_notes", "shops"
   add_foreign_key "pickup_locations", "shops"
   add_foreign_key "postal_codes", "shops"
   add_foreign_key "product_specific_prices", "rates"

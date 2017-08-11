@@ -3,6 +3,7 @@ class Shop < ActiveRecord::Base
   include ShopifyApp::SessionStorage
 
   has_many :rates, dependent: :destroy
+  has_many :order_notes, dependent: :destroy
   has_many :pickup_locations, dependent: :destroy
   has_many :blackout_dates, dependent: :destroy
   has_many :postal_codes, dependent: :destroy

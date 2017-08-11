@@ -37,6 +37,9 @@ html body {
 .Navigation__Bamboo .Polaris-Tabs__Tab {
   color: #637381;
 }
+.Navigation__Bamboo .Polaris-Tabs {
+  border-bottom: none;
+}
 .Navigation__Bamboo .Polaris-Tabs__Tab:visited {
   color: #637381;
 }

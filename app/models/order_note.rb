@@ -1,4 +1,5 @@
 class OrderNote < ActiveRecord::Base
+  belongs_to :shop
   has_one :shipping_address, dependent: :destroy
   # TODO: need to have destination address in order note
 
