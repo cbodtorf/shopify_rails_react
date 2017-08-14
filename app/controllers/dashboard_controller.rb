@@ -22,7 +22,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Subscriber Count (tagged with Active Subscriber)
     # http://support.rechargepayments.com/article/191-shopify-order-tags
     customers = ShopifyAPI::Customer.find(:all)
-    # TODO: not counting customers made in the recharge admin section.
+    # TODO: It is not counting customers made in the recharge admin section.
     # maybe look for repeat customers.
     activeSubscribers = customers.select do |c|
       c.attributes[:tags].split(', ').include?('Active Subscriber')
