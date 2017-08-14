@@ -4,20 +4,16 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @fiveDayOrders = self.formatOrders
 
     @fiveDayOrders.map do |date|
-      date[:revenue] = 0
-      if date[:afternoon].size > 0
-        date[:afternoon].each do |order|
-          date[:revenue] += order.attributes[:total_price].to_f
-        end
-      end
-      if date[:morning].size > 0
-        date[:morning].each do |order|
-          date[:revenue] += order.attributes[:total_price].to_f
+      date[:delivery_revenue] = 0
+      date[:pickup_revenue] = 0
+      if date[:delivery].size > 0
+        date[:delivery].each do |order|
+          date[:delivery_revenue] += order.attributes[:total_price].to_f
         end
       end
       if date[:pickup].size > 0
         date[:pickup].each do |order|
-          date[:revenue] += order.attributes[:total_price].to_f
+          date[:pickup_revenue] += order.attributes[:total_price].to_f
         end
       end
     end

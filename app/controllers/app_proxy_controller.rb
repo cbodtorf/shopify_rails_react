@@ -4,12 +4,12 @@ class AppProxyController < ApplicationController
   def index
 
     shop = Shop.find_by(shopify_domain: params[:shop])
-    shop = ShopifyApp::SessionRepository.retrieve(shop.id)
-    ShopifyAPI::Base.activate_session(shop)
+    session = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(session)
 
     # iterate over order notes
     # Choose the one that was created most recently or double check checkout_token and delete if completed
-    order_note = OrderNote.where(cart_token: params[:cart_token])
+    order_note = shop.order_notes.where(cart_token: params[:cart_token])
     order_note = order_note.select do |order|
       checkout = ShopifyAPI::Checkout.find(order[:checkout_token])
       Rails.logger.debug("[token?] #{order[:checkout_token].inspect}")
@@ -21,7 +21,7 @@ class AppProxyController < ApplicationController
     end
     Rails.logger.debug("[order note?] #{order_note.inspect}")
     order_note = order_note.first
-    # order_note = OrderNote.where(cart_token: params[:cart_token]).first
+    # order_note = shop.order_notes.where(cart_token: params[:cart_token]).first
 
     if order_note
       Rails.logger.debug("[Order Note Exists] #{order_note.inspect}")
@@ -69,7 +69,7 @@ class AppProxyController < ApplicationController
       #   # render layout: false, content_type: 'application/liquid'
       #   render json: { errors: @order_note.errors }, status: 422
       # end
-      render json: @order_note, status: 200
+      render json: order_note, status: 200
     end
 
 

@@ -20,13 +20,13 @@ class CheckoutsUpdateJob < ApplicationJob
     if webhook[:completed_at] == nil
       shop.with_shopify_session do
         # Make sure we have an order note
-        @order_note = OrderNote.where(checkout_token: webhook[:token]).first
+        @order_note = shop.order_notes.where(checkout_token: webhook[:token]).first
         Rails.logger.info("[Order Note sesh]: #{@order_note.inspect}")
 
         if @order_note == nil
           # If one doesn't exist we need to create one.
           # debugger
-          @order_note = OrderNote.create(hash)
+          @order_note = shop.order_notes.create(hash)
           Rails.logger.info("[Order Note nil to new]: #{@order_note.inspect}")
           @order_note.shipping_address = ShippingAddress.create(webhook[:shipping_address])
           Rails.logger.info("[Order Note shipping?]: #{@order_note.shipping_address.inspect}")
@@ -35,7 +35,7 @@ class CheckoutsUpdateJob < ApplicationJob
           if @order_note.save
             Rails.logger.info("[Order Note] - Saving: #{@order_note.inspect}")
             # Issue with checkouts/update running multiple instances, need to remove duplicates
-            OrderNote.get_duplicates(:checkout_token, :cart_token).dedupe(:checkout_token, :cart_token)
+            shop.order_notes.get_duplicates(:checkout_token, :cart_token).dedupe(:checkout_token, :cart_token)
           else
             Rails.logger.error("[Order Note] - Error: #{@order_note.inspect}")
           end
@@ -53,7 +53,7 @@ class CheckoutsUpdateJob < ApplicationJob
     else
       # delete order with this a completed checkout.
       Rails.logger.info("[Checkout Complete]: #{webhook[:completed_at].inspect}")
-      @order_note = OrderNote.where(checkout_token: webhook[:token]).first
+      @order_note = shop.order_notes.where(checkout_token: webhook[:token]).first
       if @order_note
         @order_note.shipping_address.destroy
         @order_note.destroy

@@ -81,7 +81,7 @@ class Dashboard extends React.Component {
                       <h5>{date.delivery.length}</h5>
                     </div>
                     <div className="revenue">
-                      <h5>${date.revenue.toFixed(2)}</h5>
+                      <h5>${date.delivery_revenue.toFixed(2)}</h5>
                     </div>
                   </div>
                 </Card>
@@ -96,7 +96,7 @@ class Dashboard extends React.Component {
 
                     </div>
                     <div className="revenue">
-                      <h5>${date.revenue.toFixed(2)}</h5>
+                      <h5>${date.pickup_revenue.toFixed(2)}</h5>
                     </div>
                   </div>
                 </Card>

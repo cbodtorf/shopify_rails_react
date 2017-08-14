@@ -22,7 +22,7 @@ class OrdersCreateJob < ApplicationJob
         recurringSubscriptionOrder.save
       end
 
-      order_note = OrderNote.where(checkout_token: webhook[:checkout_token]).first
+      order_note = shop.order_notes.where(checkout_token: webhook[:checkout_token]).first
       Rails.logger.info("[Order Create - note]: #{order_note.inspect}")
       Rails.logger.info("[Order Create - sa]: #{order_note.shipping_address.inspect}")
       # order has been created, we can do clear these unneeded records.

@@ -19,7 +19,7 @@ class CheckoutsCreateJob < ApplicationJob
 
     shop.with_shopify_session do
       # create our OrderNote record w/ cart & checkout tokens & destination shipping_address
-      @order_note = OrderNote.create(hash)
+      @order_note = shop.order_notes.create(hash)
       # @order_note.shipping_address = ShippingAddress.create(webhook[:shipping_address])
       Rails.logger.info("[Order Note b4 save] - Saving: #{@order_note.inspect}")
 
