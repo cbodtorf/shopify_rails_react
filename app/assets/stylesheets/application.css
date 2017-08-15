@@ -282,6 +282,20 @@ div.pickup-count {
   pointer-events: auto;
 }
 
+/* modalForm */
+.bamboo-modalForm .Polaris-Card__Footer {
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+  background: white;
+  width: 100%;
+  padding-top: 2rem;
+  border-top: 1px solid rgb(223, 228, 232);
+}
+.bamboo-modalForm .Polaris-Layout__Section {
+  padding-bottom: 8rem;
+}
+
 /* Tables
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 table {

@@ -12,6 +12,8 @@ import BlackoutDates from '../Settings/components/BlackoutDates';
 import PostalCodes from '../Settings/components/PostalCodes';
 import Navigation from '../Global/components/Navigation';
 import Subscription from '../Subscription/components/Subscription';
+import MetaForm from '../MetaForm/components/MetaForm';
+import FormSuccess from '../MetaForm/components/FormSuccess';
 
 // This is how react_on_rails can see the componenets in the browser.
 ReactOnRails.register({
@@ -27,4 +29,6 @@ ReactOnRails.register({
   PostalCodes,
   Navigation,
   Subscription,
+  MetaForm,
+  FormSuccess,
 });

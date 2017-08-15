@@ -52,7 +52,7 @@ class BundleController < ShopifyApp::AuthenticatedController
       metafield.update_attributes(:value => params[:metafield])
     end
 
-    redirect_to('/bundle')
+    redirect_to('/success')
   end
 
   def create
@@ -65,6 +65,56 @@ class BundleController < ShopifyApp::AuthenticatedController
        :value_type => 'string'
     }))
 
-    redirect_to('/bundle')
+    redirect_to('/success')
+  end
+
+  def modalForm
+    # remove bundles, cleanses, subscriptions for a list of bundle worthy products
+    @products = ShopifyAPI::Product.find(:all, params: { limit: 250 }).select do |product|
+      !product.attributes[:title].downcase.include?("auto") ?
+        (!product.attributes[:tags].downcase.include?("bundle") || !product.attributes[:product_type].downcase.include?("cleanse")) :
+        false
+    end
+
+    @bundle = ShopifyAPI::Product.find(params[:id])
+    @bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => @bundle.id, :namespace => "bundle", :key => "items"})
+    if @bundle.metafield != nil
+      @bundle.metafield = @bundle.metafield.value.split(',').map.with_index do |item, index|
+        item = item.split(' x')
+        {title: item.first, quantity: item.last.to_i, id: index}
+      end
+    else
+      @bundle.metafield = []
+    end
+  end
+
+  def success
+    # Show Success Page
+  end
+
+  def get_bundles
+    Rails.logger.debug("Get Bundles!: #{params.inspect}")
+
+    @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
+    products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
+
+    # bundles are designated by 'bundle' tag
+    @bundles = products.select do |product|
+      product.attributes[:tags].include?("bundle")
+    end
+
+    @bundles.each do |bundle|
+      bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
+      if bundle.metafield != nil
+        bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
+          item = item.split(' x')
+          {title: item.first, quantity: item.last.to_i, id: index}
+        end
+      else
+        bundle.metafield = []
+      end
+    end
+
+    render json: { bundles: @bundles }, status: 200
   end
 end

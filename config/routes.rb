@@ -49,6 +49,9 @@ Rails.application.routes.draw do
   delete 'destroy_postal_code', to: 'settings#destroy_postal_code'
 
   resources :bundle, only: [:index, :update, :create]
+  get 'modal_form', to: 'bundle#modalForm'
+  get 'get_bundles', to: 'bundle#get_bundles'
+  get 'success', to: 'bundle#success'
   resources :rates, only: [:index, :update, :create, :destroy]
 
 
