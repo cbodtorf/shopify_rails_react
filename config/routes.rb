@@ -50,7 +50,7 @@ Rails.application.routes.draw do
 
   resources :bundle, only: [:index, :update, :create]
   get 'modal_form', to: 'bundle#modalForm'
-  get 'get_bundles', to: 'bundle#get_bundles'
+  get 'get_bundle', to: 'bundle#get_bundle'
   get 'success', to: 'bundle#success'
   resources :rates, only: [:index, :update, :create, :destroy]
 

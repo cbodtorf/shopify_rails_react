@@ -26,11 +26,11 @@ class BundleEditor extends React.Component {
 
 
   render() {
-    console.log("render", this.props);
+    console.log("render", this);
     let bundlesItems = this.state.bundleItems.map(bundle => {
       return (
         {
-          url: bundle.url,
+          url: `https://bamboojuices.myshopify.com/admin/products/${bundle.id}`,
           media: <Thumbnail
             source={bundle.image ? bundle.image.src : ''}
             alt={bundle.image ? bundle.image.alt : ''}
@@ -106,7 +106,7 @@ class BundleEditor extends React.Component {
             title={`Edit ${this.state.bundleToEdit.title}`}
             onClose={() => {
               this.setState({modalOpen: false})
-              this.refreshContent()
+              this.refreshBundle(this.state.bundleToEdit.id)
             }}
           />
         </Page>
@@ -118,7 +118,7 @@ class BundleEditor extends React.Component {
     window.location = '/'
   }
 
-  refreshContent() {
+  refreshBundle(id) {
     const self = this
     let myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
@@ -129,13 +129,19 @@ class BundleEditor extends React.Component {
                mode: 'cors',
                cache: 'default' };
 
-    fetch('/get_bundles', myInit) // Call the fetch function passing the url of the API as a parameter
+    fetch(`/get_bundle?id=${id}`, myInit) // Call the fetch function passing the url of the API as a parameter
     .then((resp) => resp.json()) // Transform the data into json
     .then(function(data) {
         // Your code for handling the data you get from the API
         console.log("fetch data", data)
+        console.log("fetch data", self.state.bundleItems)
+        let newState = self.state.bundleItems.map(bundle => {
+          return Number(data.bundle.id) === Number(bundle.id) ?
+            data.bundle :
+            bundle;
+        })
         self.setState({
-          bundleItems: data.bundles,
+          bundleItems: newState,
         })
     })
     .catch(function(error) {

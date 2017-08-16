@@ -92,29 +92,22 @@ class BundleController < ShopifyApp::AuthenticatedController
     # Show Success Page
   end
 
-  def get_bundles
-    Rails.logger.debug("Get Bundles!: #{params.inspect}")
+  def get_bundle
 
-    @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
-    products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
+    bundle = ShopifyAPI::Product.find(params[:id])
+    Rails.logger.debug("Get Bundle! b4: #{bundle.inspect}")
 
-    # bundles are designated by 'bundle' tag
-    @bundles = products.select do |product|
-      product.attributes[:tags].include?("bundle")
-    end
-
-    @bundles.each do |bundle|
-      bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
-      if bundle.metafield != nil
-        bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
-          item = item.split(' x')
-          {title: item.first, quantity: item.last.to_i, id: index}
-        end
-      else
-        bundle.metafield = []
+    bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
+    if bundle.metafield != nil
+      bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
+        item = item.split(' x')
+        {title: item.first, quantity: item.last.to_i, id: index}
       end
+    else
+      bundle.metafield = []
     end
+    Rails.logger.debug("Get Bundle! aft: #{bundle.inspect}")
 
-    render json: { bundles: @bundles }, status: 200
+    render json: { bundle: bundle }, status: 200
   end
 end
