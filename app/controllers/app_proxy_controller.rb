@@ -223,14 +223,26 @@ class AppProxyController < ApplicationController
             dateObj = {
               date: date,
               disabled: false,
-              rates: rates.select {|rate| rate.delivery_type == 'same_day'}
+              rates: rates.select do |rate|
+                if  params[:subscriptionPresent] == 'true'
+                  rate.delivery_type == 'subscription' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                else
+                  rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                end
+              end
             }
           elsif !date.today? && !(date - 1).today?
             # no next day rates today or tomorrow
             dateObj = {
               date: date,
               disabled: false,
-              rates: rates.select {|rate| rate.delivery_type == 'next_day'}
+              rates: rates.select do |rate|
+                if params[:subscriptionPresent] == 'true'
+                  rate.delivery_type == 'subscription'
+                else
+                  rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                end
+              end
             }
           end
         else
