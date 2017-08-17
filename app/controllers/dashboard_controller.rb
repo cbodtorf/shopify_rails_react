@@ -126,25 +126,30 @@ class DashboardController < ShopifyApp::AuthenticatedController
         rate = Rate.find(rates[0].attributes[:value])
         # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
         if dates[0] != nil
-          @fiveDayOrders.map do |date|
-            # Organize orders for counts
-            if date[:date] == Date.parse(dates[0].attributes[:value])
-              date[rate[:delivery_method].downcase.to_sym].push(order)
-            end
+          Rails.logger.debug("Ddate: #{Date.parse(dates[0].attributes[:value]).inspect}")
+          Rails.logger.debug("Rrate: #{rate.inspect}")
+          @fiveDayOrders.each do |date|
 
-            # Organize CSV orders
+            # Organize CSV orders and Counts
             if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
-              if date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time] == "afternoon"
+              if date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time].downcase == "afternoon"
+                # CSV
                 date[rate[:cook_time].downcase.to_sym].push(order)
-              elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time] == "morning"
+                # Count
+                date[rate[:delivery_method].downcase.to_sym].push(order)
+              elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time].downcase == "morning"
+                # CSV
                 date[rate[:cook_time].downcase.to_sym].push(order)
+                # Count
+                date[rate[:delivery_method].downcase.to_sym].push(order)
               end
             end
+            # Rails.logger.debug("date: #{date[:afternoon].inspect}")
           end
 
         end
       end
-
+      # Rails.logger.debug("date: #{@fiveDayOrders[0][:afternoon].inspect}")
     return @fiveDayOrders
   end
 
