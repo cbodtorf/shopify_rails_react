@@ -54,11 +54,13 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
       # Morning Cooks consist of morning deliveries and pickup orders. Addresses don't need pickup orders
       if params[:time] == 'morning' && params[:attribute] == 'items'
-        @orders = selectedDate[:morning].concat(selectedDate[:pickup])
+        @orders = selectedDate[:morning_items]
       elsif params[:time] == 'morning' && params[:attribute] == 'addresses'
-        @orders = selectedDate[:morning]
-      elsif params[:time] == 'afternoon'
-        @orders = selectedDate[:afternoon]
+        @orders = selectedDate[:morning_addresses]
+      elsif params[:time] == 'afternoon' && params[:attribute] == 'items'
+        @orders = selectedDate[:afternoon_items]
+      elsif params[:time] == 'afternoon' && params[:attribute] == 'addresses'
+        @orders = selectedDate[:afternoon_addresses]
       end
       # Rails.logger.debug("order check?: #{@orders.inspect}")
 
@@ -112,39 +114,74 @@ class DashboardController < ShopifyApp::AuthenticatedController
     date_from  = Date.current
     date_to    = date_from + 4
     date_range = (date_from..date_to).map()
-    @fiveDayOrders = date_range.map {|date| {date: date, morning: [], afternoon: [], pickup: [], shipping: [], delivery: []}}
+    @fiveDayOrders = date_range.map {|date| {
+      date: date,
+      morning_items: [],
+      morning_addresses: [],
+      afternoon_items: [],
+      afternoon_addresses: [],
+      pickup: [],
+      shipping: [],
+      delivery: []
+      }}
       @orders.each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
         # Isolate Delivery Date
-        dates = order.attributes[:note_attributes].select do |note|
+        note_date = order.attributes[:note_attributes].select do |note|
           note.attributes[:name] === "delivery_date"
         end
+
         # Isolate Delivery Rate
         rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
         # Rails.logger.debug("notes rate: #{rates.inspect}")
         rate = Rate.find(rates[0].attributes[:value])
         # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
-        if dates[0] != nil
-          Rails.logger.debug("Ddate: #{Date.parse(dates[0].attributes[:value]).inspect}")
-          Rails.logger.debug("Rrate: #{rate.inspect}")
-          @fiveDayOrders.each do |date|
+        if note_date[0] != nil
+          note_date = Date.parse(note_date[0].attributes[:value])
 
-            # Organize CSV orders and Counts
+          # mach dates
+          dateIndex = @fiveDayOrders.index { |date| date[:date] == note_date }
+          if dateIndex
+            # Counts
+            @fiveDayOrders[dateIndex][rate[:delivery_method].downcase.to_sym].push(order)
+
+            # Organize CSV orders for delivery and pickup
             if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
-              if date[:date] == (Date.parse(dates[0].attributes[:value]) - 1) && rate[:cook_time].downcase == "afternoon"
-                # CSV
-                date[rate[:cook_time].downcase.to_sym].push(order)
-                # Count
-                date[rate[:delivery_method].downcase.to_sym].push(order)
-              elsif date[:date] == Date.parse(dates[0].attributes[:value]) && rate[:cook_time].downcase == "morning"
-                # CSV
-                date[rate[:cook_time].downcase.to_sym].push(order)
-                # Count
-                date[rate[:delivery_method].downcase.to_sym].push(order)
+
+              # Same Day [same_day] [morning]
+              if rate[:cook_time].downcase == "morning" && rate[:delivery_type].downcase == "same_day"
+                @fiveDayOrders[dateIndex][:morning_items].push(order)
+                @fiveDayOrders[dateIndex][:afternoon_addresses].push(order)
               end
+              # Free Local [next_day] [morning] && Pickup [next_day] [morning]
+              if rate[:cook_time].downcase == "morning" && rate[:delivery_type].downcase == "next_day" && rate[:delivery_method].downcase == "delivery"
+                @fiveDayOrders[dateIndex][:morning_items].push(order)
+                @fiveDayOrders[dateIndex][:afternoon_addresses].push(order)
+              end
+              # Pickup [next_day] [morning] TODO: double check pickup is cooked in the morning of date.
+              if rate[:cook_time].downcase == "morning" && rate[:delivery_type].downcase == "next_day" && rate[:delivery_method].downcase == "pickup"
+                @fiveDayOrders[dateIndex][:morning_items].push(order)
+                # no addresses needed.
+              end
+              # Super Fast [next_day] [afternoon]
+              if rate[:cook_time].downcase == "afternoon" && rate[:delivery_type].downcase == "next_day"
+                # prevent index from cycling to last item in array
+                dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:afternoon_items].push(order) : nil
+                @fiveDayOrders[dateIndex][:morning_addresses].push(order)
+              end
+              # Subscription First [next_day] [afternoon]
+              if rate[:cook_time].downcase == "afternoon" && rate[:delivery_type].downcase == "subscription"
+                # prevent index from cycling to last item in array
+                dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:afternoon_items].push(order) : nil
+                @fiveDayOrders[dateIndex][:morning_addresses].push(order)
+              end
+              # Subscription Recurring [next_day] [afternoon]
+              # Subscription First Same day [same_day] [afternoon]
+              # Subscription Recurring Same day [same_day] [afternoon]
             end
-            # Rails.logger.debug("date: #{date[:afternoon].inspect}")
+          else
+            # Order not in the Date Range
           end
 
         end
