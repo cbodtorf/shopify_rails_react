@@ -9,7 +9,9 @@
   "scripts": {
     "postinstall": "cd client && yarn install",
     "test": "rspec",
-    "build:production": "(cd client && yarn run build:production)",
+    "build:production": "(cd client && yarn run build:production --silent)",
+    "build:production:client": "(cd client && yarn run build:production:client --silent)",
+    "build:production:server": "(cd client && yarn run build:production:server --silent)"
   },
   "cacheDirectories": [
   "node_modules",
