@@ -7,8 +7,6 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-Dotenv::Railtie.load
-
 module BambooApp
   class Application < Rails::Application
     config.action_dispatch.default_headers['P3P'] = 'CP="Not used"'
