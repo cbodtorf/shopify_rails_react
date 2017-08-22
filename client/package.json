@@ -7,7 +7,6 @@
     "npm": "4.1.1"
   },
   "scripts": {
-    "postinstall": "yarn link react-on-rails",
     "build:test": "webpack --config webpack.config.js",
     "build:production": "NODE_ENV=production webpack --config webpack.config.js",
     "build:development": "webpack -w --config webpack.config.js"
