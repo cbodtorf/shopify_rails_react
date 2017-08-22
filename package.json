@@ -7,10 +7,10 @@
     "npm": "4.1.1"
   },
   "scripts": {
-    "postinstall": "cd ./client && yarn install",
+    "postinstall": "cd ./client && npm install",
     "test": "rspec",
     "build:clean": "rm -rf public/webpack || true",
-    "build:production": "(cd client && yarn run build:production --silent)"
+    "build:production": "(cd client && npm run build:production --silent)"
   },
   "cacheDirectories": [
   "node_modules",
