@@ -58,6 +58,7 @@ class OrderList extends React.Component {
       <EmbeddedApp
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
+        forceRedirect={true}
       >
         <Page
           title={`Orders`}

@@ -41,6 +41,7 @@ class PostalCodes extends React.Component {
       <EmbeddedApp
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
+        forceRedirect={true}
       >
         <Page title="Postal Codes" fullWidth icon={bambooIcon}>
           <Layout>

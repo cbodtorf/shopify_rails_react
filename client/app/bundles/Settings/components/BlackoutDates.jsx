@@ -54,6 +54,7 @@ class BlackoutDates extends React.Component {
       <EmbeddedApp
         apiKey={this.props.apiKey}
         shopOrigin={this.props.shopOrigin}
+        forceRedirect={true}
       >
         <Page title={`Blackout Dates`} fullWidth icon={bambooIcon}>
           <Layout>
