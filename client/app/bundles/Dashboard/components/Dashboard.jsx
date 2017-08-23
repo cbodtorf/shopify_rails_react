@@ -59,8 +59,11 @@ class Dashboard extends React.Component {
       const m = monthNames[formatedDate.getMonth()]
       const w = weekNames[formatedDate.getDay()]
       const d = formatedDate.getDate()
-      let disabledMorning = date.morning.length === 0
-      let disabledAfternoon = date.afternoon.length === 0
+      let disabledMorningItems = date.morning_items.length === 0
+      let disabledAfternoonItems = date.afternoon_items.length === 0
+      let disabledMorningAddresses = date.morning_addresses.length === 0
+      let disabledAfternoonAddresses = date.afternoon_addresses.length === 0
+
 
       return (
         <div key={i} className="dashboard-card-primary">
@@ -110,15 +113,15 @@ class Dashboard extends React.Component {
               <div className="time-button morning">
                 <Heading>Morning</Heading>
                 <ButtonGroup>
-                    <Button disabled={ disabledMorning } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}>Items</Button>
-                    <Button disabled={ disabledMorning } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}>Addresses</Button>
+                    <Button disabled={ disabledMorningItems } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}>Items</Button>
+                    <Button disabled={ disabledMorningAddresses } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}>Addresses</Button>
                 </ButtonGroup>
               </div>
               <div className="time-button afternoon">
                 <Heading>Afternoon</Heading>
                 <ButtonGroup>
-                    <Button disabled={ disabledAfternoon } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}>Items</Button>
-                    <Button disabled={ disabledAfternoon } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}>Addresses</Button>
+                    <Button disabled={ disabledAfternoonItems } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}>Items</Button>
+                    <Button disabled={ disabledAfternoonAddresses } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}>Addresses</Button>
                 </ButtonGroup>
               </div>
               </Card>
