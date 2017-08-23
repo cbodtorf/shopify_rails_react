@@ -147,7 +147,7 @@ class AppProxyController < ApplicationController
 
     pickup_locations = shop.pickup_locations.all
 
-    # hour should be a variable maybe held in a config/settings from the admin.
+    # TODO: hour should be a variable maybe held in a config/settings from the admin.
     end_of_day = DateTime.now.change({ hour: 15 })
 
 
@@ -169,6 +169,7 @@ class AppProxyController < ApplicationController
     # TODO: add Subscription logic
 
     if Time.now < end_of_day # normal
+      Rails.logger.debug("[work day] #{Time.now} #{end_of_day}")
       picker_data = date_range.map.with_index do |date, i|
         # black out sundays
         if date.wday != 0
@@ -208,6 +209,7 @@ class AppProxyController < ApplicationController
         end
       end
     elsif Time.now > end_of_day # shift rates over one day
+      Rails.logger.debug("[end of work day] #{Time.now} #{end_of_day}")
       picker_data = date_range.map.with_index do |date, i|
         # black out sundays
         if date.wday != 0
