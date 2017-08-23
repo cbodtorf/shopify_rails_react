@@ -240,7 +240,7 @@ class AppProxyController < ApplicationController
                 if params[:subscriptionPresent] == 'true'
                   rate.delivery_type == 'subscription'
                 else
-                  rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
+                  rate.delivery_type == 'next_day'
                 end
               end
             }
