@@ -176,7 +176,7 @@ class Dashboard extends React.Component {
                             <h5>{ this.props.shippingOrdersCount }</h5>
                           </div>
                           <div className="revenue">
-                            <h5>${ this.props.shippingOrdersRevenue }</h5>
+                            <h5>${ this.props.shippingOrdersRevenue.toFixed(2) }</h5>
                           </div>
                         </div>
                       </Card>

@@ -7,18 +7,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
       date[:delivery_revenue] = 0
       date[:pickup_revenue] = 0
       if date[:delivery].size > 0
-        # preserve trailing zero
-        date[:delivery_revenue] = "%.2f" % date[:delivery].inject(0) { |sum, order| sum + order.attributes[:total_price] }
-        # date[:delivery].each do |order|
-        #   date[:delivery_revenue] += order.attributes[:total_price].to_f
-        # end
+        date[:delivery].each do |order|
+          date[:delivery_revenue] += order.attributes[:total_price].to_f
+        end
       end
       if date[:pickup].size > 0
-        # preserve trailing zero
-        date[:pickup_revenue] = "%.2f" % date[:pickup].inject(0) { |sum, order| sum + order.attributes[:total_price] }
-        # date[:pickup].each do |order|
-        #   date[:pickup_revenue] += order.attributes[:total_price].to_f
-        # end
+        date[:pickup].each do |order|
+          date[:pickup_revenue] += order.attributes[:total_price].to_f
+        end
       end
     end
     # Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
@@ -34,14 +30,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @activeSubscriberCount = activeSubscribers.count
 
     @shippingOrdersCount = getShippingOrders.count
-    # preserve trailing zero
+
     @shippingOrdersRevenue = 0
-    if getShippingOrders.size > 0
-      @shippingOrdersRevenue = "%.2f" % getShippingOrders.inject(0) { |sum, order| sum + order.attributes[:total_price] }
+    getShippingOrders.each do |order|
+      @shippingOrdersRevenue += order.attributes[:total_price].to_f
     end
-    # getShippingOrders.each do |order|
-    #   @shippingOrdersRevenue += order.attributes[:total_price]
-    # end
 
     # Customer Count:
     @customerCount = ShopifyAPI::Customer.count
