@@ -8,14 +8,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
       date[:pickup_revenue] = 0
       if date[:delivery].size > 0
         # preserve trailing zero
-        date[:delivery_revenue] = "%.2f" % date[:delivery].inject { |sum, order| sum + order.attributes[:total_price] }
+        date[:delivery_revenue] = "%.2f" % date[:delivery].inject(0) { |sum, order| sum + order.attributes[:total_price] }
         # date[:delivery].each do |order|
         #   date[:delivery_revenue] += order.attributes[:total_price].to_f
         # end
       end
       if date[:pickup].size > 0
         # preserve trailing zero
-        date[:pickup_revenue] = "%.2f" % date[:pickup].inject { |sum, order| sum + order.attributes[:total_price] }
+        date[:pickup_revenue] = "%.2f" % date[:pickup].inject(0) { |sum, order| sum + order.attributes[:total_price] }
         # date[:pickup].each do |order|
         #   date[:pickup_revenue] += order.attributes[:total_price].to_f
         # end
@@ -37,7 +37,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # preserve trailing zero
     @shippingOrdersRevenue = 0
     if getShippingOrders.size > 0
-      @shippingOrdersRevenue = "%.2f" % getShippingOrders.inject { |sum, order| sum + order.attributes[:total_price] }
+      @shippingOrdersRevenue = "%.2f" % getShippingOrders.inject(0) { |sum, order| sum + order.attributes[:total_price] }
     end
     # getShippingOrders.each do |order|
     #   @shippingOrdersRevenue += order.attributes[:total_price]
