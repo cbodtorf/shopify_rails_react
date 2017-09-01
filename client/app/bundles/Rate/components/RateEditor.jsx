@@ -106,7 +106,7 @@ class RateEditor extends React.Component {
         shopOrigin={this.props.shopOrigin}
         forceRedirect={true}
       >
-        <Page title={`Edit Rate`} fullWidth icon={bambooIcon}>
+        <Page fullWidth icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={3}/>

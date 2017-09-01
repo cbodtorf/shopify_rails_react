@@ -77,9 +77,7 @@ class BundleEditor extends React.Component {
         forceRedirect={true}
       >
         <Page
-          title={`Edit Bundle`}
           icon={bambooIcon}
-          primaryAction={{content: 'New Product', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
           fullWidth
           >
           <Layout>

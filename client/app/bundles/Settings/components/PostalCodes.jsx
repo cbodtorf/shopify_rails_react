@@ -43,7 +43,7 @@ class PostalCodes extends React.Component {
         shopOrigin={this.props.shopOrigin}
         forceRedirect={true}
       >
-        <Page title="Postal Codes" fullWidth icon={bambooIcon}>
+        <Page fullWidth icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={0}/>

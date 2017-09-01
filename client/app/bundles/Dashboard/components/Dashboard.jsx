@@ -138,7 +138,7 @@ class Dashboard extends React.Component {
           shopOrigin={this.props.shopOrigin}
           forceRedirect={true}
         >
-          <Page title="Dashboard" fullWidth ref="dashboard" icon={bambooIcon}>
+          <Page fullWidth ref="dashboard" icon={bambooIcon}>
             <Layout>
 
               <Layout.Section>

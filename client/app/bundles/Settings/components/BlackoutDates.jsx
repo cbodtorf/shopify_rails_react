@@ -56,7 +56,7 @@ class BlackoutDates extends React.Component {
         shopOrigin={this.props.shopOrigin}
         forceRedirect={true}
       >
-        <Page title={`Blackout Dates`} fullWidth icon={bambooIcon}>
+        <Page fullWidth icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={null}/>

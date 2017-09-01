@@ -61,7 +61,6 @@ class OrderList extends React.Component {
         forceRedirect={true}
       >
         <Page
-          title={`Orders`}
           icon={bambooIcon}
           fullWidth
           primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
