@@ -11,6 +11,7 @@ import PickupLocations from '../Settings/components/PickupLocations';
 import BlackoutDates from '../Settings/components/BlackoutDates';
 import PostalCodes from '../Settings/components/PostalCodes';
 import Navigation from '../Global/components/Navigation';
+import ModalForm from '../Global/components/ModalForm';
 import Subscription from '../Subscription/components/Subscription';
 import MetaForm from '../MetaForm/components/MetaForm';
 import FormSuccess from '../MetaForm/components/FormSuccess';
@@ -28,6 +29,7 @@ ReactOnRails.register({
   PickupLocations,
   PostalCodes,
   Navigation,
+  ModalForm,
   Subscription,
   MetaForm,
   FormSuccess,

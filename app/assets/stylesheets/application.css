@@ -18,12 +18,85 @@
 html body {
   background-color: #e9ebee;
 }
+div.Polaris-Page {
+  margin: 0;
+  padding-top: 6.4rem;
+}
+
+/* ModalForm */
+.ui-modal {
+    max-width: calc(100% - 40px);
+    max-height: calc(100% - 40px);
+    width: 620px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    border-radius: 3px;
+    background: #ffffff;
+    visibility: hidden;
+    display: none;
+    -webkit-flex-direction: column;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-transform: translate3d(0, 200px, 0);
+    transform: translate3d(0, 200px, 0);
+    transition: all ease-in-out 260ms;
+    opacity: 0;
+    -webkit-align-self: center;
+    -ms-flex-item-align: center;
+    align-self: center;
+}
+
+.ui-modal--is-visible {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    visibility: visible;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    overflow: auto;
+}
+
+.ui-modal-contents {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 551;
+}
+
+.ui-modal-contents--is-visible {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-justify-content: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+}
+
+.ui-modal-backdrop {
+    height: 100vh;
+    width: 100vw;
+    background: rgba(0,0,0,0.25);
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: none;
+    z-index: 550;
+}
+
+.ui-modal-backdrop--is-visible {
+    display: block;
+}
+
 /* Navigation */
 .Navigation__Bamboo {
   background: #f4f6f8;
-  width: 100vw;
-  left: -3.2rem;
-  position: relative;
+  width: 100%;
+  right: 0;
+  top: 0;
+  position: fixed;
   padding-left: 3.2rem;
 }
 .bamboo-nav {
@@ -72,9 +145,6 @@ html body {
   margin-bottom: 20px;
   color: #637381;
 }
-.bamboo-dashboard .Polaris-Layout__Section {
-  margin-top: 6rem;
-}
 .upcomingSubscriptions .Polaris-ResourceList__AttributeOne, .upcomingSubscriptions .Polaris-ResourceList__AttributeTwo {
   flex: 0.4;
 }
@@ -108,7 +178,7 @@ html body {
   color: #000;
   height: 124px;
   margin-bottom: 1.5rem;
-  min-width: 200px;
+  min-width: 180px;
 }
 
 .dashboard-card-primary .Polaris-Card--subdued {
@@ -116,11 +186,11 @@ html body {
 }
 
 .date {
-  width: 150px;
+  width: 130px;
 }
 .date h5 {
   text-align: left;
-  font-size: 24px;
+  font-size: 22px;
 }
 .date h5:first-of-type {
   font-size: 1.3rem;
@@ -130,7 +200,7 @@ html body {
 }
 
 .date h5:last-of-type {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 500;
   letter-spacing: 1px;
   margin-top: 15px;
@@ -168,7 +238,7 @@ html body {
   width: 100%;
 }
 .spreadsheet .time-button .Polaris-Heading {
-  margin-right: 40px;
+  margin-right: 2rem;
 }
 .spreadsheet .time-button:last-of-type {
   margin-top: 10px;

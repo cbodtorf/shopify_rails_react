@@ -55,9 +55,15 @@ class SettingsController < ShopifyApp::AuthenticatedController
     end
   end
 
-  def update
+  def update_blackout_date
+    @blackout_date = shop.blackout_dates.find(params[:id])
 
-    redirect_to(root_path)
+    if @blackout_date.update_attributes(blackout_date_params)
+      redirect_to action: 'blackout_dates'
+    else
+      Rails.logger.debug("hmmm #{@blackout_date.errors.full_messages}")
+      redirect_to action: 'blackout_dates'
+    end
   end
 
   def destroy_pickup_location

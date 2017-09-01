@@ -78,7 +78,6 @@ class BundleEditor extends React.Component {
       >
         <Page
           icon={bambooIcon}
-          fullWidth
           >
           <Layout>
             <Layout.Section>

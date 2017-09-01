@@ -55,7 +55,7 @@ class PickupLocations extends React.Component {
         shopOrigin={this.props.shopOrigin}
         forceRedirect={true}
       >
-        <Page fullWidth icon={bambooIcon}>
+        <Page icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={null}/>

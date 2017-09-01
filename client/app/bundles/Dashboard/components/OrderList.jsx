@@ -62,8 +62,6 @@ class OrderList extends React.Component {
       >
         <Page
           icon={bambooIcon}
-          fullWidth
-          primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
           >
           <Layout>
             <Layout.Section>

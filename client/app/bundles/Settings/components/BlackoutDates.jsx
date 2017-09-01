@@ -1,7 +1,8 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, DatePicker, Badge} from '@shopify/polaris';
+import {Page, Card, Banner, DatePicker, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+import ModalForm from '../../Global/components/ModalForm';
 import bambooIcon from 'assets/green-square.jpg';
 
 
@@ -13,8 +14,20 @@ class BlackoutDates extends React.Component {
 
     this.state = {
       deleteAlertBlackoutOpen: false,
-      blackoutDate: {},
+      datePickerMonth: new Date().getMonth(),
+      datePickerYear: new Date().getUTCFullYear(),
+      datePickerSelected: null,
+      blackoutDate: {
+        blackout_date: undefined,
+        title: undefined,
+        wday: undefined,
+        day: undefined,
+        month: undefined,
+        year: undefined
+      },
       blackoutDates: [],
+      method: 'put',
+      formUrl: '/create_blackout_date',
       editModal: false
     }
   }
@@ -41,7 +54,20 @@ class BlackoutDates extends React.Component {
           attributeOne: date.title,
           attributeTwo: utc.toLocaleDateString(),
           actions: [
-            {content: 'Edit date', onAction: () => { this.handleEdit(date) }},
+            {content: 'Edit date', onAction: () => this.setState({
+              editModal: true,
+              method: 'patch',
+              formUrl: `/update_blackout_date/${date.id}`,
+              datePickerSelected: utc,
+              blackoutDate: {
+                blackout_date: utc,
+                title: date.title,
+                wday: weekNames[utc.getDay()],
+                day: this.addZ(utc.getDate()),
+                month: this.addZ(utc.getMonth() + 1),
+                year: utc.getFullYear()
+              }
+            }) },
             {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertBlackoutOpen: true, dateToDelete: date}) }},
           ],
           persistActions: true,
@@ -56,7 +82,7 @@ class BlackoutDates extends React.Component {
         shopOrigin={this.props.shopOrigin}
         forceRedirect={true}
       >
-        <Page fullWidth icon={bambooIcon}>
+        <Page icon={bambooIcon}>
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={null}/>
@@ -66,35 +92,28 @@ class BlackoutDates extends React.Component {
               description="Customers will be unable to select these dates for their deliveries."
             >
               <Card
+                title="Create new Blackout Date"
                 sectioned
-                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave(this.blackoutDateForm) } }}
+                primaryFooterAction={{content: 'New', onAction: () => this.setState({
+                  editModal: true,
+                  method: 'post',
+                  url: '/create_blackout_date',
+                  datePickerSelected: null,
+                  blackoutDate: {
+                    blackout_date: undefined,
+                    title: undefined,
+                    wday: undefined,
+                    day: undefined,
+                    month: undefined,
+                    year: undefined
+                  }
+                }) }}
                 >
-                <form
-                  action='/create_blackout_date'
-                  acceptCharset="UTF-8" method="post"
-                  ref={(form) => {this.blackoutDateForm = form}}
-                  >
-                  <FormLayout>
-                    <input name="utf8" type="hidden" value="✓" />
-                    <input type="hidden" name="_method" value={this.state.blackoutDateMethod} />
-                    <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
-                    <TextField
-                      label="Blackout Date Title"
-                      name="blackout_date[title]"
-                      type="text"
-                      value={this.state.blackoutDate.title}
-                      onChange={this.valueUpdater('title', 'blackoutDate')}
-                    />
-                    <TextField
-                    label="Blackout Date"
-                    name="blackout_date[blackout_date]"
-                    value={`${this.state.blackoutDate.year}-${this.state.blackoutDate.month}-${this.state.blackoutDate.day}`}
-                    onChange={this.blackoutDateUpdater()}
-                    type="date"
-                    />
-                    <Icon source="calendar" />
-                  </FormLayout>
-                </form>
+                Click the 'New' button to open a popup in order to create a new blackout date.
+              </Card>
+              <Card
+                sectioned
+                >
                 <ResourceList
                   items={blackoutDates}
                   renderItem={(item, index) => {
@@ -117,20 +136,50 @@ class BlackoutDates extends React.Component {
           >
             Are you sure you want to delete this blackout date?
           </Alert>
-          <Modal
-            src="/edit_blackout_date"
-            open={this.state.editModal}
-            title="Edit blackout date"
-            primaryAction={{
-              content: 'Update account',
-              onAction: () => this.setState({editModal: false}),
-            }}
-            secondaryActions={[{
-              content: 'Change account',
-              onAction: () => this.setState({editModal: false}),
-            }]}
-            onClose={() => this.setState({editModal: false})}
-          />
+
+          <ModalForm
+            open={ this.state.editModal }
+            onClose={ () => this.setState({editModal: false}) }
+            onSave={ () => this.handleSave(this.blackoutDateForm) }
+            title="Blackout Date"
+          >
+            <div>
+              <form
+                action={ this.state.formUrl }
+                acceptCharset="UTF-8" method="post"
+                ref={(form) => {this.blackoutDateForm = form}}
+                >
+                <FormLayout>
+                  <input name="utf8" type="hidden" value="✓" />
+                  <input type="hidden" name="_method" value={this.state.method} />
+                  <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
+                  <input type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
+                  <TextField
+                    label="Blackout Date Title"
+                    name="blackout_date[title]"
+                    type="text"
+                    value={this.state.blackoutDate.title}
+                    onChange={this.valueUpdater('title', 'blackoutDate')}
+                  />
+                  <Icon source="calendar" />
+                </FormLayout>
+              </form>
+              <TextField
+                label="Blackout Date"
+                value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.month}-${this.state.blackoutDate.day}-${this.state.blackoutDate.year}` : '' }
+                readOnly={true}
+                placeholder='mm-dd-yyyy'
+              />
+              <DatePicker
+                month={this.state.datePickerMonth}
+                year={this.state.datePickerYear}
+                selected={this.state.datePickerSelected}
+                disableDatesBefore={new Date()}
+                onChange={ (selected) => { this.dateChange(selected) } }
+                onMonthChange={ (month,year) => { this.monthChange(month,year) } }
+              />
+            </div>
+          </ModalForm>
         </Page>
       </EmbeddedApp>
       </div>
@@ -139,27 +188,33 @@ class BlackoutDates extends React.Component {
   valueUpdater(field, namespace) {
     return (value) => this.setState({ [namespace]: { ...this.state[namespace], [field]: value } });
   }
-  blackoutDateUpdater() {
-    return (
-      (value) => {
-        let d = new Date(value.replace('-','/'))
-        this.setState({
-            blackoutDate: {
-              blackout_date: d,
-              title: this.state.blackoutDate.title,
-              wday: weekNames[d.getDay()],
-              day: this.addZ(d.getDate()),
-              month: this.addZ(d.getMonth() + 1),
-              year: d.getFullYear()
-            }
-        })
-      }
-    )
+
+  monthChange(month, year) {
+
+    this.setState({
+      datePickerMonth: month,
+      datePickerYear: year
+    })
   }
 
+  dateChange(selected) {
+
+    let d = selected.end
+    this.setState({
+      datePickerSelected: d,
+      blackoutDate: {
+        blackout_date: d,
+        title: this.state.blackoutDate.title,
+        wday: weekNames[d.getDay()],
+        day: this.addZ(d.getDate()),
+        month: this.addZ(d.getMonth() + 1),
+        year: d.getFullYear()
+      }
+    })
+  }
 
   handleSave(formType) {
-      formType.submit()
+    formType.submit()
   }
 
   handleDelete(url) {

@@ -40,6 +40,7 @@ Rails.application.routes.draw do
   get 'postal_codes', to: 'settings#postal_codes'
 
   post 'create_blackout_date', to: 'settings#create_blackout_date'
+  patch 'update_blackout_date/:id', to: 'settings#update_blackout_date'
   delete 'destroy_blackout_date', to: 'settings#destroy_blackout_date'
 
   post 'create_pickup_location', to: 'settings#create_pickup_location'

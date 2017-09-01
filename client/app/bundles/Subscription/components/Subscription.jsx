@@ -47,7 +47,6 @@ class Subscription extends React.Component {
         forceRedirect={true}
       >
         <Page
-          fullWidth
           icon={bambooIcon}
           primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
           >
