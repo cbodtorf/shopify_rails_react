@@ -1,6 +1,6 @@
 import React from 'react';
 import {Page, Card, Banner, Tabs, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Icon, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
-import {EmbeddedApp} from '@shopify/polaris/embedded';
+import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
@@ -8,7 +8,10 @@ class Subscription extends React.Component {
   constructor(props) {
     super(props)
 
-    this.state = {}
+    this.state = {
+      modalOpen: false,
+      modalUrl: ''
+    }
   }
 
   componentWillMount() {
@@ -21,8 +24,17 @@ class Subscription extends React.Component {
           <td><Link external="true" url={`${urlBase}customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.first_name + ' ' + sub.customer.last_name}</Link></td>
           <td>{new Date(sub.next_charge_scheduled_at).toLocaleDateString()}</td>
           <td>{ new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString() }</td>
-          <td>${sub.price}</td>
-          <td><Link external="true" url={`${urlBase}addresses/${sub.address_id}`}>Edit</Link></td>
+          <td>${sub.price.toFixed(2)}</td>
+          <td><Link external="true" onClick={() => {
+              this.setState({modalOpen: true,
+                modalUrl: `http://bamboojuices.myshopify.com/tools/recurring/customers/${sub.customer.hash}/subscriptions/`
+              })
+            }}>Edit</Link></td>
+          <td><Link external="true" onClick={() => {
+              this.setState({modalOpen: true,
+                modalUrl: `http://bamboojuices.myshopify.com/tools/recurring/customers/${sub.customer.hash}/delivery_schedule/`
+              })
+            }}>Edit</Link></td>
         </tr>
       )
     })
@@ -68,7 +80,8 @@ class Subscription extends React.Component {
                           <th>Charge Date</th>
                           <th>Delivery Date</th>
                           <th>Total</th>
-                          <th>Edit</th>
+                          <th>Subscription</th>
+                          <th>Schedule</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -78,6 +91,15 @@ class Subscription extends React.Component {
                 </Card>
             </Layout.Section>
           </Layout>
+          <Modal
+            src={this.state.modalUrl}
+            open={this.state.modalOpen}
+            width="large"
+            title={`Edit Subscription`}
+            onClose={() => {
+              this.setState({modalOpen: false})
+            }}
+          />
         </Page>
       </EmbeddedApp>
       </div>
