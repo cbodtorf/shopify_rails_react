@@ -63,12 +63,13 @@ class DashboardController < ShopifyApp::AuthenticatedController
       elsif params[:time] == 'afternoon' && params[:attribute] == 'addresses'
         @orders = selectedDate[:afternoon_addresses]
       end
-      # Rails.logger.debug("order check?: #{@orders.inspect}")
 
+      shop = ShopifyAPI::Shop.current()
+      Rails.logger.debug("shop: #{shop.inspect}")
       respond_to do |format|
         format.html
         format.csv {
-          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders),
+          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders, shop),
           filename: "#{Date.parse(params[:date])}_#{params[:time]}-#{params[:attribute]}.csv"
         }
       end

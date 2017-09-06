@@ -39,10 +39,21 @@ class CSVGenerator
     end
   end
 
-  def self.generateAddressesCSV(orders)
+  def self.generateAddressesCSV(orders, shop)
 
     attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Notes}
     shippingAddressArray = []
+    shippingAddressArray.push({
+      customer_last_name: shop.attributes[:name],
+      first_name: '',
+      address: shop.attributes[:address1],
+      address_2: shop.attributes[:address2],
+      city: shop.attributes[:city],
+      state: shop.attributes[:province_code],
+      zip: shop.attributes[:zip],
+      notes: '',
+    })
+    Rails.logger.debug("bamboo: #{shop.attributes.inspect}")
     orders.each do |order|
       s_a = order.attributes[:shipping_address].attributes
       shippingAddressArray.push({
