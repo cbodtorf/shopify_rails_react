@@ -23,6 +23,13 @@ div.Polaris-Page {
   padding-top: 6.4rem;
 }
 
+/* SearchBar */
+.search-input .Polaris-Icon {
+    height: 1.5rem;
+    width: 1.5rem;
+    position: relative;
+    top: 3px;
+}
 /* ModalForm */
 .ui-modal {
     max-width: calc(100% - 40px);

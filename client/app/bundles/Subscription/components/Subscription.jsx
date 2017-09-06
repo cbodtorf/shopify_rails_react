@@ -4,34 +4,45 @@ import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
+import SearchBar, {createFilter} from '../../Global/components/SearchBar';
+
+const KEYS_TO_FILTERS = ['product_title', 'customer.first_name', 'customer.last_name']
+
 class Subscription extends React.Component {
   constructor(props) {
     super(props)
 
     this.state = {
       modalOpen: false,
-      modalUrl: ''
+      modalUrl: '',
+      searchTerm: ''
     }
   }
 
   componentWillMount() {
     console.log('props: ', this.props)
-    let subscriptionList = this.props.subscriptions.map(sub => {
+  }
+
+  render() {
+
+    let subscriptionList = this.props.subscriptions.filter(
+      createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
+    ).map(sub => {
       let urlBase = 'https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/'
       return (
-        <tr key={sub.id}>
-          <td><Link external="true" url={`${urlBase}addresses/${sub.address_id}`}>#{sub.id}</Link></td>
-          <td><Link external="true" url={`${urlBase}customer/${sub.customer_id}/subscription/${sub.id}`}>{sub.customer.first_name + ' ' + sub.customer.last_name}</Link></td>
-          <td>{new Date(sub.next_charge_scheduled_at).toLocaleDateString()}</td>
+        <tr key={ sub.id }>
+          <td><Link external="true" url={ `${urlBase}addresses/${sub.address_id}` }>#{ sub.id }</Link></td>
+          <td><Link external="true" url={ `${urlBase}customer/${sub.customer_id}/subscription/${sub.id}` }>{ sub.customer.first_name + ' ' + sub.customer.last_name }</Link></td>
+          <td>{ new Date(sub.next_charge_scheduled_at).toLocaleDateString() }</td>
           <td>{ new Date(new Date(sub.next_charge_scheduled_at).setDate(new Date(sub.next_charge_scheduled_at).getDate() + 1)).toLocaleDateString() }</td>
-          <td>${sub.price.toFixed(2)}</td>
+          <td>${ sub.price.toFixed(2) }</td>
           <td><Link external="true" onClick={() => {
-              this.setState({modalOpen: true,
+              this.setState({ modalOpen: true,
                 modalUrl: `http://bamboojuices.myshopify.com/tools/recurring/customers/${sub.customer.hash}/subscriptions/`
               })
             }}>Edit</Link></td>
-          <td><Link external="true" onClick={() => {
-              this.setState({modalOpen: true,
+          <td><Link external="true" onClick={ () => {
+              this.setState({ modalOpen: true,
                 modalUrl: `http://bamboojuices.myshopify.com/tools/recurring/customers/${sub.customer.hash}/delivery_schedule/`
               })
             }}>Edit</Link></td>
@@ -39,12 +50,8 @@ class Subscription extends React.Component {
       )
     })
 
-    this.setState({
-      subscriptionList: subscriptionList,
-    })
-  }
+    console.log("state: ", this.state)
 
-  render() {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
     const pageTitle = this.props.subscriptions ?
@@ -54,24 +61,27 @@ class Subscription extends React.Component {
     return (
       <div className="bamboo-orderList">
       <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-        forceRedirect={true}
+        apiKey={ this.props.apiKey }
+        shopOrigin={ this.props.shopOrigin }
+        forceRedirect={ true }
       >
         <Page
-          icon={bambooIcon}
-          primaryAction={{content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
+          icon={ bambooIcon }
+          primaryAction={{ content: 'Back', onAction: () => { window.location.href = '/dashboard' } }}
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={1}/>
+              <Navigation selectedTab={ 1 }/>
             </Layout.Section>
             <Layout.Section>
 
                 <Card
-                  title={pageTitle}
+                  title={ pageTitle }
                   sectioned
                 >
+                <div>
+                    <SearchBar className="search-input" onChange={ this.searchUpdated.bind(this) } />
+                    </div>
                     <table>
                       <thead>
                         <tr>
@@ -85,25 +95,29 @@ class Subscription extends React.Component {
                         </tr>
                       </thead>
                       <tbody>
-                        { this.state.subscriptionList }
+                        { subscriptionList }
                       </tbody>
                     </table>
                 </Card>
             </Layout.Section>
           </Layout>
           <Modal
-            src={this.state.modalUrl}
-            open={this.state.modalOpen}
+            src={ this.state.modalUrl }
+            open={ this.state.modalOpen }
             width="large"
-            title={`Edit Subscription`}
+            title={ `Edit Subscription` }
             onClose={() => {
-              this.setState({modalOpen: false})
+              this.setState({ modalOpen: false })
             }}
           />
         </Page>
       </EmbeddedApp>
       </div>
     );
+  }
+
+  searchUpdated (term) {
+    this.setState({ searchTerm: term })
   }
 }
 export default Subscription
