@@ -54,6 +54,7 @@ Rails.application.routes.draw do
   get 'get_bundle', to: 'bundle#get_bundle'
   get 'success', to: 'bundle#success'
   resources :rates, only: [:index, :update, :create, :destroy]
+  resources :orders, only: [:index, :update, :create, :destroy]
 
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

@@ -7,6 +7,7 @@ import Dashboard from '../Dashboard/components/Dashboard';
 import OrderList from '../Dashboard/components/OrderList';
 import BundleEditor from '../Bundle/components/BundleEditor';
 import RateEditor from '../Rate/components/RateEditor';
+import OrderEditor from '../Order/components/OrderEditor';
 import PickupLocations from '../Settings/components/PickupLocations';
 import BlackoutDates from '../Settings/components/BlackoutDates';
 import PostalCodes from '../Settings/components/PostalCodes';
@@ -26,6 +27,7 @@ ReactOnRails.register({
   OrderList,
   BundleEditor,
   RateEditor,
+  OrderEditor,
   BlackoutDates,
   PickupLocations,
   PostalCodes,

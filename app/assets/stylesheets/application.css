@@ -21,6 +21,7 @@ html body {
 div.Polaris-Page {
   margin: 0;
   padding-top: 6.4rem;
+  max-width: none;
 }
 
 /* SearchBar */
@@ -390,6 +391,21 @@ div.pickup-count {
 }
 .table-wrapper {
   padding-top: 2rem;
+}
+
+/* Edit Order */
+.customer {
+  margin-bottom: 20px;
+}
+.customer .Polaris-Card .Polaris-Stack {
+  align-items: stretch;
+}
+.fresh-ui .Polaris-Thumbnail {
+  text-align: center;
+  background-color: #fafbfc;
+}
+.fresh-ui .Polaris-Thumbnail__Image {
+  width: auto;
 }
 
 /* Tables
