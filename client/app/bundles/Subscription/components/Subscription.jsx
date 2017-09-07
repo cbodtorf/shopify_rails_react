@@ -35,8 +35,8 @@ class Subscription extends React.Component {
           )
         })
       return (
-          <tbody key={ sub.id }>
-            <tr>
+          <tbody key={ sub.id } className="ui-nested-link-container">
+            <tr className="">
               <td><Link external="true" url={ `${urlBase}addresses/${sub.address_id}` }>#{ sub.id }</Link></td>
               <td><Link external="true" url={ `${urlBase}customer/${sub.customer_id}/subscription/${sub.id}` }>{ sub.first_name + ' ' + sub.last_name }</Link></td>
               <td>{ new Date(sub.scheduled_at).toLocaleDateString() }</td>
@@ -64,7 +64,7 @@ class Subscription extends React.Component {
                 }}>{ this.state.showProduct[sub.id] === true ? 'Hide' : 'Show' }</Link></td>
             </tr>
 
-            <tr className={`product ${this.state.showProduct[sub.id] === true ? 'show-product' : 'hide-product'}`}>
+            <tr className={`ui-nested-link-container product ${this.state.showProduct[sub.id] === true ? 'show-product' : 'hide-product'}`}>
               <th colSpan="8">
                 <Stack spacing="tight" distribution="leading">
                   { productBadges }
@@ -103,24 +103,26 @@ class Subscription extends React.Component {
                   title={ pageTitle }
                   sectioned
                 >
-                <div>
+                  <div>
                     <SearchBar className="search-input" onChange={ this.searchUpdated.bind(this) } />
+                  </div>
+                    <div className="table-wrapper">
+                      <table className="table-hover expanded">
+                        <thead className="">
+                          <tr className="">
+                            <th>Order</th>
+                            <th>Customer</th>
+                            <th>Charge Date</th>
+                            <th>Delivery Date</th>
+                            <th>Total</th>
+                            <th>Subscription</th>
+                            <th>Schedule</th>
+                            <th>Product</th>
+                          </tr>
+                        </thead>
+                          { subscriptionList }
+                      </table>
                     </div>
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Order</th>
-                          <th>Customer</th>
-                          <th>Charge Date</th>
-                          <th>Delivery Date</th>
-                          <th>Total</th>
-                          <th>Subscription</th>
-                          <th>Schedule</th>
-                          <th>Product</th>
-                        </tr>
-                      </thead>
-                        { subscriptionList }
-                    </table>
                 </Card>
             </Layout.Section>
           </Layout>
