@@ -31,13 +31,15 @@ class Subscription extends React.Component {
     ).map(sub => {
       let productBadges = sub.line_items.map((item, i) => {
           return (
-            <Badge key={i} status="info">{item.title.replace('Auto renew', '') + ' x' + item.quantity}</Badge>
+            <Badge key={i} status="success">{item.title.replace('Auto renew', '') + ' x' + item.quantity}</Badge>
           )
         })
       return (
           <tbody key={ sub.id } className="ui-nested-link-container">
             <tr className="">
-              <td><Link external="true" url={ `${urlBase}addresses/${sub.address_id}` }>#{ sub.id }</Link></td>
+              <td><Link external="true" url={ `${urlBase}addresses/${sub.address_id}` }>#{ sub.id }
+              { sub.note !== null ? <Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip> : '' }
+              </Link></td>
               <td><Link external="true" url={ `${urlBase}customer/${sub.customer_id}/subscription/${sub.id}` }>{ sub.first_name + ' ' + sub.last_name }</Link></td>
               <td>{ new Date(sub.scheduled_at).toLocaleDateString() }</td>
               <td>{ new Date(new Date(sub.scheduled_at).setDate(new Date(sub.scheduled_at).getDate() + 1)).toLocaleDateString() }</td>

@@ -359,6 +359,12 @@ div.pickup-count {
 .bamboo-orderList .Polaris-ResourceList__Container {
   pointer-events: auto;
 }
+.table-wrapper .Polaris-Icon {
+  display: inline-block;
+  width: 16px;
+  vertical-align: middle;
+  margin-left: 8px;
+}
 
 /* modalForm */
 .bamboo-modalForm .Polaris-Card__Footer {
@@ -377,6 +383,7 @@ div.pickup-count {
 /* Upcoming Subscription */
 .product {
   display: none;
+  background-color: #f4f5fa;
 }
 .product.show-product {
   display: table-row;

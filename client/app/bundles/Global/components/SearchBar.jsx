@@ -67,7 +67,6 @@ const Search = createReactClass({
   },
 
   updateSearch (e) {
-    console.log('updateSearch SearchBar: ', e)
     const searchTerm = e
 
     this.setState({
