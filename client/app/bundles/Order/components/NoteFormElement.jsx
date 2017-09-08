@@ -16,7 +16,6 @@ class NoteFormElement extends Component {
   }
 
   render() {
-    console.log("noteForm props: ", this.props)
 
     let noteElement = ''
 
@@ -44,8 +43,8 @@ class NoteFormElement extends Component {
                     { label: 'Delivery', value: 'delivery' },
                     { label: 'Shipping', value: 'shipping' }
                   ]}
-                  value={ this.props.noteAttribute.value }
-                  onChange={ () => { console.log("change") } }
+                  value={ this.props.checkout || this.props.noteAttribute.value }
+                  onChange={ (value) => { this.props.onCheckoutChange(value) } }
                   placeholder="Select"
                 />
               </Stack>
@@ -59,8 +58,8 @@ class NoteFormElement extends Component {
                   label="Rate"
                   name="order[note_attributes][][value]"
                   options={ rateOptions }
-                  value={ this.props.noteAttribute.value }
-                  onChange={ () => { console.log("change") } }
+                  value={ this.props.rate || this.props.noteAttribute.value }
+                  onChange={ (value) => { this.props.onRateChange(value) } }
                   placeholder="Select"
                 />
               </Stack>
@@ -72,7 +71,7 @@ class NoteFormElement extends Component {
                 <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ this.props.noteAttribute.name } />
                 <TextField
                   label="Delivery Date"
-                  value={ this.props.noteAttribute.value }
+                  value={ this.props.datePickerSelected ? `${this.props.deliveryDate.month}-${this.props.deliveryDate.day}-${this.props.deliveryDate.year}` : this.props.noteAttribute.value }
                   readOnly={true}
                   placeholder='mm-dd-yyyy'
                 />
@@ -81,8 +80,8 @@ class NoteFormElement extends Component {
                   year={ this.props.datePickerYear }
                   selected={ this.props.datePickerSelected }
                   disableDatesBefore={ new Date() }
-                  onChange={ (selected) => { this.dateChange(selected) } }
-                  onMonthChange={ (month,year) => { this.monthChange(month,year) } }
+                  onChange={ (selected) => { this.props.onDateChange(selected) } }
+                  onMonthChange={ (month,year) => { this.props.onMonthChange(month,year) } }
                 />
               </Stack>
             )
@@ -95,8 +94,8 @@ class NoteFormElement extends Component {
                   label="Location"
                   name="order[note_attributes][][value]"
                   options={ locationOptions }
-                  value={ this.props.noteAttribute.value }
-                  onChange={ () => { console.log("change") } }
+                  value={ this.props.location || this.props.noteAttribute.value }
+                  onChange={ (value) => { this.props.onLocationChange(value) } }
                   placeholder="Select"
                 />
               </Stack>

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Stack, FormLayout, Select, Layout, Button, Icon, Thumbnail, TextStyle, TextField, Subheading, Avatar, Tabs, Link} from '@shopify/polaris';
+import {Page, Card, Stack, FormLayout, Select, Layout, Button, Icon, Thumbnail, TextStyle, TextField, Subheading, DisplayText, Avatar, Tabs, Link} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 
 import Navigation from '../../Global/components/Navigation';
@@ -12,6 +12,23 @@ import uuid from 'uuid'
 function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
+function formatDate(str) {
+  let d = new Date(str)
+  let date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()));
+  let options = {
+    year: "numeric", month: "long",
+    day: "numeric", hour: "2-digit", minute: "2-digit"
+  };
+  return date.toLocaleTimeString("en-us", options).replace(/\,(?=[^,]*$)/, ' at')
+}
+
+/**
+* Helps to format Dates input single d, outputs dd.
+* ie. addZ(2) => '02'
+*/
+function addZ(n){return n<10? '0'+n:''+n;}
+
+const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
 
 class OrderEditor extends React.Component {
   constructor(props) {
@@ -21,6 +38,16 @@ class OrderEditor extends React.Component {
       datePickerMonth: new Date().getMonth(),
       datePickerYear: new Date().getUTCFullYear(),
       datePickerSelected: null,
+      rate: null,
+      checkout: null,
+      location: null,
+      deliveryDate: {
+        delivery_date: undefined,
+        wday: undefined,
+        day: undefined,
+        month: undefined,
+        year: undefined
+      },
       order: {},
       method: '',
       url: '',
@@ -52,11 +79,20 @@ class OrderEditor extends React.Component {
         <NoteFormElement
           key={ `${i}_${note.value}` }
           noteAttribute={ note }
+          deliveryDate={ this.state.deliveryDate }
           datePickerMonth={ this.state.datePickerMonth }
           datePickerYear={ this.state.datePickerYear }
           datePickerSelected={ this.state.datePickerSelected }
+          rate={ this.state.rate }
+          onRateChange={ (value) => this.setState({rate: value}) }
+          location={ this.state.location }
+          onLocationChange={ (value) => this.setState({location: value}) }
+          checkout={ this.state.checkout }
+          onCheckoutChange={ (value) => this.setState({checkout: value}) }
           pickupLocations={ this.props.pickupLocations }
           rates={ this.props.rates }
+          onDateChange={ (selected) => { this.dateChange(selected) } }
+          onMonthChange={ (month,year) => { this.monthChange(month,year) } }
         />
       )
     })
@@ -86,7 +122,7 @@ class OrderEditor extends React.Component {
             <Stack.Item>
               <Thumbnail
                 source={ item.image.src }
-                size="medium"
+                size="small"
                 alt={ item.title }
               />
             </Stack.Item>
@@ -108,16 +144,45 @@ class OrderEditor extends React.Component {
       )
     })
 
+    const self = this
+    const shippingLines = function() {
+      if (self.props.order.shipping_lines.length > 0) {
+        return (
+          <Stack distribution="equalSpacing">
+            <Stack.Item><TextStyle variation="subdued">{ `Shipping` }</TextStyle></Stack.Item>
+            <Stack.Item>$ { self.props.order.shipping_lines[0].price }</Stack.Item>
+          </Stack>
+        )
+      }
+    }
+
     return (
       <EmbeddedApp
         apiKey={ this.props.apiKey }
         shopOrigin={ this.props.shopOrigin }
         forceRedirect={ true }
       >
-        <Page icon={ bambooIcon }>
+        <Page
+          icon={ bambooIcon }
+          primaryAction={{
+            content: 'Back',
+            url: (urlBase + this.props.order.id),
+          }}
+          >
           <Layout>
             <Layout.Section>
               <Navigation selectedTab={ null }/>
+            </Layout.Section>
+
+            <Layout.Section>
+              <DisplayText size="large">
+                { this.props.order.name }
+                <span className="title-meta">
+                  <TextStyle variation="subdued">
+                    { formatDate(this.props.order.created_at) }
+                  </TextStyle>
+                </span>
+              </DisplayText>
             </Layout.Section>
 
             <Layout.Section>
@@ -153,10 +218,7 @@ class OrderEditor extends React.Component {
                           <Stack.Item><TextStyle variation="subdued">{ `Subtotal` }</TextStyle></Stack.Item>
                           <Stack.Item>$ { this.props.order.subtotal_price }</Stack.Item>
                         </Stack>
-                        <Stack distribution="equalSpacing">
-                          <Stack.Item><TextStyle variation="subdued">{ `Shipping` }</TextStyle></Stack.Item>
-                          <Stack.Item>$ { this.props.order.shipping_lines[0].price }</Stack.Item>
-                        </Stack>
+                        { shippingLines() }
                         <Stack distribution="equalSpacing">
                           <Stack.Item><TextStyle variation="strong">{ `Total ` }</TextStyle></Stack.Item>
                           <Stack.Item><TextStyle variation="strong">{ `$${ this.props.order.total_price_usd }` }</TextStyle></Stack.Item>
@@ -309,7 +371,28 @@ class OrderEditor extends React.Component {
     });
   }
 
+  monthChange(month, year) {
 
+    this.setState({
+      datePickerMonth: month,
+      datePickerYear: year
+    })
+  }
+
+  dateChange(selected) {
+
+    let d = selected.end
+    this.setState({
+      datePickerSelected: d,
+      deliveryDate: {
+        delivery_date: d,
+        wday: weekNames[d.getDay()],
+        day: addZ(d.getDate()),
+        month: addZ(d.getMonth() + 1),
+        year: d.getFullYear()
+      }
+    })
+  }
 
 }
 export default OrderEditor

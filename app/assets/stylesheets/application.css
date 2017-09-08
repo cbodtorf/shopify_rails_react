@@ -397,6 +397,23 @@ div.pickup-count {
 .customer {
   margin-bottom: 20px;
 }
+span.title-meta {
+  padding-left: 0;
+  -webkit-flex: 0 1 auto;
+  -ms-flex: 0 1 auto;
+  flex: 0 1 auto;
+  -webkit-align-self: flex-end;
+  -ms-flex-item-align: end;
+  align-self: flex-end;
+  line-height: 2.5rem;
+  font-size: 1.4rem;
+  font-weight: 400;
+  text-transform: initial;
+  letter-spacing: initial;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-left: 0.8rem;
+}
 .customer .Polaris-Card .Polaris-Stack {
   align-items: stretch;
 }
