@@ -102,19 +102,8 @@ class AppProxyController < ApplicationController
       "checkout": {
         "token": checkout_token,
         "shipping_address": {
-          "id": 6757311429,
-          "first_name": "Caleb",
-          "last_name": "Bodtorf",
-          "phone": nil,
+          "id": @checkout.attributes[:shipping_address].attributes[:id],
           "company": @checkout.attributes[:shipping_address].attributes[:company] += "_",
-          "address1": "1234 test",
-          "address2": "",
-          "city": "Atlanta",
-          "province": "Georgia",
-          "province_code": "GA",
-          "country": "United States",
-          "country_code": "US",
-          "zip": "30076"
         }
       }
     }
