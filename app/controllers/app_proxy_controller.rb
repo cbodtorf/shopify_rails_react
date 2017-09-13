@@ -160,8 +160,8 @@ class AppProxyController < ApplicationController
     if Time.now < end_of_day # normal
       Rails.logger.debug("[work day] #{Time.now} #{end_of_day}")
       picker_data = date_range.map.with_index do |date, i|
-        # black out sundays
-        if date.wday != 0
+        # black out Saturday Afternoon
+        if date.wday != 6 && date.wday != 0
           if date.today?
             # allow same_day for today
             dateObj = {
@@ -189,7 +189,34 @@ class AppProxyController < ApplicationController
               end
             }
           end
+        elsif date.wday == 6
+          # no Saturday morning cook time.
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select do |rate|
+              if params[:subscriptionPresent] == 'true'
+                rate.delivery_type == 'subscription'
+              else
+                rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time }) && rate.cook_time != 'morning'
+              end
+            end
+          }
+        elsif date.wday == 0
+          # no Sunday morning delivery.
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select do |rate|
+              if params[:subscriptionPresent] == 'true'
+                rate.delivery_type == 'subscription'
+              else
+                rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time }) && rate.cook_time != 'afternoon'
+              end
+            end
+          }
         else
+          # disabled.
           dateObj = {
             date: date,
             disabled: true,
@@ -201,7 +228,7 @@ class AppProxyController < ApplicationController
       Rails.logger.debug("[end of work day] #{Time.now} #{end_of_day}")
       picker_data = date_range.map.with_index do |date, i|
         # black out sundays
-        if date.wday != 0
+        if date.wday != 6 && date.wday != 0
           if i == 0
             # disable
             dateObj = {
@@ -236,7 +263,34 @@ class AppProxyController < ApplicationController
               end
             }
           end
+        elsif date.wday == 6
+          # no Saturday morning cook time.
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select do |rate|
+              if params[:subscriptionPresent] == 'true'
+                rate.delivery_type == 'subscription'
+              else
+                rate.delivery_type == 'next_day' && rate.cook_time != 'morning'
+              end
+            end
+          }
+        elsif date.wday == 0
+          # no Sunday morning delivery.
+          dateObj = {
+            date: date,
+            disabled: false,
+            rates: rates.select do |rate|
+              if params[:subscriptionPresent] == 'true'
+                rate.delivery_type == 'subscription'
+              else
+                rate.delivery_type == 'next_day' && rate.cook_time != 'afternoon'
+              end
+            end
+          }
         else
+          # disabled.
           dateObj = {
             date: date,
             disabled: true,
