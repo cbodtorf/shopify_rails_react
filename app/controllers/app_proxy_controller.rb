@@ -196,7 +196,7 @@ class AppProxyController < ApplicationController
             disabled: false,
             rates: rates.select do |rate|
               if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription'
+                rate.delivery_type == 'subscription' && rate.cook_time != 'morning'
               else
                 rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time }) && rate.cook_time != 'morning'
               end
@@ -209,7 +209,7 @@ class AppProxyController < ApplicationController
             disabled: false,
             rates: rates.select do |rate|
               if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription'
+                rate.delivery_type == 'subscription' && rate.cook_time != 'afternoon'
               else
                 rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time }) && rate.cook_time != 'afternoon'
               end
@@ -270,7 +270,7 @@ class AppProxyController < ApplicationController
             disabled: false,
             rates: rates.select do |rate|
               if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription'
+                rate.delivery_type == 'subscription' && rate.cook_time != 'morning'
               else
                 rate.delivery_type == 'next_day' && rate.cook_time != 'morning'
               end
@@ -283,7 +283,7 @@ class AppProxyController < ApplicationController
             disabled: false,
             rates: rates.select do |rate|
               if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription'
+                rate.delivery_type == 'subscription' && rate.cook_time != 'afternoon'
               else
                 rate.delivery_type == 'next_day' && rate.cook_time != 'afternoon'
               end
