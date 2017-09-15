@@ -1,5 +1,6 @@
 class Rate < ApplicationRecord
   belongs_to :shop
+  has_and_belongs_to_many :cook_day, dependent: :destroy
 
   has_many :conditions, dependent: :destroy
   has_many :product_specific_prices, dependent: :destroy

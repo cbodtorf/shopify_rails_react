@@ -35,6 +35,26 @@ ActiveRecord::Schema.define(version: 20170801155131) do
     t.index ["rate_id"], name: "index_conditions_on_rate_id", using: :btree
   end
 
+  create_table "cook_days", force: :cascade do |t|
+    t.integer "cook_schedule_id"
+    t.text    "title",            null: false
+    t.index ["cook_schedule_id"], name: "index_cook_days_on_cook_schedule_id", using: :btree
+  end
+
+  create_table "cook_days_rates", id: false, force: :cascade do |t|
+    t.integer "cook_day_id"
+    t.integer "rate_id"
+  end
+
+  create_table "cook_schedules", force: :cascade do |t|
+    t.integer  "shop_id"
+    t.text     "title"
+    t.integer  "cook_time",  null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["shop_id"], name: "index_cook_schedules_on_shop_id", using: :btree
+  end
+
   create_table "order_notes", force: :cascade do |t|
     t.integer  "shop_id"
     t.string   "checkout_token",  null: false
@@ -135,6 +155,8 @@ ActiveRecord::Schema.define(version: 20170801155131) do
 
   add_foreign_key "blackout_dates", "shops"
   add_foreign_key "conditions", "rates"
+  add_foreign_key "cook_days", "cook_schedules"
+  add_foreign_key "cook_schedules", "shops"
   add_foreign_key "order_notes", "shops"
   add_foreign_key "pickup_locations", "shops"
   add_foreign_key "postal_codes", "shops"

@@ -2,6 +2,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
   def index
 
     @fiveDayOrders = self.formatOrders
+    Rails.logger.debug("@fiveDayOrders: #{@fiveDayOrders.inspect}")
 
     @fiveDayOrders.map do |date|
       date[:delivery_revenue] = 0
@@ -107,25 +108,33 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Shopify requires time to be iso8601 format
     # Order Information 7 day range ( limit for which orders )
     # TODO: make sure this range is right,
+    shop = Shop.find_by(shopify_domain: params[:shop])
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
     @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
-    # Rails.logger.debug("notes order: #{@orders.inspect}")
+    schedules = shop.cook_schedules
+
+    Rails.logger.debug("notes order: #{@orders.inspect}")
 
     date_from  = Date.current
     date_to    = date_from + 4
     date_range = (date_from..date_to).map()
-    @fiveDayOrders = date_range.map {|date| {
-      date: date,
-      morning_items: [],
-      morning_addresses: [],
-      afternoon_items: [],
-      afternoon_addresses: [],
-      pickup: [],
-      shipping: [],
-      delivery: []
-      }}
+    @fiveDayOrders = date_range.map do |date|
+      obj = {
+              date: date,
+              cook_schedules: schedules.map {|sched| {orders: [], title: sched[:title], cook_time: sched[:cook_time]}},
+              morning_items: [],
+              afternoon_items: [],
+              morning_addresses: [],
+              afternoon_addresses: [],
+              pickup: [],
+              shipping: [],
+              delivery: []
+            }
+    end
+
+
       @orders.each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
@@ -136,18 +145,36 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
         # Isolate Delivery Rate
         rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
-        # Rails.logger.debug("notes rate: #{rates.inspect}")
-        rate = Rate.find(rates[0].attributes[:value])
-        # Rails.logger.debug("notes rate: #{order.attributes[:note_attributes].inspect}")
+        rate = shop.rates.find(rates[0].attributes[:value])
+
         if note_date[0] != nil
           note_date = Date.parse(note_date[0].attributes[:value])
 
-          # mach dates
+          # match dates
           dateIndex = @fiveDayOrders.index { |date| date[:date] == note_date }
           if dateIndex
             # Counts
             @fiveDayOrders[dateIndex][rate[:delivery_method].downcase.to_sym].push(order)
 
+            # NEW
+            # Ignore shipping rates
+            if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
+              # Find cook_day and cook_schedule that rate belongs to
+              cook_days = rate.cook_day.select {|day| day.title.downcase == note_date.strftime("%A").downcase}
+              Rails.logger.debug("cook_days: #{rate.cook_day.inspect}")
+              Rails.logger.debug("cook_days: #{note_date.strftime("%A").downcase.inspect}")
+              Rails.logger.debug("order name: #{order.name.inspect}")
+
+              if cook_days.size > 1
+                # rate appears in multiple cook days ie. multiple cook times
+                # TODO: this should not happen, need figure out how to prevent this.
+              else
+                Rails.logger.debug("cook_days: #{cook_days.first.inspect}")
+                @fiveDayOrders[dateIndex][:cook_schedules].select {|sched| sched[:title] == cook_days.first.cook_schedule.title}.first[:orders].push(order)
+              end
+            end
+
+            # OLD
             # Organize CSV orders for delivery and pickup
             if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
 
@@ -188,7 +215,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
         end
       end
-      # Rails.logger.debug("date: #{@fiveDayOrders[0][:afternoon].inspect}")
+      Rails.logger.debug("order: #{@fiveDayOrders[0][:cook_schedules].inspect}")
     return @fiveDayOrders
   end
 

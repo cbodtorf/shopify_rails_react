@@ -123,182 +123,91 @@ class AppProxyController < ApplicationController
     puts response.body
   end
 
+  def createDateObject(date, delivery_type, date_rates, honor_cutoff, sub_present)
+
+    dateObj = {
+      date: date,
+      disabled: false,
+      rates: date_rates.select do |rate|
+        honor_cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
+
+        Rails.logger.debug("[sub_present] #{sub_present.inspect}")
+        if  sub_present
+          rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
+        else
+          rate.delivery_type == delivery_type && honor_cutoff && rate.delivery_method == 'delivery'
+        end
+      end
+    }
+  end
+
   def picker
     shop = Shop.find_by(shopify_domain: params[:shop])
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    rates = shop.rates.where(delivery_method: "delivery")
+    sub_present = params[:subscriptionPresent] == 'true'
+
     pickup_rate = shop.rates.where(delivery_method: "pickup")
     shipping_rates = shop.rates.where(delivery_method: "shipping")
 
+    cook_schedules = shop.cook_schedules.all
     postal_codes = shop.postal_codes.all
-
     pickup_locations = shop.pickup_locations.all
 
-    # TODO: hour should be a variable maybe held in a config/settings from the admin.
-    end_of_day = DateTime.now.change({ hour: 15 })
-
-
     blackout_dates = shop.blackout_dates.all
-    # no sundays
-    blackout_sunday = 0
-
-    date_from  = Date.current
-    Rails.logger.debug("[date] #{date_from.inspect}")
-    date_to    = date_from + 6
-    date_range = (date_from..date_to).map()
-
     # TODO: black out days. This is still being handled on the front end, but we are passing it the dates.
     # bo = blackout_dates.map do |d|
     #   if Date.parse(d) == date
     #   Date.parse(d) == date ? "disable" : "clear"
     # end
 
-    # TODO: add Subscription logic
+    date_from  = Date.current
+    Rails.logger.debug("[date] #{date_from.inspect}")
+    date_to    = date_from + 6
+    date_range = (date_from..date_to).map()
 
-    if Time.now < end_of_day # normal
-      Rails.logger.debug("[work day] #{Time.now} #{end_of_day}")
-      picker_data = date_range.map.with_index do |date, i|
-        # black out Saturday Afternoon
-        if date.wday != 6 && date.wday != 0
-          if date.today?
-            # allow same_day for today
-            dateObj = {
-              date: date,
-              disabled: false,
-              rates: rates.select do |rate|
-                if  params[:subscriptionPresent] == 'true'
-                  rate.delivery_type == 'subscription' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
-                else
-                  rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
-                end
-              end
-            }
-          elsif !date.today?
-            # no next day rates today
-            dateObj = {
-              date: date,
-              disabled: false,
-              rates: rates.select do |rate|
-                if params[:subscriptionPresent] == 'true'
-                  rate.delivery_type == 'subscription'
-                else
-                  rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
-                end
-              end
-            }
-          end
-        elsif date.wday == 6
-          # no Saturday morning cook time.
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select do |rate|
-              if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription' && rate.cook_time != 'morning'
-              else
-                rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time }) && rate.cook_time != 'morning'
-              end
-            end
-          }
-        elsif date.wday == 0
-          # no Sunday morning delivery.
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select do |rate|
-              if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription' && rate.cook_time != 'afternoon'
-              else
-                rate.delivery_type == 'next_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time }) && rate.cook_time != 'afternoon'
-              end
-            end
-          }
+    # Sort by cook time
+    schedules = cook_schedules.sort_by { |sched| sched[:cook_time] }
+
+    # TODO: hour should be a variable maybe held in a config/settings from the admin.
+    # We'll use last cook_schedule cook_time
+    end_of_day = DateTime.now.change({ hour: cook_schedules.last.cook_time })
+
+    # loop through dates:
+    cal_data = date_range.map.with_index do |date, i|
+
+      rate_dates = []
+      schedules.each_with_index do |sched, idx|
+        # last schedule is delivered day after.
+        if idx == (schedules.each_with_index.size - 1)
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday].rates)
         else
-          # disabled.
-          dateObj = {
-            date: date,
-            disabled: true,
-            rates: []
-          }
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
         end
       end
-    elsif Time.now > end_of_day # shift rates over one day
-      Rails.logger.debug("[end of work day] #{Time.now} #{end_of_day}")
-      picker_data = date_range.map.with_index do |date, i|
-        # black out sundays
-        if date.wday != 6 && date.wday != 0
-          if i == 0
-            # disable
-            dateObj = {
-              date: date,
-              disabled: true,
-              rates: []
-            }
-          elsif (date - 1).today?
-            # allow same_day for tomorrow
-            dateObj = {
-              date: date,
-              disabled: false,
-              rates: rates.select do |rate|
-                if  params[:subscriptionPresent] == 'true'
-                  rate.delivery_type == 'subscription' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
-                else
-                  rate.delivery_type == 'same_day' && Time.now < DateTime.now.change({ hour: rate.cutoff_time })
-                end
-              end
-            }
-          elsif !date.today? && !(date - 1).today?
-            # no next day rates today or tomorrow
-            dateObj = {
-              date: date,
-              disabled: false,
-              rates: rates.select do |rate|
-                if params[:subscriptionPresent] == 'true'
-                  rate.delivery_type == 'subscription'
-                else
-                  rate.delivery_type == 'next_day'
-                end
-              end
-            }
-          end
-        elsif date.wday == 6
-          # no Saturday morning cook time.
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select do |rate|
-              if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription' && rate.cook_time != 'morning'
-              else
-                rate.delivery_type == 'next_day' && rate.cook_time != 'morning'
-              end
-            end
-          }
-        elsif date.wday == 0
-          # no Sunday morning delivery.
-          dateObj = {
-            date: date,
-            disabled: false,
-            rates: rates.select do |rate|
-              if params[:subscriptionPresent] == 'true'
-                rate.delivery_type == 'subscription' && rate.cook_time != 'afternoon'
-              else
-                rate.delivery_type == 'next_day' && rate.cook_time != 'afternoon'
-              end
-            end
-          }
-        else
-          # disabled.
-          dateObj = {
-            date: date,
-            disabled: true,
-            rates: []
-          }
+
+      if Time.now < end_of_day # normal
+        if date.today?
+          # offer same_day
+          createDateObject(date, 'same_day', rate_dates.uniq, true, sub_present)
+        elsif !date.today?
+          # offer next_day
+          createDateObject(date, 'next_day', rate_dates.uniq, true, sub_present)
+        end
+      elsif Time.now > end_of_day # shift rates over one day
+        if (date - 1).today?
+          # offer same_day
+          createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
+        elsif !date.today? && !(date - 1).today?
+          # offer next_day
+          createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
         end
       end
+
     end
+
+    Rails.logger.debug("[cal_data] #{cal_data.inspect}")
 
     date_from  = Date.current + 1
     date_to    = date_from + 6
@@ -313,7 +222,7 @@ class AppProxyController < ApplicationController
       }
     end
 
-    render json: {deliveryDates: picker_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates, postalCodes: postal_codes } , status: 200
+    render json: {deliveryDates: cal_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates, postalCodes: postal_codes} , status: 200
   end
 
   def customerPortal
