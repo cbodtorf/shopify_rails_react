@@ -253,10 +253,13 @@ div.Polaris-Page {
   margin-top: 10px;
 }
 
-.spreadsheet .time-button.morning .Polaris-Button{
+.spreadsheet .time-button .Polaris-Button{
+  background-color: #B7ECEC;
+}
+.spreadsheet .time-button:first-of-type .Polaris-Button{
   background-color: #FFEA8A;
 }
-.spreadsheet .time-button.afternoon .Polaris-Button{
+.spreadsheet .time-button:last-of-type .Polaris-Button{
   background-color: #B3BCF5;
 }
 

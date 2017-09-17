@@ -59,10 +59,23 @@ class Dashboard extends React.Component {
       const m = monthNames[formatedDate.getMonth()]
       const w = weekNames[formatedDate.getDay()]
       const d = formatedDate.getDate()
+
       let disabledMorningItems = date.morning_items.length === 0
       let disabledAfternoonItems = date.afternoon_items.length === 0
       let disabledMorningAddresses = date.morning_addresses.length === 0
       let disabledAfternoonAddresses = date.afternoon_addresses.length === 0
+
+      const cookSchedule = date.cook_schedules.map((sched) => {
+        return (
+          <div className="time-button {{ sched.title.toLowerCase().split(' ').join('') }}">
+            <Heading>{ sched.title.split(' ')[0] }</Heading>
+            <ButtonGroup>
+                <Button disabled={ sched.orders.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=${sched.cook_time}&date=${formatedDate}`}>Items</Button>
+                <Button disabled={ sched.addresses.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=${sched.cook_time}&date=${formatedDate}`}>Addresses</Button>
+            </ButtonGroup>
+          </div>
+        )
+      })
 
 
       return (
@@ -110,6 +123,8 @@ class Dashboard extends React.Component {
 
             <div className="delivery-wrapper spreadsheet">
               <Card sectioned>
+              { cookSchedule }
+              {/*
               <div className="time-button morning">
                 <Heading>Morning</Heading>
                 <ButtonGroup>
@@ -124,6 +139,7 @@ class Dashboard extends React.Component {
                     <Button disabled={ disabledAfternoonAddresses } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}>Addresses</Button>
                 </ButtonGroup>
               </div>
+              */}
               </Card>
             </div>
           </Stack>

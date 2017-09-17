@@ -129,13 +129,14 @@ class AppProxyController < ApplicationController
       date: date,
       disabled: false,
       rates: date_rates.select do |rate|
-        honor_cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
+        cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
 
-        Rails.logger.debug("[sub_present] #{sub_present.inspect}")
+        Rails.logger.debug("[args] date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}")
         if  sub_present
           rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
         else
-          rate.delivery_type == delivery_type && honor_cutoff && rate.delivery_method == 'delivery'
+          Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
+          rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'
         end
       end
     }
@@ -187,6 +188,7 @@ class AppProxyController < ApplicationController
         end
       end
 
+
       if Time.now < end_of_day # normal
         if date.today?
           # offer same_day
@@ -194,6 +196,14 @@ class AppProxyController < ApplicationController
         elsif !date.today?
           # offer next_day
           createDateObject(date, 'next_day', rate_dates.uniq, true, sub_present)
+        else
+          # blank day
+          Rails.logger.debug("[blank] #{date.inspect}")
+          {
+            date: date,
+            disabled: true,
+            rates: []
+          }
         end
       elsif Time.now > end_of_day # shift rates over one day
         if (date - 1).today?
@@ -202,7 +212,18 @@ class AppProxyController < ApplicationController
         elsif !date.today? && !(date - 1).today?
           # offer next_day
           createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
+        else
+          # blank day
+          Rails.logger.debug("[blank] #{date.inspect}")
+          {
+            date: date,
+            disabled: true,
+            rates: []
+          }
         end
+      else
+        # Should not run
+        Rails.logger.debug("[err] #{date.inspect}")
       end
 
     end

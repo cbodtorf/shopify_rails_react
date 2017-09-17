@@ -160,23 +160,33 @@ class DashboardController < ShopifyApp::AuthenticatedController
             if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
               cook_date = nil
 
+              # last cook of day?
+              deliver_next_day = false
+
               # Find cook_day and cook_schedule that rate belongs to
+
               cook_days = rate.cook_day.select do |day|
-                # last cook of day?
-                if day.cook_schedule_id == schedules.last.id
+                Rails.logger.debug("day: #{day.title.downcase.inspect}")
+                Rails.logger.debug("day: #{note_date.strftime("%A").downcase.inspect}")
+                Rails.logger.debug("id: #{day.cook_schedule_id.inspect}")
+                if day.title.downcase == note_date.strftime("%A").downcase && day.cook_schedule_id != schedules.last.id
+                  cook_date = (note_date)
+                  deliver_next_day = false
+                  true # cook on delivery date
+                elsif day.title.downcase == note_date.strftime("%A").downcase && day.cook_schedule_id == schedules.last.id
                   cook_date = (note_date - 1.day)
-                  day.title.downcase == cook_date.strftime("%A").downcase
+                  deliver_next_day = true
+                  true # cook day before delivery date
                 else
                   cook_date = (note_date)
-                  day.title.downcase == cook_date.strftime("%A").downcase
+                  Rails.logger.debug("err: #{day.inspect}")
+                  false
                 end
               end
 
-              # last cook of day?
-              deliver_next_day = cook_days.first.cook_schedule_id = schedules.last.id
-
               Rails.logger.debug("rate: #{rate.inspect}")
-              Rails.logger.debug("cook_days: #{rate.cook_day.inspect}")
+              Rails.logger.debug("rate cook_days: #{rate.cook_day.inspect}")
+              Rails.logger.debug("cook_days: #{cook_days.inspect}")
               Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("delivery date: #{note_date.inspect} - #{note_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("order name: #{order.name.inspect}")
@@ -201,7 +211,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
                   sched.first[:orders].push(order)
 
                   # cooks that go out same day go into the next schedule's addresses.
-                  @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].push(order)
+                  Rails.logger.debug("index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
+                  Rails.logger.debug("index: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
+                  @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
                 end
               end
             end
