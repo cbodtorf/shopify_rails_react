@@ -65,13 +65,13 @@ class Dashboard extends React.Component {
       let disabledMorningAddresses = date.morning_addresses.length === 0
       let disabledAfternoonAddresses = date.afternoon_addresses.length === 0
 
-      const cookSchedule = date.cook_schedules.map((sched) => {
+      const cookSchedule = date.cook_schedules.map((sched, idx) => {
         return (
-          <div className="time-button {{ sched.title.toLowerCase().split(' ').join('') }}">
+          <div key={sched.title + "_" + idx} className="time-button {{ sched.title.toLowerCase().split(' ').join('') }}">
             <Heading>{ sched.title.split(' ')[0] }</Heading>
             <ButtonGroup>
-                <Button disabled={ sched.orders.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=${sched.cook_time}&date=${formatedDate}`}>Items</Button>
-                <Button disabled={ sched.addresses.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=${sched.cook_time}&date=${formatedDate}`}>Addresses</Button>
+                <Button disabled={ sched.orders.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Items</Button>
+                <Button disabled={ sched.addresses.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Addresses</Button>
             </ButtonGroup>
           </div>
         )
@@ -92,7 +92,7 @@ class Dashboard extends React.Component {
             </Card>
 
             <div className="delivery-wrapper">
-              <Link url={`/showOrders?attribute=delivery&date=${formatedDate}`}>
+              <Link url={`/showOrders?attribute=delivery&date=${formatedDate}&shop=${this.props.shop_session.url}`}>
                 <Card sectioned title="Deliveries">
                   <div className="count-revenue">
                     <div className="pickup-count">
@@ -106,7 +106,7 @@ class Dashboard extends React.Component {
               </Link>
             </div>
             <div className="delivery-wrapper pickup">
-              <Link url={`/showOrders?attribute=pickup&date=${formatedDate}`}>
+              <Link url={`/showOrders?attribute=pickup&date=${formatedDate}&shop=${this.props.shop_session.url}`}>
                 <Card sectioned title="Pickups">
                   <div className="count-revenue">
                     <div className="pickup-count">
@@ -123,23 +123,9 @@ class Dashboard extends React.Component {
 
             <div className="delivery-wrapper spreadsheet">
               <Card sectioned>
-              { cookSchedule }
-              {/*
-              <div className="time-button morning">
-                <Heading>Morning</Heading>
-                <ButtonGroup>
-                    <Button disabled={ disabledMorningItems } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=morning&date=${formatedDate}`}>Items</Button>
-                    <Button disabled={ disabledMorningAddresses } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=morning&date=${formatedDate}`}>Addresses</Button>
-                </ButtonGroup>
-              </div>
-              <div className="time-button afternoon">
-                <Heading>Afternoon</Heading>
-                <ButtonGroup>
-                    <Button disabled={ disabledAfternoonItems } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=afternoon&date=${formatedDate}`}>Items</Button>
-                    <Button disabled={ disabledAfternoonAddresses } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=afternoon&date=${formatedDate}`}>Addresses</Button>
-                </ButtonGroup>
-              </div>
-              */}
+
+                { cookSchedule }
+
               </Card>
             </div>
           </Stack>

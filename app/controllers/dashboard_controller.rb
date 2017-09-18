@@ -1,8 +1,8 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
+    shop = ShopifyAPI::Shop.current()
+    @fiveDayOrders = self.formatOrders(shop.attributes[:domain])
 
-    @fiveDayOrders = self.formatOrders
-    # Rails.logger.debug("@fiveDayOrders: #{@fiveDayOrders.inspect}")
 
     @fiveDayOrders.map do |date|
       date[:delivery_revenue] = 0
@@ -18,7 +18,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
         end
       end
     end
-    # Rails.logger.debug("order date time: #{@fiveDayOrders.inspect}")
 
     # Subscriber Count (tagged with Active Subscriber)
     # http://support.rechargepayments.com/article/191-shopify-order-tags
@@ -49,29 +48,36 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
   def generateCSV
     if params[:attribute].downcase != 'shipping'
-      dates = self.formatOrders
+      dates = self.formatOrders(params[:shop])
       selectedDate = dates.select do |order|
         order[:date] == Date.parse(params[:date])
       end.first
 
+      orders = []
+      cook_title = ''
+
       # Morning Cooks consist of morning deliveries and pickup orders. Addresses don't need pickup orders
-      if params[:time] == 'morning' && params[:attribute] == 'items'
-        @orders = selectedDate[:morning_items]
-      elsif params[:time] == 'morning' && params[:attribute] == 'addresses'
-        @orders = selectedDate[:morning_addresses]
-      elsif params[:time] == 'afternoon' && params[:attribute] == 'items'
-        @orders = selectedDate[:afternoon_items]
-      elsif params[:time] == 'afternoon' && params[:attribute] == 'addresses'
-        @orders = selectedDate[:afternoon_addresses]
+      selectedDate[:cook_schedules].each do |sched|
+        if params[:time].to_i == sched[:cook_time].to_i && params[:attribute] == 'items'
+          orders = sched[:orders]
+          cook_title = sched[:title]
+          Rails.logger.debug("item csv: #{sched[:title].inspect} #{sched[:cook_time].inspect}")
+        elsif params[:time].to_i == sched[:cook_time].to_i && params[:attribute] == 'addresses'
+          orders = sched[:addresses]
+          cook_title = sched[:title]
+          Rails.logger.debug("add csv: #{sched[:title].inspect} #{sched[:cook_time].inspect}")
+        else
+          Rails.logger.debug("err csv: #{sched[:cook_time].inspect}")
+        end
       end
 
+      Rails.logger.debug("orders: #{orders.size.inspect}")
       shop = ShopifyAPI::Shop.current()
-      Rails.logger.debug("shop: #{shop.inspect}")
       respond_to do |format|
         format.html
         format.csv {
-          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(@orders) : CSVGenerator.generateAddressesCSV(@orders, shop),
-          filename: "#{Date.parse(params[:date])}_#{params[:time]}-#{params[:attribute]}.csv"
+          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(orders) : CSVGenerator.generateAddressesCSV(orders, shop),
+          filename: "#{Date.parse(params[:date])}_#{cook_title}-#{params[:attribute]}.csv"
         }
       end
     else
@@ -90,7 +96,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
   def showOrders
     if params[:attribute].downcase != 'shipping'
-      dates = self.formatOrders
+      dates = self.formatOrders(params[:shop])
       selectedDate = dates.select do |order|
         order[:date] == Date.parse(params[:date])
       end.first
@@ -104,11 +110,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
   end
 
-  def formatOrders
+  def formatOrders(shop_domain = params[:shop])
     # Shopify requires time to be iso8601 format
     # Order Information 7 day range ( limit for which orders )
     # TODO: make sure this range is right,
-    shop = Shop.find_by(shopify_domain: params[:shop])
+    shop = Shop.find_by(shopify_domain: shop_domain)
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
@@ -155,7 +161,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
             # Counts
             @fiveDayOrders[dateIndex][rate[:delivery_method].downcase.to_sym].push(order)
 
-            # NEW
             # Ignore shipping rates
             if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
               cook_date = nil
@@ -164,7 +169,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
               deliver_next_day = false
 
               # Find cook_day and cook_schedule that rate belongs to
-
               cook_days = rate.cook_day.select do |day|
                 Rails.logger.debug("day: #{day.title.downcase.inspect}")
                 Rails.logger.debug("day: #{note_date.strftime("%A").downcase.inspect}")
@@ -196,6 +200,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 # TODO: this should not happen, need figure out how to prevent this.
               else
                 if deliver_next_day
+                  # DELIVERED NEXT DAY AFTER COOK
                   # prevent index from cycling to last item in array
                   dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:cook_schedules].select do |sched|
                     sched[:title] == cook_days.first.cook_schedule.title
@@ -204,7 +209,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                   # Last cooks go into the first delivery addresses of next day.
                   @fiveDayOrders[dateIndex][:cook_schedules].first[:addresses].push(order)
                 else
-
+                  # DELIVERED SAME DAY AS COOK
                   sched = @fiveDayOrders[dateIndex][:cook_schedules].select do |sched|
                     sched[:title] == cook_days.first.cook_schedule.title
                   end
@@ -217,49 +222,13 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 end
               end
             end
-
-            # OLD
-            # Organize CSV orders for delivery and pickup
-            if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
-
-              # Same Day [same_day] [morning]
-              if rate[:cook_time].downcase == "morning" && rate[:delivery_type].downcase == "same_day"
-                @fiveDayOrders[dateIndex][:morning_items].push(order)
-                @fiveDayOrders[dateIndex][:afternoon_addresses].push(order)
-              end
-              # Free Local [next_day] [morning] && Pickup [next_day] [morning]
-              if rate[:cook_time].downcase == "morning" && rate[:delivery_type].downcase == "next_day" && rate[:delivery_method].downcase == "delivery"
-                @fiveDayOrders[dateIndex][:morning_items].push(order)
-                @fiveDayOrders[dateIndex][:afternoon_addresses].push(order)
-              end
-              # Pickup [next_day] [morning] TODO: double check pickup is cooked in the morning of date.
-              if rate[:cook_time].downcase == "morning" && rate[:delivery_type].downcase == "next_day" && rate[:delivery_method].downcase == "pickup"
-                @fiveDayOrders[dateIndex][:morning_items].push(order)
-                # no addresses needed.
-              end
-              # Super Fast [next_day] [afternoon]
-              if rate[:cook_time].downcase == "afternoon" && rate[:delivery_type].downcase == "next_day"
-                # prevent index from cycling to last item in array
-                dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:afternoon_items].push(order) : nil
-                @fiveDayOrders[dateIndex][:morning_addresses].push(order)
-              end
-              # Subscription First [next_day] [afternoon]
-              if rate[:cook_time].downcase == "afternoon" && rate[:delivery_type].downcase == "subscription"
-                # prevent index from cycling to last item in array
-                dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:afternoon_items].push(order) : nil
-                @fiveDayOrders[dateIndex][:morning_addresses].push(order)
-              end
-              # Subscription Recurring [next_day] [afternoon]
-              # Subscription First Same day [same_day] [afternoon]
-              # Subscription Recurring Same day [same_day] [afternoon]
-            end
           else
             # Order not in the Date Range
           end
 
         end
       end
-      # Rails.logger.debug("order: #{@fiveDayOrders[0][:cook_schedules].inspect}")
+
     return @fiveDayOrders
   end
 
@@ -275,8 +244,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
         end
       end
     end
-    # Rails.logger.debug("shipping orders check?: #{shippingOrders.inspect}")
-    # Rails.logger.debug("shipping orders check?: #{shippingOrders.size}")
 
     return shippingOrders
   end
