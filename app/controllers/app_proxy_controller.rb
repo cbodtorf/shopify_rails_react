@@ -181,9 +181,13 @@ class AppProxyController < ApplicationController
       rate_dates = []
       schedules.each_with_index do |sched, idx|
         # last schedule is delivered day after.
-        if idx == (schedules.each_with_index.size - 1)
-          rate_dates = rate_dates.concat(sched.cook_days[date.wday].rates)
+        if idx == (schedules.size - 1)
+          Rails.logger.debug("[last date wday] #{date.wday.inspect}")
+          Rails.logger.debug("[last date wday] #{sched.cook_days[date.wday - 2].inspect}")
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 2].rates)
         else
+          Rails.logger.debug("[date wday] #{date.wday.inspect}")
+          Rails.logger.debug("[date wday] #{sched.cook_days[date.wday - 1].inspect}")
           rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
         end
       end
@@ -211,6 +215,7 @@ class AppProxyController < ApplicationController
           createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
         elsif !date.today? && !(date - 1).today?
           # offer next_day
+          Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.uniq.inspect}")
           createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
         else
           # blank day
