@@ -2,32 +2,97 @@ import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
+
+import ModalForm from '../../Global/components/ModalForm';
 import bambooIcon from 'assets/green-square.jpg';
+
+function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)}
 
 class BundleEditor extends React.Component {
   constructor(props) {
     super(props)
 
     this.state = {
-      bundleItems: [],
-      modalOpen: false,
-      bundleToEdit: this.props.bundles[0]
+      formFields: [],
+      hiddenFormInput: '',
+      method: '',
+      url: '',
+      editModal: false
     }
   }
 
   componentWillMount() {
     console.log("props", this.props);
+    let metafield = []
+    let method = 'post'
+    let url = this.props.bundle === null ? '/bundle' : `/bundle?id=${this.props.bundle.id}`
+
+    if (this.props.bundle) {
+      if (this.props.bundle.metafield.length !== 0) {
+        method = 'put'
+        url = `/bundle/${this.props.bundle.id}`
+      }
+    }
+
+    let bundles = this.props.bundles.map((item) => item)
 
     this.setState({
-      bundleItems: this.props.bundles,
+      bundleToEdit: this.props.bundle === null ? this.props.bundles[0] : this.props.bundle,
+      method: method,
+      url: url,
+      bundles: bundles,
+      authenticity_token: this.props.authenticity_token
     })
   }
 
-
-
   render() {
     console.log("render", this);
-    let bundlesItems = this.state.bundleItems.map(bundle => {
+    console.log('state', this.state);
+    /**
+    * Filtering out Bundles, Cleanses, and Subscriptions on the backend.
+    */
+    const productOptions = this.props.products.map(product => {
+      return { label: product.title, value: product.title }
+    })
+
+    let existingMetafields = []
+    if (this.state.formFields.length !== 0 ) {
+      existingMetafields = this.state.formFields.map((item, i) => {
+        return (
+          <div key={item.id} className={`bundle-input ${item.id}`}>
+          <Select
+            label="Bundle Item"
+            value={item.title}
+            options={productOptions}
+            placeholder="Select"
+            onChange={this.valueUpdater(item.id, "title")}
+          />
+          <div className="quantity">
+            <TextField
+              label="Quantity"
+              value={item.quantity || 1}
+              type="number"
+              name="quantity"
+              onChange={this.valueUpdater(item.id, "quantity")}
+            />
+          </div>
+          <Button destructive outline icon="delete" onClick={ () => this.removeFormField(item.id) }></Button>
+          </div>
+        )
+      })
+    } else {
+      existingMetafields = (
+        <p>No associated products yet.</p>
+      )
+    }
+
+    let bundlesItems = []
+    console.log('bundle items', this.props.bundles);
+
+    bundlesItems = this.state.bundles.map(bundle => {
+      if (this.state.bundleToEdit.id === bundle.id) {
+        console.log('bundle items', bundle.metafield);
+      }
       return (
         {
           url: `https://bamboojuices.myshopify.com/admin/products/${bundle.id}`,
@@ -43,11 +108,7 @@ class BundleEditor extends React.Component {
               )
           })
         }</div>,
-          actions: [{content: 'Edit listing', onAction: () => {
-              this.setState({modalOpen: true})
-              this.setState({bundleToEdit: bundle})
-            }
-          }],
+          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit(bundle) }],
           persistActions: true,
         }
       )
@@ -58,7 +119,6 @@ class BundleEditor extends React.Component {
           sectioned
           title={"Welcome"}
           primaryFooterAction={{content: 'New', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
-          secondaryFooterAction={{content: 'Cancel', onAction: () => { this.handleCancel() } }}
           >
           <div>
             In order to create a bundle and add product to it, The listing must have a tag called 'bundle'.
@@ -67,6 +127,26 @@ class BundleEditor extends React.Component {
             <br />
             Once selected, bundle items can be added, and product can be selected from a drop down menu.
           </div>
+        </Card>
+      )
+
+      let modalContainer = (
+        <Card
+          sectioned
+          title={this.state.bundleToEdit.title}
+          >
+        <FormLayout>
+          <FormLayout.Group>
+            <div className="bundle-form">
+              { existingMetafields }
+              <div className="bundle-input">
+                <Button outline icon="add" onClick={ () => this.addFormField() }>
+                  add bundle item
+                </Button>
+              </div>
+            </div>
+          </FormLayout.Group>
+        </FormLayout>
         </Card>
       )
 
@@ -91,61 +171,113 @@ class BundleEditor extends React.Component {
                 >
                   <ResourceList
                     items={bundlesItems}
-                    renderItem={(item, index) => {
+                    renderItem={(item) => {
                       return <ResourceList.Item key={item.id} {...item} />;
                     }}
                   />
                 </Card>
             </Layout.Section>
           </Layout>
-          <Modal
-            src={`/modal_form?id=${this.state.bundleToEdit.id}`}
-            open={this.state.modalOpen}
-            title={`Edit ${this.state.bundleToEdit.title}`}
-            onClose={() => {
-              this.setState({modalOpen: false})
-              this.refreshBundle(this.state.bundleToEdit.id)
-            }}
-          />
+          <ModalForm
+            open={ this.state.editModal }
+            onClose={ () => this.setState({editModal: false}) }
+            onSave={ () => this.handleSave() }
+            title="Bundle Editor"
+          >
+            <div>
+              <form
+                action={this.state.url}
+                acceptCharset="UTF-8" method="post"
+                ref={(form) => {this.bundleForm = form}}
+                style={{'display': 'none'}}
+                >
+                <input name="utf8" type="hidden" value="✓" />
+                <input type="hidden" name="_method" value={this.state.method} />
+                <input type="hidden" name="authenticity_token" value={this.state.authenticity_token} />
+                <label htmlFor="metafield">Search for:</label>
+                <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={ () => this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
+              </form>
+              { modalContainer }
+            </div>
+          </ModalForm>
         </Page>
       </EmbeddedApp>
     );
   }
 
-  handleCancel() {
-    window.location = '/'
+  valueUpdater(id, name) {
+    return (value) => {
+      let metafield = this.state.formFields.map((field, i) => {
+        if (field.id !== id) {
+          return field
+        } else {
+          field[name] = value
+          return field
+        }
+        })
+        this.setState({formFields: metafield})
+      }
   }
 
-  refreshBundle(id) {
-    const self = this
-    let myHeaders = new Headers();
-    myHeaders.append("Content-Type", "application/json");
+  formUpdater(field) {
+    console.log('meh', field);
+    return (value) => this.setState({[field]: value});
+  }
 
-    let myInit = { method: 'GET',
-               headers: myHeaders,
-               credentials: 'same-origin',
-               mode: 'cors',
-               cache: 'default' };
+  handleSave() {
+    let dataString = this.state.formFields.map(field => {
+      return field.title.split('_')[0] + ' x' + field.quantity
+    }).join(',')
 
-    fetch(`/get_bundle?id=${id}`, myInit) // Call the fetch function passing the url of the API as a parameter
-    .then((resp) => resp.json()) // Transform the data into json
-    .then(function(data) {
-        // Your code for handling the data you get from the API
-        console.log("fetch data", data)
-        console.log("fetch data", self.state.bundleItems)
-        let newState = self.state.bundleItems.map(bundle => {
-          return Number(data.bundle.id) === Number(bundle.id) ?
-            data.bundle :
-            bundle;
-        })
-        self.setState({
-          bundleItems: newState,
-        })
+    this.metaInput.value = dataString
+    console.log('data', dataString, this.bundleForm, this.metaInput.value);
+    this.bundleForm.submit()
+  }
+
+  handleEdit(bundle) {
+    let method = 'post'
+    let url = `/bundle?id=${bundle.id}`
+    let fields = []
+
+    let bundleToEdit = Object.assign({}, bundle)
+    if (bundleToEdit.metafield.length !== 0) {
+      method = 'put'
+      url = `/bundle/${bundle.id}`
+      fields = bundleToEdit.metafield.map((item) => item)
+    }
+
+    this.setState({
+      bundleToEdit: bundleToEdit,
+      editModal: true,
+      formFields: fields,
+      method: method,
+      url: url
     })
-    .catch(function(error) {
-        // This is where you run code if the server returns any errors
-        console.error('Hmm something went wrong:', error)
-    });
+  }
+
+  addFormField() {
+    let formFields = this.state.formFields
+    formFields.push({title: this.props.products[0].title, quantity: 1, id: uuid() })
+
+    console.log('formFields add pst', formFields);
+    console.log('formFields add pst', this.props.bundles);
+    this.setState({
+      formFields: formFields,
+    })
+    console.log('formFields add pst', this.state.formFields);
+  }
+
+  removeFormField(id) {
+    let formFields = this.state.formFields.filter(item => {
+      // Remove item
+      return item.id != id
+    })
+
+    console.log('formFields remove pre', formFields);
+    this.setState({
+      formFields: formFields,
+    })
+    console.log('formFields remove pst', this.state.formFields);
   }
 
 }

@@ -52,7 +52,7 @@ class BundleController < ShopifyApp::AuthenticatedController
       metafield.update_attributes(:value => params[:metafield])
     end
 
-    redirect_to('/success')
+    redirect_to('/bundle')
   end
 
   def create
@@ -65,49 +65,6 @@ class BundleController < ShopifyApp::AuthenticatedController
        :value_type => 'string'
     }))
 
-    redirect_to('/success')
-  end
-
-  def modalForm
-    # remove bundles, cleanses, subscriptions for a list of bundle worthy products
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 250 }).select do |product|
-      !product.attributes[:title].downcase.include?("auto") ?
-        (!product.attributes[:tags].downcase.include?("bundle") || !product.attributes[:product_type].downcase.include?("cleanse")) :
-        false
-    end
-
-    @bundle = ShopifyAPI::Product.find(params[:id])
-    @bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => @bundle.id, :namespace => "bundle", :key => "items"})
-    if @bundle.metafield != nil
-      @bundle.metafield = @bundle.metafield.value.split(',').map.with_index do |item, index|
-        item = item.split(' x')
-        {title: item.first, quantity: item.last.to_i, id: index}
-      end
-    else
-      @bundle.metafield = []
-    end
-  end
-
-  def success
-    # Show Success Page
-  end
-
-  def get_bundle
-
-    bundle = ShopifyAPI::Product.find(params[:id])
-    Rails.logger.debug("Get Bundle! b4: #{bundle.inspect}")
-
-    bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
-    if bundle.metafield != nil
-      bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
-        item = item.split(' x')
-        {title: item.first, quantity: item.last.to_i, id: index}
-      end
-    else
-      bundle.metafield = []
-    end
-    Rails.logger.debug("Get Bundle! aft: #{bundle.inspect}")
-
-    render json: { bundle: bundle }, status: 200
+    redirect_to('/bundle')
   end
 end

@@ -35,7 +35,7 @@ div.Polaris-Page {
 .ui-modal {
     max-width: calc(100% - 40px);
     max-height: calc(100% - 40px);
-    width: 620px;
+    width: 1000px;
     box-shadow: 0 0 10px rgba(0,0,0,0.2);
     border-radius: 3px;
     background: #ffffff;
@@ -337,6 +337,18 @@ div.pickup-count {
   display: inline-flex;
   max-width: 297px;
   align-items: flex-end;
+  padding: 5px;
+}
+.bundle-input .quantity .Polaris-TextField {
+  width: 80px;
+}
+.bundle-input:nth-child(2n) {
+  flex-basis: 100%;
+}
+
+.bundle-form {
+  display: flex;
+  flex-wrap: wrap;
 }
 
 /* Settings */
