@@ -9,7 +9,7 @@ class BundleController < ShopifyApp::AuthenticatedController
     # remove bundles, cleanses, subscriptions for a list of bundle worthy products
     @products = ShopifyAPI::Product.find(:all, params: { limit: 250 }).select do |product|
       !product.attributes[:title].downcase.include?("auto") ?
-        (!product.attributes[:tags].downcase.include?("bundle") || !product.attributes[:product_type].downcase.include?("cleanse")) :
+        !product.attributes[:tags].downcase.include?("bundle") :
         false
     end
 

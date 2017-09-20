@@ -34,14 +34,38 @@ class BundleEditor extends React.Component {
       }
     }
 
-    let bundles = this.props.bundles.map((item) => item)
+    let bundlesItems = []
+    console.log('bundle items', this.props.bundles);
+
+    bundlesItems = this.props.bundles.map(bundle => {
+      return (
+        {
+          url: `https://bamboojuices.myshopify.com/admin/products/${bundle.id}`,
+          media: <Thumbnail
+            source={bundle.image ? bundle.image.src : ''}
+            alt={bundle.image ? bundle.image.alt : ''}
+          />,
+          attributeOne: bundle.title,
+          attributeTwo: <div className="resource-badge">{
+            bundle.metafield.map((item, i) => {
+              return (
+                <Badge key={i} status="default">{item.title + ' x' + item.quantity}</Badge>
+              )
+          })
+        }</div>,
+          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit({...bundle}) }],
+          persistActions: true,
+        }
+      )
+    })
+
+    const { authenticity_token } = this.props
 
     this.setState({
-      bundleToEdit: this.props.bundle === null ? this.props.bundles[0] : this.props.bundle,
-      method: method,
-      url: url,
-      bundles: bundles,
-      authenticity_token: this.props.authenticity_token
+      bundlesItems,
+      method,
+      url,
+      authenticity_token
     })
   }
 
@@ -86,34 +110,6 @@ class BundleEditor extends React.Component {
       )
     }
 
-    let bundlesItems = []
-    console.log('bundle items', this.props.bundles);
-
-    bundlesItems = this.state.bundles.map(bundle => {
-      if (this.state.bundleToEdit.id === bundle.id) {
-        console.log('bundle items', bundle.metafield);
-      }
-      return (
-        {
-          url: `https://bamboojuices.myshopify.com/admin/products/${bundle.id}`,
-          media: <Thumbnail
-            source={bundle.image ? bundle.image.src : ''}
-            alt={bundle.image ? bundle.image.alt : ''}
-          />,
-          attributeOne: bundle.title,
-          attributeTwo: <div className="resource-badge">{
-            bundle.metafield.map((item, i) => {
-              return (
-                <Badge key={i} status="default">{item.title + ' x' + item.quantity}</Badge>
-              )
-          })
-        }</div>,
-          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit(bundle) }],
-          persistActions: true,
-        }
-      )
-    })
-
     let mainContainer = (
         <Card
           sectioned
@@ -133,7 +129,7 @@ class BundleEditor extends React.Component {
       let modalContainer = (
         <Card
           sectioned
-          title={this.state.bundleToEdit.title}
+          title={ "Edit Bundle" }
           >
         <FormLayout>
           <FormLayout.Group>
@@ -170,7 +166,7 @@ class BundleEditor extends React.Component {
                   title="Other Bundles"
                 >
                   <ResourceList
-                    items={bundlesItems}
+                    items={ this.state.bundlesItems }
                     renderItem={(item) => {
                       return <ResourceList.Item key={item.id} {...item} />;
                     }}
@@ -239,15 +235,13 @@ class BundleEditor extends React.Component {
     let url = `/bundle?id=${bundle.id}`
     let fields = []
 
-    let bundleToEdit = Object.assign({}, bundle)
-    if (bundleToEdit.metafield.length !== 0) {
+    if (bundle.metafield.length !== 0) {
       method = 'put'
       url = `/bundle/${bundle.id}`
-      fields = bundleToEdit.metafield.map((item) => item)
+      fields = bundle.metafield.map((item) => item)
     }
 
     this.setState({
-      bundleToEdit: bundleToEdit,
       editModal: true,
       formFields: fields,
       method: method,
@@ -259,12 +253,12 @@ class BundleEditor extends React.Component {
     let formFields = this.state.formFields
     formFields.push({title: this.props.products[0].title, quantity: 1, id: uuid() })
 
-    console.log('formFields add pst', formFields);
-    console.log('formFields add pst', this.props.bundles);
+    console.log('formFields add', formFields);
+    console.log('prop.bundles', this.props.bundles);
     this.setState({
-      formFields: formFields,
+      formFields,
     })
-    console.log('formFields add pst', this.state.formFields);
+    console.log('state.formFields add pst', this.state.formFields);
   }
 
   removeFormField(id) {
@@ -277,7 +271,7 @@ class BundleEditor extends React.Component {
     this.setState({
       formFields: formFields,
     })
-    console.log('formFields remove pst', this.state.formFields);
+    console.log('state.formFields remove pst', this.state.formFields);
   }
 
 }

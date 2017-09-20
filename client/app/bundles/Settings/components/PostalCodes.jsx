@@ -1,7 +1,9 @@
 import React from 'react';
 import {Page, Card, Layout, Stack, Button, Heading, Tag, FormLayout, TextField} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
+
 import Navigation from '../../Global/components/Navigation';
+import ModalForm from '../../Global/components/ModalForm';
 import bambooIcon from 'assets/green-square.jpg';
 
 class PostalCodes extends React.Component {
@@ -11,16 +13,13 @@ class PostalCodes extends React.Component {
     this.state = {
       deleteAlertOpen: false,
       postalCode: {},
-      postalCodes: [],
+      postalCodes: this.props.postalCodes,
+      editModal: false
     }
   }
 
   componentWillMount() {
     console.log('props: ', this.props)
-
-    this.setState({
-      postalCodes: this.props.postalCodes,
-    })
   }
 
   render() {
@@ -51,12 +50,56 @@ class PostalCodes extends React.Component {
 
             <Layout.AnnotatedSection
               title="Postal Codes"
-              description="Determine the postal codes in which your delivery rates will be valid. Enter a 5 digit zip code [ex. 30076] or a comma separated list [ex. 30076,30002,30030,30032,30067]"
+              description={
+                <div>
+                  <div>
+                    "Determine the postal codes in which your delivery rates will be valid. Enter a 5 digit zip code [ex. 30076] or a comma separated list [ex. 30076,30002,30030,30032,30067]"
+                  </div>
+                  <br />
+                  <Button onClick={ () => {
+                    this.setState({
+                      postalCode: {},
+                      method: 'post',
+                      editModal: true
+                    })
+                  } }>Add Postal Code</Button>
+                </div>
+              }
             >
-              <Card
-                sectioned
-                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave(this.postalCodeForm) } }}
-              >
+              <div className="postalCodes">
+                <Heading>Postal Codes</Heading>
+                <Card sectioned>
+                  <Stack
+                    spacing="loose"
+                    distribution="baseline"
+                    >
+                    { codes }
+                  </Stack>
+                </Card>
+              </div>
+            </Layout.AnnotatedSection>
+
+          </Layout>
+          <Alert
+            title="Delete Postal Code?"
+            open={this.state.deleteAlertOpen}
+            confirmContent="Delete"
+            onConfirm={() => {
+              this.handleDelete(`/destroy_postal_code?id=${this.state.postalCodeToDelete.id}`).bind(this)
+              this.setState({deleteAlertOpen: false, postalCodeToDelete: null})
+              }}
+            cancelContent="Continue editing"
+            onCancel={() => this.setState({deleteAlertOpen: false})}
+          >
+            Are you sure you want to delete this postal code?
+          </Alert>
+          <ModalForm
+            open={ this.state.editModal }
+            onClose={ () => this.setState({ editModal: false }) }
+            onSave={ () => this.handleSave(this.postalCodeForm) }
+            title="Postal Code"
+          >
+            <div>
               <form
                 action='/create_postal_code'
                 acceptCharset="UTF-8" method="post"
@@ -76,36 +119,8 @@ class PostalCodes extends React.Component {
                     />
                   </FormLayout>
                 </form>
-              </Card>
-            </Layout.AnnotatedSection>
-
-            <Layout.Section>
-              <div className="postalCodes">
-                <Heading>Postal Codes</Heading>
-                <Card sectioned>
-                  <Stack
-                    spacing="loose"
-                    distribution="baseline"
-                    >
-                    { codes }
-                  </Stack>
-                </Card>
-              </div>
-            </Layout.Section>
-          </Layout>
-          <Alert
-            title="Delete Postal Code?"
-            open={this.state.deleteAlertOpen}
-            confirmContent="Delete"
-            onConfirm={() => {
-              this.handleDelete(`/destroy_postal_code?id=${this.state.postalCodeToDelete.id}`).bind(this)
-              this.setState({deleteAlertOpen: false, postalCodeToDelete: null})
-              }}
-            cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertOpen: false})}
-          >
-            Are you sure you want to delete this postal code?
-          </Alert>
+            </div>
+          </ModalForm>
         </Page>
       </EmbeddedApp>
     );

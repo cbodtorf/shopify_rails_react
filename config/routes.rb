@@ -44,6 +44,7 @@ Rails.application.routes.draw do
   delete 'destroy_blackout_date', to: 'settings#destroy_blackout_date'
 
   post 'create_pickup_location', to: 'settings#create_pickup_location'
+  patch 'update_pickup_location/:id', to: 'settings#update_pickup_location'
   delete 'destroy_pickup_location', to: 'settings#destroy_pickup_location'
 
   post 'create_postal_code', to: 'settings#create_postal_code'

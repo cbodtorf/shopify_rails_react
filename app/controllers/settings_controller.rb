@@ -43,6 +43,17 @@ class SettingsController < ShopifyApp::AuthenticatedController
     end
   end
 
+  def update_pickup_location
+    @pickup_location = shop.pickup_locations.find(params[:id])
+
+    if @pickup_location.update_attributes(location_params)
+      redirect_to action: 'pickup_locations'
+    else
+      Rails.logger.debug("hmmm #{@pickup_location.errors.full_messages}")
+      redirect_to action: 'pickup_locations'
+    end
+  end
+
   def create_blackout_date
     Rails.logger.debug("My loc params: #{blackout_date_params.inspect}")
     @blackout_date = shop.blackout_dates.build(blackout_date_params)

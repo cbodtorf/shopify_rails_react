@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, DatePicker, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, Badge} from '@shopify/polaris';
+import {Page, Card, Banner, DatePicker, FormLayout, Select, Layout, Button, Icon, ResourceList, DisplayText, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import ModalForm from '../../Global/components/ModalForm';
@@ -89,28 +89,32 @@ class BlackoutDates extends React.Component {
             </Layout.Section>
             <Layout.AnnotatedSection
               title="Blackout Dates"
-              description="Customers will be unable to select these dates for their deliveries."
+              description={
+                <div>
+                  <div>
+                    Customers will be unable to select these dates for their deliveries.<br /><br />
+
+                    Click the 'New' button to open a popup in order to create a new blackout date.
+                  </div>
+                  <Button onClick={ () => {
+                    this.setState({
+                      editModal: true,
+                      method: 'post',
+                      url: '/create_blackout_date',
+                      datePickerSelected: null,
+                      blackoutDate: {
+                        blackout_date: undefined,
+                        title: undefined,
+                        wday: undefined,
+                        day: undefined,
+                        month: undefined,
+                        year: undefined
+                      }
+                    })
+                  } }>Create new blackout date</Button>
+                </div>
+              }
             >
-              <Card
-                title="Create new Blackout Date"
-                sectioned
-                primaryFooterAction={{content: 'New', onAction: () => this.setState({
-                  editModal: true,
-                  method: 'post',
-                  url: '/create_blackout_date',
-                  datePickerSelected: null,
-                  blackoutDate: {
-                    blackout_date: undefined,
-                    title: undefined,
-                    wday: undefined,
-                    day: undefined,
-                    month: undefined,
-                    year: undefined
-                  }
-                }) }}
-                >
-                Click the 'New' button to open a popup in order to create a new blackout date.
-              </Card>
               <Card
                 sectioned
                 >
@@ -161,15 +165,10 @@ class BlackoutDates extends React.Component {
                     value={this.state.blackoutDate.title}
                     onChange={this.valueUpdater('title', 'blackoutDate')}
                   />
-                  <Icon source="calendar" />
                 </FormLayout>
               </form>
-              <TextField
-                label="Blackout Date"
-                value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.month}-${this.state.blackoutDate.day}-${this.state.blackoutDate.year}` : '' }
-                readOnly={true}
-                placeholder='mm-dd-yyyy'
-              />
+              <br />
+              <br />
               <DatePicker
                 month={this.state.datePickerMonth}
                 year={this.state.datePickerYear}

@@ -1,7 +1,9 @@
 import React from 'react';
 import {Page, Card, Banner, FormLayout, Select, Layout, Button, Icon, ResourceList, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, DatePicker, Badge} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
+
 import Navigation from '../../Global/components/Navigation';
+import ModalForm from '../../Global/components/ModalForm';
 import bambooIcon from 'assets/green-square.jpg';
 
 
@@ -12,9 +14,12 @@ class PickupLocations extends React.Component {
     super(props)
 
     this.state = {
+      method: '',
+      formUrl: '',
       deleteAlertPickupOpen: false,
       pickupLocation: {},
-      pickupLocations: [],
+      pickupLocations: this.props.pickupLocations,
+      editModal: false
     }
   }
   /**
@@ -24,10 +29,7 @@ class PickupLocations extends React.Component {
   addZ(n){return n<10? '0'+n:''+n;}
 
   componentWillMount() {
-
-    this.setState({
-      pickupLocations: this.props.pickupLocations,
-    })
+    console.log("this", this);
   }
 
   render() {
@@ -37,11 +39,11 @@ class PickupLocations extends React.Component {
       return (
         {
           attributeOne: location.title,
-          attributeTwo: <TextStyle variation="subdued">{location.address}</TextStyle>,
-          attributeThree: location.days_available.map((day, i) => {return (<Badge key={i} status="info">{weekNames[day]}</Badge>)}),
+          attributeTwo: <TextStyle variation="subdued">{ location.address }</TextStyle>,
+          attributeThree: location.days_available.map((day, i) => { return (<Badge key={ i } status="info">{ weekNames[day] }</Badge>) }),
           actions: [
-            {content: 'Edit location', onAction: () => { this.handleEdit(location) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertPickupOpen: true, locationToDelete: location}) }},
+            { content: 'Edit location', onAction: () => { this.handleEdit(location) } },
+            { content: <Icon source="delete" color="red" />, onAction: () => { this.setState({ deleteAlertPickupOpen: true, locationToDelete: location }) } },
           ],
           persistActions: true,
         }
@@ -51,109 +53,128 @@ class PickupLocations extends React.Component {
     return (
       <div className="bamboo-settings">
       <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-        forceRedirect={true}
+        apiKey={ this.props.apiKey }
+        shopOrigin={ this.props.shopOrigin }
+        forceRedirect={ false }
       >
-        <Page icon={bambooIcon}>
+        <Page icon={ bambooIcon }>
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={null}/>
+              <Navigation selectedTab={ null }/>
             </Layout.Section>
 
             <Layout.AnnotatedSection
               title="Pickup Locations"
-              description="Customers will be able to choose pickup locations from the cart page, this information will be added to the order."
+              description={
+                <div>
+                  <div>Customers will be able to choose pickup locations from the cart page, this information will be added to the order.</div>
+                  <Button onClick={ () => {
+                    this.setState({
+                      pickupLocation: {},
+                      method: 'post',
+                      formUrl: '/create_pickup_location',
+                      editModal: true
+                    })
+                  } }>Create new pickup location</Button>
+                </div>
+              }
             >
               <Card
                 sectioned
-                primaryFooterAction={{content: 'Save', onAction: () => { this.handleSave(this.pickupLocationForm) } }}
               >
-              <form
-                action='/create_pickup_location'
-                acceptCharset="UTF-8" method="post"
-                ref={(form) => {this.pickupLocationForm = form}}
-                >
-                  <FormLayout>
-                    <input name="utf8" type="hidden" value="✓" />
-                    <input type="hidden" name="_method" value={this.state.pickupLocationMethod} />
-                    <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
-                    <TextField
-                      label="Store name"
-                      name="pickup_location[title]"
-                      type="text"
-                      value={this.state.pickupLocation.title}
-                      onChange={this.valueUpdater('title', 'pickupLocation')}
-                    />
-                    <TextField
-                      label="Address"
-                      name="pickup_location[address]"
-                      type="text"
-                      value={this.state.pickupLocation.address}
-                      onChange={this.valueUpdater('address', 'pickupLocation')}
-                    />
-                    <ChoiceList
-                      allowMultiple
-                      title="Available pickup days"
-                      name="pickup_location[days_available]"
-                      choices={[
-                        {
-                          label: 'Sun',
-                          value: 0,
-                        },
-                        {
-                          label: 'Mon',
-                          value: 1,
-                        },
-                        {
-                          label: 'Tue',
-                          value: 2,
-                        },
-                        {
-                          label: 'Wed',
-                          value: 3,
-                        },
-                        {
-                          label: 'Thu',
-                          value: 4,
-                        },
-                        {
-
-                          label: 'Fri',
-                          value: 5,
-                        },
-                        {
-                          label: 'Sat',
-                          value: 6,
-                        },
-                      ]}
-                      selected={this.state.pickupLocation.days_available ? this.state.pickupLocation.days_available : []}
-                      onChange={this.valueUpdater('days_available', 'pickupLocation')}
-                    />
-                  </FormLayout>
-                </form>
                 <ResourceList
-                  items={pickupLocations}
-                  renderItem={(item, index) => {
-                    return <ResourceList.Item key={index} {...item} />;
-                  }}
+                  items={ pickupLocations }
+                  renderItem={ (item, index) => {
+                    return <ResourceList.Item key={ index } { ...item } />;
+                  } }
                 />
               </Card>
             </Layout.AnnotatedSection>
           </Layout>
           <Alert
             title="Delete Pickup Location?"
-            open={this.state.deleteAlertPickupOpen}
+            open={ this.state.deleteAlertPickupOpen }
             confirmContent="Delete"
-            onConfirm={() => {
+            onConfirm={ () => {
               this.handleDelete(`/destroy_pickup_location?id=${this.state.locationToDelete.id}`).bind(this)
-              this.setState({deleteAlertPickupOpen: false, locationToDelete: null})
-              }}
+              this.setState({ deleteAlertPickupOpen: false, locationToDelete: null })
+              } }
             cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertPickupOpen: false})}
+            onCancel={ () => this.setState({ deleteAlertPickupOpen: false }) }
           >
             Are you sure you want to delete this pickup location?
           </Alert>
+          <ModalForm
+            open={ this.state.editModal }
+            onClose={ () => this.setState({ editModal: false }) }
+            onSave={ () => this.handleSave(this.pickupLocationForm) }
+            title="Pickup Location"
+          >
+            <div>
+              <form
+                action={ this.state.formUrl }
+                acceptCharset="UTF-8" method="post"
+                ref={ (form) => { this.pickupLocationForm = form } }
+                >
+                <FormLayout>
+                  <input name="utf8" type="hidden" value="✓" />
+                  <input type="hidden" name="_method" value={ this.state.method } />
+                  <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
+                  <TextField
+                    label="Store name"
+                    name="pickup_location[title]"
+                    type="text"
+                    value={ this.state.pickupLocation.title }
+                    onChange={ this.valueUpdater('title', 'pickupLocation') }
+                  />
+                  <TextField
+                    label="Address"
+                    name="pickup_location[address]"
+                    type="text"
+                    value={ this.state.pickupLocation.address }
+                    onChange={ this.valueUpdater('address', 'pickupLocation') }
+                  />
+                  <ChoiceList
+                    allowMultiple
+                    title="Available pickup days"
+                    name="pickup_location[days_available]"
+                    choices={[
+                      {
+                        label: 'Sun',
+                        value: 0,
+                      },
+                      {
+                        label: 'Mon',
+                        value: 1,
+                      },
+                      {
+                        label: 'Tue',
+                        value: 2,
+                      },
+                      {
+                        label: 'Wed',
+                        value: 3,
+                      },
+                      {
+                        label: 'Thu',
+                        value: 4,
+                      },
+                      {
+                        label: 'Fri',
+                        value: 5,
+                      },
+                      {
+                        label: 'Sat',
+                        value: 6,
+                      },
+                    ]}
+                    selected={ this.state.pickupLocation.days_available ? this.state.pickupLocation.days_available : [] }
+                    onChange={ this.valueUpdater('days_available', 'pickupLocation') }
+                  />
+                </FormLayout>
+              </form>
+            </div>
+          </ModalForm>
         </Page>
       </EmbeddedApp>
       </div>
@@ -161,6 +182,20 @@ class PickupLocations extends React.Component {
   }
   valueUpdater(field, namespace) {
     return (value) => this.setState({ [namespace]: { ...this.state[namespace], [field]: value } });
+  }
+
+  handleEdit(location) {
+    let pickupLocation = { ...location }
+    pickupLocation.days_available = pickupLocation.days_available.map(day => { return Number(day) })
+    console.log("pickupLocation: ", pickupLocation)
+
+    this.setState({
+      pickupLocation,
+      title: location.title,
+      method: 'patch',
+      formUrl: `/update_pickup_location/${location.id}`,
+      editModal: true
+    })
   }
 
   handleSave(formType) {
