@@ -2,12 +2,14 @@ import React from 'react';
 import {Page, Card, Stack, FormLayout, Select, Layout, Button, Icon, Thumbnail, TextStyle, TextField, Subheading, DisplayText, Avatar, Tabs, Link} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 
+import CustomerInfo from './CustomerInfo';
 import Navigation from '../../Global/components/Navigation';
+import ModalForm from '../../Global/components/ModalForm';
 import bambooIcon from 'assets/green-square.jpg';
 
-import NoteFormElement from './NoteFormElement'
+import NoteFormElement from './NoteFormElement';
 
-import uuid from 'uuid'
+import uuid from 'uuid';
 
 function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
@@ -48,30 +50,48 @@ class OrderEditor extends React.Component {
         month: undefined,
         year: undefined
       },
-      order: {},
+      order: this.props.order,
       method: '',
-      url: '',
+      formUrl: '',
       deleteAlertOpen: false,
+      editModal: false
     }
   }
 
   componentWillMount() {
     console.log("this", this);
-
-    this.setState({
-      order: this.props.order,
-    })
   }
 
   render() {
-    const customer = this.props.order.customer
+    const urlBase = 'https://bamboojuices.myshopify.com/admin/'
+    let customerInfo = ''
+
+    if (this.props.order.customer) {
+      customerInfo = <CustomerInfo
+                        customerInfo={ this.props.order.customer ? this.props.order.customer : null }
+                        shippingAddress={ this.props.order.shippingAddress ? this.props.order.shippingAddress : null }
+                        urlBase={urlBase}
+                        />
+    } else {
+      customerInfo = (
+        <Card
+          sectioned
+          title="Customer"
+          primaryFooterAction={{ content: 'Add Customer Info', onAction: () => { window.open(`${urlBase}orders/${this.props.order.id}`) } }}
+        >
+          no customer <br/><br/>
+          *** can only add email and shipping information to order. <br />
+        </Card>
+      )
+    }
+
     const sourceName = this.props.order.tags.split(', ').indexOf('Subscription') !== -1 ?
       "ReCharge Recurring Billing & Subscriptions (via import)" :
       this.props.order.source_name.split('_').join(' ');
 
     const shippingAddress = this.props.order.shipping_address
     const products = this.props.order.line_items
-    const urlBase = 'https://bamboojuices.myshopify.com/admin/'
+
     console.log("render", this.state);
 
     const noteAttributes = this.props.order.note_attributes.map((note, i) => {
@@ -164,10 +184,10 @@ class OrderEditor extends React.Component {
       >
         <Page
           icon={ bambooIcon }
-          primaryAction={{
+          primaryAction={ {
             content: 'Back',
             url: (urlBase + this.props.order.id),
-          }}
+          } }
           >
           <Layout>
             <Layout.Section>
@@ -221,7 +241,7 @@ class OrderEditor extends React.Component {
                         { shippingLines() }
                         <Stack distribution="equalSpacing">
                           <Stack.Item><TextStyle variation="strong">{ `Total ` }</TextStyle></Stack.Item>
-                          <Stack.Item><TextStyle variation="strong">{ `$${ this.props.order.total_price_usd }` }</TextStyle></Stack.Item>
+                          <Stack.Item><TextStyle variation="strong">{ `$${this.props.order.total_price_usd}` }</TextStyle></Stack.Item>
                         </Stack>
                       </Layout.Section>
                     </Layout>
@@ -229,54 +249,20 @@ class OrderEditor extends React.Component {
 
                   <Card.Section
                     title="Accept Payment"
-                    primaryFooterAction={{content: 'Capture Payment', onAction: () => { this.handleSave() } }}
+                    primaryFooterAction={ { content: 'Capture Payment', onAction: () => { this.handleSave() } } }
                     >
                   </Card.Section>
                   <Card.Section
                     title="2 items to Fulfill"
-                    primaryFooterAction={{content: 'Start Fulfilling', onAction: () => { this.handleSave() } }}
+                    primaryFooterAction={ { content: 'Start Fulfilling', onAction: () => { this.handleSave() } } }
                     >
                   </Card.Section>
                 </Card>
             </Layout.Section>
             <Layout.Section secondary>
-              <div className="customer">
-                <Card
-                  title="Customer"
-                  actions={[{
-                    content:
-                      <Avatar
-                        customer
-                        name={ `${customer.first_name} ${customer.last_name}` }
-                        size="small"
-                      />
-                  }]}
-                >
-                <Card.Section>
-                  <Link external="true" url={ `${urlBase}customers/${customer.id}` }>{ `${customer.first_name} ${customer.last_name}` }</Link><br />
-                  <Link external="true" url={ `${urlBase}orders/?customer_id=${customer.id}` }>{ customer.orders_count } orders</Link>
-                </Card.Section>
-                  <Card.Section
-                    title="Order Contact"
-                    >
-                    <TextStyle variation="subdued">{ customer.email }</TextStyle>
-                  </Card.Section>
-                  <Card.Section
-                    title="Shipping Address"
-                    >
-                    <TextStyle variation="subdued">
-                      { shippingAddress.name }<br />
-                      { shippingAddress.company }<br />
-                      { shippingAddress.address1 }<br />
-                      { shippingAddress.address2 }<br />
-                      { `${shippingAddress.city} ${shippingAddress.province_code} ${shippingAddress.zip}` }<br />
-                      { shippingAddress.country }
-                      <br /><br />
-                      <Link external="true" url={ `https://maps.google.com/?q=${shippingAddress.latitude},${shippingAddress.longitude}&t=h&z=17` }>View map</Link>
-                    </TextStyle>
-                  </Card.Section>
-                </Card>
-              </div>
+
+              { customerInfo }
+
               <div className="note-attributes">
                 <Card
                   sectioned
@@ -289,17 +275,39 @@ class OrderEditor extends React.Component {
           </Layout>
           <Alert
             title="Delete Delivery Rate?"
-            open={this.state.deleteAlertOpen}
+            open={ this.state.deleteAlertOpen }
             confirmContent="Delete"
-            onConfirm={() => {
+            onConfirm={ () => {
               this.handleDelete(this.state.rateToDelete).bind(this)
-              this.setState({deleteAlertOpen: false, rateToDelete: null})
-              }}
+              this.setState({ deleteAlertOpen: false, rateToDelete: null })
+              } }
             cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertOpen: false})}
+            onCancel={ () => this.setState({ deleteAlertOpen: false }) }
           >
             Are you sure you want to delete this rate?
           </Alert>
+          <ModalForm
+            open={ this.state.editModal }
+            onClose={ () => this.setState({ editModal: false }) }
+            onSave={ () => this.handleSave(this.orderForm) }
+            title="Blackout Date"
+          >
+            <div>
+              <form
+                action={ this.state.formUrl }
+                acceptCharset="UTF-8" method="post"
+                ref={ (form) => { this.orderForm = form } }
+                >
+                <FormLayout>
+                  <input name="utf8" type="hidden" value="✓" />
+                  <input type="hidden" name="_method" value={ this.state.method } />
+                  <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
+
+
+                </FormLayout>
+              </form>
+            </div>
+          </ModalForm>
         </Page>
       </EmbeddedApp>
     );

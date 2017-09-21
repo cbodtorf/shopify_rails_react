@@ -2,12 +2,17 @@ ShopifyApp.configure do |config|
   config.application_name = "Bamboo App"
   config.api_key = ENV['SHOPIFY_CLIENT_API_KEY']
   config.secret = ENV['SHOPIFY_CLIENT_API_SECRET']
-  config.scope = "read_reports, write_orders, read_orders, write_products, read_products, write_shipping, read_shipping, read_customers, write_customers, read_checkouts, write_checkouts"
+  config.scope = "read_reports, write_orders, read_orders, read_draft_orders, write_draft_orders, write_products, read_products, write_shipping, read_shipping, read_customers, write_customers, read_checkouts, write_checkouts"
   config.embedded_app = true
   config.webhooks = [
   {
     topic: 'orders/create',
     address: "#{Rails.configuration.application_url}/webhooks/orders_create/",
+    format: 'json'
+  },
+  {
+    topic: 'draft_orders/update',
+    address: "#{Rails.configuration.application_url}/webhooks/draft_orders_update/",
     format: 'json'
   },
   {

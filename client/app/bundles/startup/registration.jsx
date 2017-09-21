@@ -15,8 +15,6 @@ import Navigation from '../Global/components/Navigation';
 import ModalForm from '../Global/components/ModalForm';
 import SearchBar from '../Global/components/SearchBar';
 import Subscription from '../Subscription/components/Subscription';
-import MetaForm from '../MetaForm/components/MetaForm';
-import FormSuccess from '../MetaForm/components/FormSuccess';
 
 // This is how react_on_rails can see the componenets in the browser.
 ReactOnRails.register({
@@ -35,6 +33,4 @@ ReactOnRails.register({
   SearchBar,
   ModalForm,
   Subscription,
-  MetaForm,
-  FormSuccess,
 });

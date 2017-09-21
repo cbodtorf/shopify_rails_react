@@ -64,14 +64,14 @@ class RateEditor extends React.Component {
       return (
         {
           media: <Icon
-            source={'notes'}
-            color={this.state.rate.id === rate.id ? 'blue' : 'black'}
+            source={ 'notes' }
+            color={ this.state.rate.id === rate.id ? 'blue' : 'black' }
           />,
           attributeOne: `${rate.title} - ${rate.price / 100.0} ${this.props.shop.currency}`,
-          attributeTwo: <TextStyle variation="subdued">{rate.description}</TextStyle>,
+          attributeTwo: <TextStyle variation="subdued">{ rate.description }</TextStyle>,
           actions: [
             {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertOpen: true, rateToDelete: rate}) }},
+            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({ deleteAlertOpen: true, rateToDelete: rate }) } },
           ],
           persistActions: true,
         }
@@ -82,11 +82,11 @@ class RateEditor extends React.Component {
       data['index'] = i + 1
       return (
         <Condition
-          key={i}
-          id={data.newCondition ? data.id : i + 1}
-          updateCondition={(field, id) => self.handleConditionUpdate(field, id)}
-          deleteCondition={(id) => self.handleConditionDelete(id)}
-          condition={data} matcher={self.props.matcher}
+          key={ i }
+          id={ data.newCondition ? data.id : i + 1 }
+          updateCondition={ (field, id) => self.handleConditionUpdate(field, id) }
+          deleteCondition={ (id) => self.handleConditionDelete(id) }
+          condition={ data } matcher={ self.props.matcher }
           />
       );
     })
@@ -94,9 +94,9 @@ class RateEditor extends React.Component {
     const conditionsToDelete = this.state.conditionsToDelete.map((data, i) => {
       if (data.created_at) {
         return (
-          <div key={i} style={{'display': 'none'}}>
-            <input value={1} type="hidden" name={`rate[conditions_attributes][${data.index}][_destroy]`}/>
-            <input value={data.id} type="hidden" name={`rate[conditions_attributes][${data.index}][id]`}/>
+          <div key={ i } style={ { 'display': 'none' } }>
+            <input value={ 1 } type="hidden" name={ `rate[conditions_attributes][${data.index}][_destroy]` }/>
+            <input value={ data.id } type="hidden" name={ `rate[conditions_attributes][${data.index}][id]` }/>
           </div>
         )
       }
@@ -105,14 +105,14 @@ class RateEditor extends React.Component {
 
     return (
       <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-        forceRedirect={true}
+        apiKey={ this.props.apiKey }
+        shopOrigin={ this.props.shopOrigin }
+        forceRedirect={ true }
       >
-        <Page icon={bambooIcon}>
+        <Page icon={ bambooIcon }>
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={3}/>
+              <Navigation selectedTab={ 3 }/>
             </Layout.Section>
 
             <Layout.Section>
@@ -128,9 +128,9 @@ class RateEditor extends React.Component {
                   }] }
                 >
                   <ResourceList
-                    items={rates}
-                    renderItem={(item, index) => {
-                      return <ResourceList.Item key={index} {...item} />;
+                    items={ rates }
+                    renderItem={ (item, index) => {
+                      return <ResourceList.Item key={ index } { ...item } />;
                     }}
                   />
                 </Card>
@@ -138,49 +138,49 @@ class RateEditor extends React.Component {
           </Layout>
           <Alert
             title="Delete Delivery Rate?"
-            open={this.state.deleteAlertOpen}
+            open={ this.state.deleteAlertOpen }
             confirmContent="Delete"
-            onConfirm={() => {
+            onConfirm={ () => {
               this.handleDelete(this.state.rateToDelete).bind(this)
-              this.setState({deleteAlertOpen: false, rateToDelete: null})
-              }}
+              this.setState({ deleteAlertOpen: false, rateToDelete: null })
+              } }
             cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertOpen: false})}
+            onCancel={ () => this.setState({ deleteAlertOpen: false }) }
           >
             Are you sure you want to delete this rate?
           </Alert>
           <ModalForm
             open={ this.state.editModal }
-            onClose={ () => this.setState({editModal: false}) }
+            onClose={ () => this.setState({ editModal: false }) }
             onSave={ () => this.handleSave() }
             title={ this.state.rate.title }
           >
             <div>
               <form
-                action={this.state.url}
+                action={ this.state.url }
                 acceptCharset="UTF-8" method="post"
-                ref={(form) => {this.rateForm = form}}
+                ref={ (form) => { this.rateForm = form } }
                 >
                 <FormLayout>
                     <input name="utf8" type="hidden" value="✓" />
-                    <input type="hidden" name="_method" value={this.state.method} />
-                    <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
+                    <input type="hidden" name="_method" value={ this.state.method } />
+                    <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
                     <TextField
                       label="Title"
                       name="rate[title]"
                       type="text"
-                      value={this.state.rate.title}
-                      onChange={this.valueUpdater('title')}
+                      value={ this.state.rate.title }
+                      onChange={ this.valueUpdater('title') }
                       connectedRight={
                         <TextField
                           label="Price"
                           name="rate[price]"
                           type="number"
                           labelHidden
-                          prefix={<TextStyle variation="strong">Price: </TextStyle>}
-                          value={this.state.rate.price}
-                          onChange={this.valueUpdater('price')}
-                          suffix={<TextStyle variation="strong">{this.props.shop.currency}</TextStyle>}
+                          prefix={ <TextStyle variation="strong">Price: </TextStyle> }
+                          value={ this.state.rate.price }
+                          onChange={ this.valueUpdater('price') }
+                          suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
                           />
                       }
                       />
@@ -188,55 +188,55 @@ class RateEditor extends React.Component {
                         label="Description"
                         name="rate[description]"
                         type="text"
-                        value={this.state.rate.description}
-                        onChange={this.valueUpdater('description')}
+                        value={ this.state.rate.description }
+                        onChange={ this.valueUpdater('description') }
                         multiline
                       />
                       <TextField
                         label="Cutoff Time (Hour of day between 0-23)"
                         name="rate[cutoff_time]"
                         type="number"
-                        minLength={2}
-                        maxLength={2}
-                        max={23}
-                        min={0}
-                        value={this.state.rate.cutoff_time}
-                        onChange={this.valueUpdater('cutoff_time')}
+                        minLength={ 2 }
+                        maxLength={ 2 }
+                        max={ 23 }
+                        min={ 0 }
+                        value={ this.state.rate.cutoff_time }
+                        onChange={ this.valueUpdater('cutoff_time') }
                       />
                       <Select
                         label="Cook Time"
                         name="rate[cook_time]"
-                        options={[
-                          {label: 'Morning of delivery', value: 'morning'},
-                          {label: 'Afternoon before delivery', value: 'afternoon'},
-                          {label: 'N/A', value: null}
-                        ]}
-                        value={this.state.rate.cook_time}
-                        onChange={this.valueUpdater('cook_time')}
+                        options={ [
+                          { label: 'Morning of delivery', value: 'morning' },
+                          { label: 'Afternoon before delivery', value: 'afternoon' },
+                          { label: 'N/A', value: null }
+                        ] }
+                        value={ this.state.rate.cook_time }
+                        onChange={ this.valueUpdater('cook_time') }
                         placeholder="Select"
                       />
                       <Select
                         label="Delivery Method"
                         name="rate[delivery_method]"
-                        options={[
-                          {label: 'Pickup', value: 'pickup'},
-                          {label: 'Delivery', value: 'delivery'},
-                          {label: 'Shipping', value: 'shipping'}
-                        ]}
-                        value={this.state.rate.delivery_method}
-                        onChange={this.valueUpdater('delivery_method')}
+                        options={ [
+                          { label: 'Pickup', value: 'pickup' },
+                          { label: 'Delivery', value: 'delivery' },
+                          { label: 'Shipping', value: 'shipping' }
+                        ] }
+                        value={ this.state.rate.delivery_method }
+                        onChange={ this.valueUpdater('delivery_method') }
                         placeholder="Select"
                       />
                       <Select
                         label="Delivery Type"
                         name="rate[delivery_type]"
-                        options={[
-                          {label: 'Same Day', value: 'same_day'},
-                          {label: 'Next Day', value: 'next_day'},
-                          {label: 'Subscription', value: 'subscription'},
-                        ]}
-                        value={this.state.rate.delivery_type}
-                        onChange={this.valueUpdater('delivery_type')}
+                        options={ [
+                          { label: 'Same Day', value: 'same_day' },
+                          { label: 'Next Day', value: 'next_day' },
+                          { label: 'Subscription', value: 'subscription' },
+                        ] }
+                        value={ this.state.rate.delivery_type }
+                        onChange={ this.valueUpdater('delivery_type') }
                         placeholder="Select"
                       />
                       <Subheading>Conditions</Subheading>
@@ -366,8 +366,6 @@ class RateEditor extends React.Component {
 
     return () => this.setState({conditions: arr});
   }
-
-
 
 }
 export default RateEditor

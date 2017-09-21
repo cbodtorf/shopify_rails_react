@@ -138,7 +138,7 @@ class PickupLocations extends React.Component {
                     allowMultiple
                     title="Available pickup days"
                     name="pickup_location[days_available]"
-                    choices={[
+                    choices={ [
                       {
                         label: 'Sun',
                         value: 0,
@@ -167,7 +167,7 @@ class PickupLocations extends React.Component {
                         label: 'Sat',
                         value: 6,
                       },
-                    ]}
+                    ] }
                     selected={ this.state.pickupLocation.days_available ? this.state.pickupLocation.days_available : [] }
                     onChange={ this.valueUpdater('days_available', 'pickupLocation') }
                   />

@@ -26,26 +26,24 @@ class PostalCodes extends React.Component {
     let codes = this.state.postalCodes.map((code,i) => {
       return (
         <Tag
-          key={i}
-          onRemove={
-            () => { this.setState({deleteAlertOpen: true, postalCodeToDelete: code}) }
-          }
-          >
+          key={ i }
+          onRemove={ () => { this.setState({ deleteAlertOpen: true, postalCodeToDelete: code }) } }
+        >
           { code.title }
-          </Tag>
+        </Tag>
       )
     })
 
     return (
       <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-        forceRedirect={true}
+        apiKey={ this.props.apiKey }
+        shopOrigin={ this.props.shopOrigin }
+        forceRedirect={ true }
       >
-        <Page icon={bambooIcon}>
+        <Page icon={ bambooIcon }>
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={0}/>
+              <Navigation selectedTab={ 0 }/>
             </Layout.Section>
 
             <Layout.AnnotatedSection
@@ -82,14 +80,14 @@ class PostalCodes extends React.Component {
           </Layout>
           <Alert
             title="Delete Postal Code?"
-            open={this.state.deleteAlertOpen}
+            open={ this.state.deleteAlertOpen }
             confirmContent="Delete"
-            onConfirm={() => {
+            onConfirm={ () => {
               this.handleDelete(`/destroy_postal_code?id=${this.state.postalCodeToDelete.id}`).bind(this)
-              this.setState({deleteAlertOpen: false, postalCodeToDelete: null})
-              }}
+              this.setState({ deleteAlertOpen: false, postalCodeToDelete: null })
+              } }
             cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertOpen: false})}
+            onCancel={ () => this.setState({ deleteAlertOpen: false }) }
           >
             Are you sure you want to delete this postal code?
           </Alert>
@@ -103,19 +101,19 @@ class PostalCodes extends React.Component {
               <form
                 action='/create_postal_code'
                 acceptCharset="UTF-8" method="post"
-                ref={(form) => {this.postalCodeForm = form}}
+                ref={ (form) => { this.postalCodeForm = form } }
                 >
                   <FormLayout>
                     <input name="utf8" type="hidden" value="✓" />
-                    <input type="hidden" name="_method" value={this.state.postalCodeMethod} />
-                    <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
+                    <input type="hidden" name="_method" value={ this.state.postalCodeMethod } />
+                    <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
                     <TextField
                       label="Postal Code"
                       name="postal_code[title]"
                       type="text"
                       multiline
-                      value={this.state.postalCode.title}
-                      onChange={this.valueUpdater('title', 'postalCode')}
+                      value={ this.state.postalCode.title }
+                      onChange={ this.valueUpdater('title', 'postalCode') }
                     />
                   </FormLayout>
                 </form>

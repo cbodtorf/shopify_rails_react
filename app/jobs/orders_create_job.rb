@@ -20,6 +20,7 @@ class OrdersCreateJob < ApplicationJob
         end
         Rails.logger.info("[Recurring delivery date]: #{recurringSubscriptionOrder.attributes[:note_attributes].inspect}")
         recurringSubscriptionOrder.save
+
       end
 
       order_note = shop.order_notes.where(checkout_token: webhook[:checkout_token]).first

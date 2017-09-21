@@ -68,7 +68,7 @@ class BlackoutDates extends React.Component {
                 year: utc.getFullYear()
               }
             }) },
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({deleteAlertBlackoutOpen: true, dateToDelete: date}) }},
+            { content: <Icon source="delete" color="red" />, onAction: () => { this.setState({ deleteAlertBlackoutOpen: true, dateToDelete: date }) } },
           ],
           persistActions: true,
         }
@@ -78,14 +78,14 @@ class BlackoutDates extends React.Component {
     return (
       <div className="bamboo-settings">
       <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-        forceRedirect={true}
+        apiKey={ this.props.apiKey }
+        shopOrigin={ this.props.shopOrigin }
+        forceRedirect={ true }
       >
-        <Page icon={bambooIcon}>
+        <Page icon={ bambooIcon }>
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={null}/>
+              <Navigation selectedTab={ null }/>
             </Layout.Section>
             <Layout.AnnotatedSection
               title="Blackout Dates"
@@ -119,31 +119,31 @@ class BlackoutDates extends React.Component {
                 sectioned
                 >
                 <ResourceList
-                  items={blackoutDates}
-                  renderItem={(item, index) => {
-                    return <ResourceList.Item key={index} {...item} />;
-                  }}
+                  items={ blackoutDates }
+                  renderItem={ (item, index) => {
+                    return <ResourceList.Item key={ index } { ...item } />;
+                  } }
                 />
               </Card>
             </Layout.AnnotatedSection>
           </Layout>
           <Alert
             title="Delete Blackout Date?"
-            open={this.state.deleteAlertBlackoutOpen}
+            open={ this.state.deleteAlertBlackoutOpen }
             confirmContent="Delete"
-            onConfirm={() => {
+            onConfirm={ () => {
               this.handleDelete(`/destroy_blackout_date?id=${this.state.dateToDelete.id}`).bind(this)
-              this.setState({deleteAlertBlackoutOpen: false, dateToDelete: null})
-              }}
+              this.setState({ deleteAlertBlackoutOpen: false, dateToDelete: null })
+              } }
             cancelContent="Continue editing"
-            onCancel={() => this.setState({deleteAlertBlackoutOpen: false})}
+            onCancel={ () => this.setState({ deleteAlertBlackoutOpen: false }) }
           >
             Are you sure you want to delete this blackout date?
           </Alert>
 
           <ModalForm
             open={ this.state.editModal }
-            onClose={ () => this.setState({editModal: false}) }
+            onClose={ () => this.setState({ editModal: false }) }
             onSave={ () => this.handleSave(this.blackoutDateForm) }
             title="Blackout Date"
           >
@@ -151,29 +151,29 @@ class BlackoutDates extends React.Component {
               <form
                 action={ this.state.formUrl }
                 acceptCharset="UTF-8" method="post"
-                ref={(form) => {this.blackoutDateForm = form}}
+                ref={ (form) => { this.blackoutDateForm = form } }
                 >
                 <FormLayout>
                   <input name="utf8" type="hidden" value="✓" />
-                  <input type="hidden" name="_method" value={this.state.method} />
-                  <input type="hidden" name="authenticity_token" value={this.props.authenticity_token} />
+                  <input type="hidden" name="_method" value={ this.state.method } />
+                  <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
                   <input type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
                   <TextField
                     label="Blackout Date Title"
                     name="blackout_date[title]"
                     type="text"
-                    value={this.state.blackoutDate.title}
-                    onChange={this.valueUpdater('title', 'blackoutDate')}
+                    value={ this.state.blackoutDate.title }
+                    onChange={ this.valueUpdater('title', 'blackoutDate') }
                   />
                 </FormLayout>
               </form>
               <br />
               <br />
               <DatePicker
-                month={this.state.datePickerMonth}
-                year={this.state.datePickerYear}
-                selected={this.state.datePickerSelected}
-                disableDatesBefore={new Date()}
+                month={ this.state.datePickerMonth }
+                year={ this.state.datePickerYear }
+                selected={ this.state.datePickerSelected }
+                disableDatesBefore={ new Date() }
                 onChange={ (selected) => { this.dateChange(selected) } }
                 onMonthChange={ (month,year) => { this.monthChange(month,year) } }
               />
