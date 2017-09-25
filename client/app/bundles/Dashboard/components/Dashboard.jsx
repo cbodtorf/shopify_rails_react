@@ -19,10 +19,9 @@ class Dashboard extends React.Component {
     console.log('props: ', this.props)
 
     let shippingList = []
-    this.props.orders.forEach(order => {
+    this.props.shippingOrders.forEach(order => {
       /* TODO: handle orders that may not have note_attributes */
       let checkoutMethod = order.note_attributes.filter(note => note['name'] === 'checkout_method')
-
       if (checkoutMethod[0].value.toLowerCase() === 'shipping' && typeof checkoutMethod[0] !== 'undefined') {
         console.log('trying filter shipping orders', order);
         let fullfillmentBadge = {
@@ -154,9 +153,34 @@ class Dashboard extends React.Component {
                     spacing="default"
                     distribution="leading"
                     >
-                    <div className="count-block"><div className="count-icon"><img src={packageIcon}></img></div><Card sectioned title="Active Subscriptions" ><h5 className="count-content">{ this.props.activeSubscriberCount }</h5></Card></div>
-                    <div className="count-block"><div className="count-icon"><img src={customerIcon}></img></div><Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card></div>
-                    <div className="count-block"><div className="count-icon"><img src={productIcon}></img></div><Card sectioned title="Total Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card></div>
+                    <div className="count-block">
+                      <div className="count-icon"><img src={packageIcon}></img></div>
+                      <Card sectioned title="Active Subscriptions" ><h5 className="count-content">{ this.props.activeSubscriberCount }</h5></Card>
+                    </div>
+                    <div className="count-block">
+                      <div className="count-icon"><img src={customerIcon}></img></div>
+                      <Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card>
+                    </div>
+                    <div className="count-block">
+                      <div className="count-icon"><img src={productIcon}></img></div>
+                      <Card sectioned title="Total Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card>
+                    </div>
+                  </Stack>
+                </div>
+              </Layout.Section>
+              <Layout.Section>
+                <div className="errors counts">
+                  <Heading>Order Info</Heading>
+                  <Stack
+                    spacing="default"
+                    distribution="leading"
+                    >
+                    <div className="count-block">
+                      <Link url={`/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop_session.url}`}>
+                        <div className="count-icon errors"><Icon color="yellow" source="alert"></Icon></div>
+                        <Card sectioned title="Orders with Errors" ><h5 className="count-content">{ this.props.errorOrders.length }</h5></Card>
+                      </Link>
+                    </div>
                   </Stack>
                 </div>
               </Layout.Section>

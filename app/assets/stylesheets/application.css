@@ -269,6 +269,18 @@ div.Polaris-Page {
 .count-block {
   display: table;
 }
+.count-block .Polaris-Link {
+  display: table;
+}
+.count-block .Polaris-Link:hover .Polaris-Heading {
+  color: #5c6ac4;
+}
+.count-block .Polaris-Link .Polaris-Card {
+  border: 2px solid transparent;
+}
+.count-block .Polaris-Link:hover .Polaris-Card {
+  border: 2px solid #5c6ac4;
+}
 .count-icon {
   display: table-cell;
   /* TODO: I think I like the purple better */
@@ -281,6 +293,7 @@ div.Polaris-Page {
   padding-bottom: 5px;
   text-align: center;
 }
+
 .count-icon img {
   transform: scale(0.5);
 }

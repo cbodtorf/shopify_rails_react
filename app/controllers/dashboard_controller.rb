@@ -1,8 +1,10 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
     shop = ShopifyAPI::Shop.current()
-    @fiveDayOrders = self.formatOrders(shop.attributes[:domain])
+    fiveDayOrdersWithErrors = self.formatOrders(shop.attributes[:domain], true)
 
+    @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
+    @errorOrders = fiveDayOrdersWithErrors[:errorOrders]
 
     @fiveDayOrders.map do |date|
       date[:delivery_revenue] = 0
@@ -29,10 +31,13 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
     @activeSubscriberCount = activeSubscribers.count
 
-    @shippingOrdersCount = getShippingOrders.count
+    # Shipping Orders:
+    @shippingOrders = getShippingOrders
+
+    @shippingOrdersCount = @shippingOrders.count
 
     @shippingOrdersRevenue = 0
-    getShippingOrders.each do |order|
+    @shippingOrders.each do |order|
       @shippingOrdersRevenue += order.attributes[:total_price].to_f
     end
 
@@ -95,22 +100,24 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def showOrders
-    if params[:attribute].downcase != 'shipping'
+    @attribute = params[:attribute].capitalize
+    @date = params[:date]
+
+    if params[:attribute].downcase == 'pickup' || params[:attribute].downcase == 'delivery'
       dates = self.formatOrders(params[:shop])
       selectedDate = dates.select do |order|
         order[:date] == Date.parse(params[:date])
       end.first
-
       @orders = selectedDate[params[:attribute].to_sym]
-    else
+    elsif params[:attribute].downcase == 'shipping'
       @orders = self.getShippingOrders
+    elsif params[:attribute].downcase == 'errors'
+      dates_with_errors = self.formatOrders(params[:shop], true)
+      @orders = dates_with_errors[:errorOrders]
     end
-    @date = params[:date]
-    @attribute = params[:attribute].capitalize
-
   end
 
-  def formatOrders(shop_domain = params[:shop])
+  def formatOrders(shop_domain = params[:shop], showErrors = false)
     # Shopify requires time to be iso8601 format
     # Order Information 7 day range ( limit for which orders )
     # TODO: make sure this range is right,
@@ -119,6 +126,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
     @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
+    errorOrders = []
     # Sort by cook time
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
 
@@ -143,13 +151,29 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders.each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
+
+        Rails.logger.debug("order: #{order.attributes[:name].inspect}")
         # Isolate Delivery Date
         note_date = order.attributes[:note_attributes].select do |note|
           note.attributes[:name] === "delivery_date"
         end
+        Rails.logger.debug("note_date?: #{note_date[0].inspect}")
+
+        # Isolate Checkout method
+        method = order.attributes[:note_attributes].select do |note|
+          note.attributes[:name] === "checkout_method"
+        end
+        Rails.logger.debug("method?: #{method[0].inspect}")
 
         # Isolate Delivery Rate
         rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+        Rails.logger.debug("rate?: #{rates[0].inspect}")
+
+        if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
+          errorOrders.push(order)
+          next
+        end
+
         rate = shop.rates.find(rates[0].attributes[:value])
 
         if note_date[0] != nil
@@ -229,7 +253,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
         end
       end
 
-    return @fiveDayOrders
+    if showErrors == true
+      return {:fiveDayOrders => @fiveDayOrders, :errorOrders => errorOrders}
+    else
+      return @fiveDayOrders
+    end
   end
 
   def getShippingOrders
