@@ -1,3 +1,5 @@
+# rake database:correction_seq_id
+
 namespace :database do
     desc "Correction of sequences id"
     task correction_seq_id: :environment do
