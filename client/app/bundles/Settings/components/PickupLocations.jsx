@@ -60,7 +60,7 @@ class PickupLocations extends React.Component {
         <Page icon={ bambooIcon }>
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={ null }/>
+              <Navigation selectedTab={ null } shop={this.props.shop_session.url}/>
             </Layout.Section>
 
             <Layout.AnnotatedSection

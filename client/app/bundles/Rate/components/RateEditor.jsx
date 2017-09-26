@@ -112,7 +112,7 @@ class RateEditor extends React.Component {
         <Page icon={ bambooIcon }>
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={ 3 }/>
+              <Navigation selectedTab={ 3 } shop={this.props.shop_session.url}/>
             </Layout.Section>
 
             <Layout.Section>

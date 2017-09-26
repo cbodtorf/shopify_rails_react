@@ -23,19 +23,19 @@ class Navigation extends React.Component {
                 id: 'dashboard',
                 title: 'Dashboard',
                 panelID: 'dashboard',
-                url: '/dashboard',
+                url: `/dashboard?shop=${this.props.shop}`,
               },
               {
                 id: 'subscriptions',
                 title: 'Subscriptions',
                 panelID: 'subscriptions',
-                url: '/subscription',
+                url: `/subscription?shop=${this.props.shop}`,
               },
               {
                 id: 'bundles',
                 title: 'Bundles',
                 panelID: 'bundles',
-                url: `/bundle`,
+                url: `/bundle?shop=${this.props.shop}`,
               },
               {},
             ]}

@@ -157,7 +157,7 @@ class BundleEditor extends React.Component {
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={2}/>
+              <Navigation selectedTab={2} shop={this.props.shop_session.url}/>
             </Layout.Section>
             <Layout.Section>
               {mainContainer}

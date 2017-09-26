@@ -191,7 +191,7 @@ class OrderEditor extends React.Component {
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={ null }/>
+              <Navigation selectedTab={ null } shop={this.props.shop_session.url}/>
             </Layout.Section>
 
             <Layout.Section>

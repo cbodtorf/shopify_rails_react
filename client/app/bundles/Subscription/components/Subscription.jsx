@@ -97,7 +97,7 @@ class Subscription extends React.Component {
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={ 1 }/>
+              <Navigation selectedTab={ 1 } shop={this.props.shop_session.url}/>
             </Layout.Section>
             <Layout.Section>
 
