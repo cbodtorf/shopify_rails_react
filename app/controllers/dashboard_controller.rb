@@ -1,10 +1,14 @@
 class DashboardController < ShopifyApp::AuthenticatedController
   def index
     shop = ShopifyAPI::Shop.current()
-    fiveDayOrdersWithErrors = self.formatOrders(shop.attributes[:domain], true)
+    shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
+    fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true)
 
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
     @errorOrders = fiveDayOrdersWithErrors[:errorOrders]
+    # Out of Stock Subs
+    subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/?status=ERROR&limit=250")['charges']
+    @errorOrders.concat(subs_with_errors)
 
     @fiveDayOrders.map do |date|
       date[:delivery_revenue] = 0
@@ -100,6 +104,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def showOrders
+    shop = Shop.find_by(shopify_domain: params[:shop])
     @attribute = params[:attribute].capitalize
     @date = params[:date]
 
@@ -112,8 +117,29 @@ class DashboardController < ShopifyApp::AuthenticatedController
     elsif params[:attribute].downcase == 'shipping'
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
+      # Missing Delivery Data
       dates_with_errors = self.formatOrders(params[:shop], true)
       @orders = dates_with_errors[:errorOrders]
+
+      # Out of Stock Subs
+      subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/?status=ERROR&limit=250")['charges']
+      out_variants = shop.getOutOfStockProduct
+      Rails.logger.debug("out_variants: #{out_variants.inspect}")
+
+      subs_with_errors.map do |sub|
+        sub_out_variants = sub['line_items'].select do |item|
+          out_variants.include?(item['shopify_variant_id'].to_i)
+        end
+        if sub['error_type'] == "SHOPIFY_REJECTED" && sub_out_variants != []
+          sub['stripe_shipping_id'] = sub['error'].split(' ERROR id: ').last
+          sub['error'] = [sub['error']].unshift("OUT OF STOCK - This subscription could not create an order because #{sub_out_variants.map{|s| s['title']}.join(', ')} was out of stock")
+          sub['out_of_stock_variants'] = sub_out_variants.map{|s| s['shopify_variant_id']}
+        elsif sub['error_type'] == "CUSTOMER_NEEDS_TO_UPDATE_CARD"
+          sub['error'] = [sub['error']].unshift("FAILED PAYMENT - the subscription could not create an order because the payment method failed. #{sub['first_name']} #{sub['last_name']} needs to update card")
+        end
+      end
+
+      @orders.concat(subs_with_errors)
     end
   end
 
@@ -170,7 +196,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
         Rails.logger.debug("rate?: #{rates[0].inspect}")
 
         if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
-          errorOrders.push(order)
+          errorOrders.push(self.setError(order, rates[0], method))
           next
         end
 
@@ -274,5 +300,21 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
 
     return shippingOrders
+  end
+
+  def setError(order, method, rate)
+    order.attributes[:error] = []
+
+    if order.attributes[:note_attributes].size == 0
+      order.attributes[:error].push("MISSING DELIVERY DATA - Please make sure the order has a delivery method, date, rate, etc.")
+    end
+    if rate == nil
+      order.attributes[:error].push("MISSING RATE DATA - Please make sure the order has a delivery method, date, rate, etc.")
+    end
+    if method == nil
+      order.attributes[:error].push("MISSING METHOD DATA - Please make sure the order has a delivery method, date, rate, etc.")
+    end
+
+    order
   end
 end

@@ -39,4 +39,29 @@ class Shop < ActiveRecord::Base
 
     response.parsed_response
   end
+
+  def getOutOfStockProduct
+    # array of out of stock variant ids
+    out_variants = []
+    out_variants_name = []
+
+    products = ShopifyAPI::Product.find(:all, params: { limit: 250 }).each do |product|
+      # remove subscriptions to reduce count
+      if !product.attributes[:title].downcase.include?("auto")
+
+        # find out of stock
+        variants_out = product.attributes[:variants].select do |variant|
+          if variant.attributes[:inventory_management] == "shopify" && variant.attributes[:inventory_quantity] < 1
+            out_variants.push(variant.attributes[:id])
+            out_variants_name.push(product.attributes[:title])
+            true
+          else
+            false
+          end
+        end
+      end
+    end
+
+    out_variants
+  end
 end

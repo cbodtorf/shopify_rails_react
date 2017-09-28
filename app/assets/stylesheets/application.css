@@ -24,6 +24,11 @@ div.Polaris-Page {
   max-width: none;
 }
 
+/* Tooltip */
+.Polaris-Tooltip__Content, .Polaris-Tooltip__Wrapper {
+  max-height: 20rem;
+}
+
 /* SearchBar */
 .search-input .Polaris-Icon {
     height: 1.5rem;

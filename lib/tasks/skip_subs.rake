@@ -22,9 +22,9 @@ namespace :scheduler do
         # remove subscriptions to reduce count
         if !product.attributes[:title].downcase.include?("auto")
           # find bundles
-          if product.attributes[:tags].downcase.include?("bundle")
-            bundles.push(product)
-          end
+          # if product.attributes[:tags].downcase.include?("bundle")
+          #   bundles.push(product)
+          # end
 
           # find out of stock
           variants_out = product.attributes[:variants].select do |variant|
@@ -41,22 +41,22 @@ namespace :scheduler do
       puts "[2.] Find All Products that are out of stock #{out_variants}"
 
       # find bundles that contain out of stock items
-      bundles.each do |bundle|
-        bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
-        if bundle.metafield != nil
-          bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
-            item = item.split(' x')
-            if out_variants_name.include? item.first
-              bundle.attributes[:variants].each do |var|
-                out_bundle_variants.push(var.attributes[:id])
-              end
-            end
-          end
-        else
-          bundle.metafield = []
-        end
-      end
-      puts "[3.] Find All Bundles that are out of stock #{out_bundle_variants}"
+      # bundles.each do |bundle|
+      #   bundle.metafield = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
+      #   if bundle.metafield != nil
+      #     bundle.metafield = bundle.metafield.value.split(',').map.with_index do |item, index|
+      #       item = item.split(' x')
+      #       if out_variants_name.include? item.first
+      #         bundle.attributes[:variants].each do |var|
+      #           out_bundle_variants.push(var.attributes[:id])
+      #         end
+      #       end
+      #     end
+      #   else
+      #     bundle.metafield = []
+      #   end
+      # end
+      # puts "[3.] Find All Bundles that are out of stock #{out_bundle_variants}"
 
       # grab queued charges that will be charged tomorrow
       today = Date.current
