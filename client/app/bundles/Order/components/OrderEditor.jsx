@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Stack, FormLayout, Select, Layout, Button, Icon, Thumbnail, TextStyle, TextField, Subheading, DisplayText, Avatar, Tabs, Link} from '@shopify/polaris';
+import {Page, Card, Stack, FormLayout, Select, Layout, Button, Icon, Label, Thumbnail, TextStyle, TextField, Subheading, DisplayText, Avatar, Tabs, Link} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 
 import CustomerInfo from './CustomerInfo';
@@ -8,6 +8,7 @@ import ModalForm from '../../Global/components/ModalForm';
 import bambooIcon from 'assets/green-square.jpg';
 
 import NoteFormElement from './NoteFormElement';
+import NoteForm from './NoteForm';
 
 import uuid from 'uuid';
 
@@ -94,6 +95,14 @@ class OrderEditor extends React.Component {
 
     console.log("render", this.state);
 
+    // const noteAttributes = this.props.order.note_attributes.map((note, i) => {
+    //   return (
+    //     <Stack.Item>
+    //       { note.name }: { note.value }
+    //     </Stack.Item>
+    //   )
+    // })
+
     const noteAttributes = this.props.order.note_attributes.map((note, i) => {
       return (
         <NoteFormElement
@@ -117,6 +126,30 @@ class OrderEditor extends React.Component {
       )
     })
 
+    const noteForm = (
+        <NoteForm
+          formUrl={ `/orders/${this.props.order.id}` }
+          orderFormRef={ (form) => { this.orderForm = form } }
+          authenticity_token={ this.props.authenticity_token }
+          method={ 'PUT' }
+          noteAttributes={ this.props.order.note_attributes }
+          deliveryDate={ this.state.deliveryDate }
+          datePickerMonth={ this.state.datePickerMonth }
+          datePickerYear={ this.state.datePickerYear }
+          datePickerSelected={ this.state.datePickerSelected }
+          rate={ this.state.rate }
+          onRateChange={ (value) => this.setState({rate: value}) }
+          location={ this.state.location }
+          onLocationChange={ (value) => this.setState({location: value}) }
+          checkout={ this.state.checkout }
+          onCheckoutChange={ (value) => this.setState({checkout: value}) }
+          pickupLocations={ this.props.pickupLocations }
+          rates={ this.props.rates }
+          onDateChange={ (selected) => { this.dateChange(selected) } }
+          onMonthChange={ (month,year) => { this.monthChange(month,year) } }
+        />
+      )
+
     const lineItems = products.map((item, i) => {
 
       let itemProps = item.properties.map((prop, idx) => {
@@ -127,10 +160,8 @@ class OrderEditor extends React.Component {
         return (
           <Stack key={ `${item.id} _ ${idx}` } distribution="leading" alignment="center">
             <Stack.Item fill>
-              <TextField prefix={ <TextStyle variation="subdued">{ prop.name + ": " }</TextStyle> } value={ prop.value } />
-            </Stack.Item>
-            <Stack.Item >
-              <Link onClick={ () => { console.log('delete') } } ><Icon source="delete" color="inkLightest"/></Link>
+              <TextStyle variation="subdued">{ prop.name + ": " }</TextStyle>
+              <TextStyle variation="default">{ prop.value }</TextStyle>
             </Stack.Item>
           </Stack>
         )
@@ -141,7 +172,7 @@ class OrderEditor extends React.Component {
           <Stack distribution="leading" alignment="center">
             <Stack.Item>
               <Thumbnail
-                source={ item.image.src }
+                source={ item.image ? item.image.src : '' }
                 size="small"
                 alt={ item.title }
               />
@@ -218,8 +249,6 @@ class OrderEditor extends React.Component {
                       </TextStyle>
                     </p>
                   }] }
-                  primaryFooterAction={{ content: 'Save', onAction: () => { this.handleSave() } }}
-                  secondaryFooterAction={{ content: 'Cancel', onAction: () => { this.handleCancel() } }}
                   >
                   <Card.Section>
                     <Subheading>{ this.props.order.fulfillment_status !== null ? this.props.order.fulfillment_status : 'Unfulfilled' }</Subheading>
@@ -230,7 +259,11 @@ class OrderEditor extends React.Component {
 
                     <Layout>
                       <Layout.Section>
-                        <TextField placeholder="Add a note to this order..." label={ <TextStyle variation="subdued">{ `Note` }</TextStyle> } value={ this.props.order.note || '' } />
+                        <TextField readOnly placeholder="No notes on this order." label={ <TextStyle variation="subdued">{ `Note` }</TextStyle> } value={ this.props.order.note || '' } />
+                        {/* Comment
+                        <Label>Note</Label>
+                        <TextStyle variation="subdued">{ this.props.order.note || 'No notes on this order' }</TextStyle>
+                        */}
                       </Layout.Section>
 
                       <Layout.Section secondary>
@@ -246,17 +279,6 @@ class OrderEditor extends React.Component {
                       </Layout.Section>
                     </Layout>
                   </Card.Section>
-
-                  <Card.Section
-                    title="Accept Payment"
-                    primaryFooterAction={ { content: 'Capture Payment', onAction: () => { this.handleSave() } } }
-                    >
-                  </Card.Section>
-                  <Card.Section
-                    title="2 items to Fulfill"
-                    primaryFooterAction={ { content: 'Start Fulfilling', onAction: () => { this.handleSave() } } }
-                    >
-                  </Card.Section>
                 </Card>
             </Layout.Section>
             <Layout.Section secondary>
@@ -267,46 +289,29 @@ class OrderEditor extends React.Component {
                 <Card
                   sectioned
                   title="Additonal Details"
+                  primaryFooterAction={ { content: 'Edit', onAction: () => {
+                    this.setState({
+                      editModal: true
+                    })
+                  } } }
                 >
-                  { noteAttributes }
+                  <Stack vertical distribution="equalSpacing">
+                    { noteAttributes.length > 0 ? noteAttributes : <span>Need to add delivery information.</span>  }
+                  </Stack>
+
                 </Card>
               </div>
             </Layout.Section>
           </Layout>
-          <Alert
-            title="Delete Delivery Rate?"
-            open={ this.state.deleteAlertOpen }
-            confirmContent="Delete"
-            onConfirm={ () => {
-              this.handleDelete(this.state.rateToDelete).bind(this)
-              this.setState({ deleteAlertOpen: false, rateToDelete: null })
-              } }
-            cancelContent="Continue editing"
-            onCancel={ () => this.setState({ deleteAlertOpen: false }) }
-          >
-            Are you sure you want to delete this rate?
-          </Alert>
           <ModalForm
             open={ this.state.editModal }
             onClose={ () => this.setState({ editModal: false }) }
             onSave={ () => this.handleSave(this.orderForm) }
-            title="Blackout Date"
+            title="Additional Details"
           >
-            <div>
-              <form
-                action={ this.state.formUrl }
-                acceptCharset="UTF-8" method="post"
-                ref={ (form) => { this.orderForm = form } }
-                >
-                <FormLayout>
-                  <input name="utf8" type="hidden" value="✓" />
-                  <input type="hidden" name="_method" value={ this.state.method } />
-                  <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
 
+            { noteForm }
 
-                </FormLayout>
-              </form>
-            </div>
           </ModalForm>
         </Page>
       </EmbeddedApp>
@@ -317,9 +322,9 @@ class OrderEditor extends React.Component {
     return (value) => this.setState({ rate: { ...this.state.rate, [field]: value } });
   }
 
-  handleSave() {
+  handleSave(form) {
 
-    this.rateForm.submit()
+    form.submit()
   }
 
   handleCancel() {

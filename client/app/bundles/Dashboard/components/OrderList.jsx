@@ -4,6 +4,18 @@ import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
+const rxOne = /^[\],:{}\s]*$/;
+const rxTwo = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+const rxThree = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+const rxFour = /(?:^|:|,)(?:\s*\[)+/g;
+const isJSON = (input) => (
+  input.length && rxOne.test(
+    input.replace(rxTwo, '@')
+      .replace(rxThree, ']')
+      .replace(rxFour, '')
+  )
+);
+
 class OrderList extends React.Component {
   constructor(props) {
     super(props)
@@ -19,8 +31,6 @@ class OrderList extends React.Component {
 
   componentWillMount() {
     console.log("props", this.props);
-    // delete variant from failed charge
-    // https://shopifysubscriptions.com/shipments/del_product_to_shipping?shopify_variant_id=34306716741&shipping_id=18798737
 
     let orderItems = this.props.orders.map((order) => {
       console.log('id: ', order.id);
@@ -33,12 +43,14 @@ class OrderList extends React.Component {
         <Link external="true" url={ `${urlBase}customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name }</Link>
 
       let editLink = <Link external="true" url={ `${urlBase}orders/${order.id}` }>Edit</Link>
+
       if (order.error_type) {
         if (order.error_type === "CUSTOMER_NEEDS_TO_UPDATE_CARD") {
           editLink = <Link external="true" url={ `https://checkout.rechargeapps.com/customer/${order.customer_hash}/card_edit/` }>Update Billing</Link>
-
         } else if (order.error_type === "SHOPIFY_REJECTED") {
           editLink = (<Link onClick={ () => { this.removeAndRecharge(order) }}>Remove Out of Stock Product, Retry charge</Link>)
+        } else if (order.error_type === "MISSING_DELIVERY_DATA") {
+          editLink = (<Link external="true" url={ `/orders?id=${order.id}` }>Edit</Link>)
         }
       }
 
@@ -137,32 +149,55 @@ class OrderList extends React.Component {
     window.location = '/'
   }
 
+  retryCharge(order, fetchSettings) {
+    const self = this
+
+    return fetch(`https://shopifysubscriptions.com/purchase/${order.address_id}/charge/${order.id}/pay`, fetchSettings)
+    .then(self._parseJSON) // Transform the data into json
+    .then(function(data) {
+        // Your code for handling the data you get from the API
+        console.log("retry charge data", data)
+        window.location = `/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${self.props.shop_session.url}`
+    })
+    .catch(function(error) {
+        // This is where you run code if the server returns any errors
+        console.error('Hmm something went wrong:', error)
+    });
+  }
+
+  _parseJSON(response) {
+      console.log("parse data", response)
+
+    return response.text().then(function(text) {
+      return isJSON(text) ? JSON.parse(text) : {}
+    })
+  }
+
   removeAndRecharge(order) {
-    let self = this
+    const self = this
+
+    let myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    let fetchSettings = { method: 'GET',
+               headers: myHeaders,
+               credentials: 'same-origin',
+               mode: 'no-cors',
+               cache: 'default' };
 
     order.out_of_stock_variants.forEach((variant) => {
-      $.ajax({
-         type: "GET",
-         url: `https://shopifysubscriptions.com/shipments/del_product_to_shipping?shopify_variant_id=${variant}&shipping_id=${order.stripe_shipping_id}`,
-         success: function (result) {
-           console.log('result', result);
-         },
-         error: function (){
-           window.alert("something wrong!");
-         }
-      }).then(function(res) {
-        console.log('res', res);
-        // $.ajax({
-        //    type: "GET",
-        //    url: `https://shopifysubscriptions.com/purchase/${order.address_id}/charge/${order.id}/pay`,
-        //    success: function (result) {
-        //     //  window.location = '/'
-        //    },
-        //    error: function (){
-        //      window.alert("something wrong!");
-        //    }
-        // })
+      fetch(`https://shopifysubscriptions.com/shipments/del_product_to_shipping?shopify_variant_id=${variant}&shipping_id=${order.stripe_shipping_id}`, fetchSettings)
+      .then(self._parseJSON) // Transform the data into json
+      .then(function(data) {
+          // Your code for handling the data you get from the API
+          console.log("remove out of stock data", data)
+
+          self.retryCharge(order, fetchSettings)
       })
+      .catch(function(error) {
+          // This is where you run code if the server returns any errors
+          console.error('Hmm something went wrong:', error)
+      });
     })
   }
 

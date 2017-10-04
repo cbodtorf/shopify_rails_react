@@ -307,6 +307,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     if order.attributes[:note_attributes].size == 0
       order.attributes[:error].push("MISSING DELIVERY DATA - Please make sure the order has a delivery method, date, rate, etc.")
+      order.attributes[:error_type] = "MISSING_DELIVERY_DATA"
     end
     if rate == nil
       order.attributes[:error].push("MISSING RATE DATA - Please make sure the order has a delivery method, date, rate, etc.")

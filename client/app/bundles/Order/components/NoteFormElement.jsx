@@ -26,9 +26,12 @@ class NoteFormElement extends Component {
       }
     })
 
-    const locationOptions = [
-      { label: 'Bamboo Juice', value: '1' },
-    ]
+    let locationOptions = this.props.pickupLocations.map(location => {
+      return {
+        label: location.title,
+        value: location.id
+      }
+    })
 
     switch (this.props.noteAttribute.name) {
         case 'checkout_method':
@@ -37,6 +40,7 @@ class NoteFormElement extends Component {
                 <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ this.props.noteAttribute.name } />
                 <Select
                   label="Checkout Method"
+                  disabled
                   name="order[note_attributes][][value]"
                   options={[
                     { label: 'Pickup', value: 'pickup' },
@@ -56,6 +60,7 @@ class NoteFormElement extends Component {
                 <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ this.props.noteAttribute.name } />
                 <Select
                   label="Rate"
+                  disabled
                   name="order[note_attributes][][value]"
                   options={ rateOptions }
                   value={ this.props.rate || this.props.noteAttribute.value }
@@ -73,15 +78,8 @@ class NoteFormElement extends Component {
                   label="Delivery Date"
                   value={ this.props.datePickerSelected ? `${this.props.deliveryDate.month}-${this.props.deliveryDate.day}-${this.props.deliveryDate.year}` : this.props.noteAttribute.value }
                   readOnly={true}
+                  disabled
                   placeholder='mm-dd-yyyy'
-                />
-                <DatePicker
-                  month={ this.props.datePickerMonth }
-                  year={ this.props.datePickerYear }
-                  selected={ this.props.datePickerSelected }
-                  disableDatesBefore={ new Date() }
-                  onChange={ (selected) => { this.props.onDateChange(selected) } }
-                  onMonthChange={ (month,year) => { this.props.onMonthChange(month,year) } }
                 />
               </Stack>
             )
@@ -92,6 +90,7 @@ class NoteFormElement extends Component {
                 <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ this.props.noteAttribute.name } />
                 <Select
                   label="Location"
+                  disabled
                   name="order[note_attributes][][value]"
                   options={ locationOptions }
                   value={ this.props.location || this.props.noteAttribute.value }
@@ -114,6 +113,8 @@ class NoteFormElement extends Component {
             <TextField
               label={ this.props.noteAttribute.name }
               value={ this.props.noteAttribute.value }
+              disabled
+              readOnly={true}
             />
           </Stack>
         )

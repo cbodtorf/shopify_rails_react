@@ -7,21 +7,23 @@ class OrdersController < ShopifyApp::AuthenticatedController
     @order = ShopifyAPI::Order.find(params[:id])
     @products = ShopifyAPI::Product.find(:all, :params=>{:ids => @order.line_items.map{|item| item.product_id.to_i}.join(','), :fields => "image,id"})
 
-    @order.attributes[:line_items].map{|item| item.attributes[:image] = @products.select{|product| product.attributes[:id] == item.attributes[:product_id]}.first.attributes[:image]}
+    if @products.size > 0
+      @order.attributes[:line_items].map{|item| item.attributes[:image] = @products.select{|product| product.attributes[:id] == item.attributes[:product_id]}.first.attributes[:image]}
+    end
 
   end
 
   def update
-    metafield = ShopifyAPI::Metafield.find(:first, :params=>{:resource => "products", :resource_id => params[:id], :namespace => "bundle", :key => "items"})
+    order = ShopifyAPI::Order.find(params[:id])
 
-    #  Delete the metafield, it is not needed if there are no associated products.
-    if params[:metafield] == ''
-      metafield.destroy
+    Rails.logger.debug("shop: #{shop.inspect}")
+    Rails.logger.debug("order: #{params[:order][:note_attributes].inspect}")
+
+    if order.update_attributes(order_params)
+      redirect_to("/orders?id=#{params[:id]}&shop=#{shop.shopify_domain}")
     else
-      metafield.update_attributes(:value => params[:metafield])
+      redirect_to("/orders?id=#{params[:id]}&shop=#{shop.shopify_domain}")
     end
-
-    redirect_to('/success')
   end
 
   def create
@@ -45,6 +47,12 @@ class OrdersController < ShopifyApp::AuthenticatedController
       redirect_to action: 'index'
     else
       redirect_to action: 'index', id: rate.id
+    end
+  end
+
+  def order_params
+    params.require(:order).tap do |whitelisted|
+      whitelisted[:note_attributes] = params[:order][:note_attributes]
     end
   end
 
