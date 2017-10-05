@@ -394,14 +394,35 @@ div.pickup-count {
 }
 
 /* OrderList */
+.hide {
+  display: none;
+}
 .bamboo-orderList .Polaris-ResourceList__Container {
   pointer-events: auto;
 }
-.table-wrapper .Polaris-Icon {
+.table-wrapper .Polaris-Icon:not(.Polaris-Checkbox__Icon .Polaris-Icon) {
   display: inline-block;
   width: 16px;
   vertical-align: middle;
   margin-left: 8px;
+}
+
+.table-wrapper th.bulk-select {
+  max-width: 250px;
+  width: auto;
+}
+.table-wrapper th.bulk-select .Polaris-Button {
+  padding: 10px;
+  height: 28px;
+  left: -7px;
+  min-width: 45px;
+  top: 2px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+.table-wrapper th.bulk-select .Polaris-Checkbox {
+  left: -5px;
+  pointer-events: all !important;
 }
 
 /* modalForm */

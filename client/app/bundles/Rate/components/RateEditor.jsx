@@ -169,7 +169,7 @@ class RateEditor extends React.Component {
                       label="Title"
                       name="rate[title]"
                       type="text"
-                      value={ this.state.rate.title }
+                      value={ this.state.rate.title || '' }
                       onChange={ this.valueUpdater('title') }
                       connectedRight={
                         <TextField
@@ -178,7 +178,7 @@ class RateEditor extends React.Component {
                           type="number"
                           labelHidden
                           prefix={ <TextStyle variation="strong">Price: </TextStyle> }
-                          value={ this.state.rate.price }
+                          value={ this.state.rate.price || '' }
                           onChange={ this.valueUpdater('price') }
                           suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
                           />
@@ -188,9 +188,25 @@ class RateEditor extends React.Component {
                         label="Description"
                         name="rate[description]"
                         type="text"
-                        value={ this.state.rate.description }
+                        value={ this.state.rate.description || '' }
                         onChange={ this.valueUpdater('description') }
                         multiline
+                      />
+                      <TextField
+                        label="Min Price"
+                        name="rate[min_price]"
+                        type="number"
+                        value={ this.state.rate.min_price || '' }
+                        onChange={ this.valueUpdater('min_price') }
+                        suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
+                      />
+                      <TextField
+                        label="Max Price"
+                        name="rate[max_price]"
+                        type="number"
+                        value={ this.state.rate.max_price || '' }
+                        onChange={ this.valueUpdater('max_price') }
+                        suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
                       />
                       <TextField
                         label="Cutoff Time (Hour of day between 0-23)"
@@ -200,7 +216,7 @@ class RateEditor extends React.Component {
                         maxLength={ 2 }
                         max={ 23 }
                         min={ 0 }
-                        value={ this.state.rate.cutoff_time }
+                        value={ this.state.rate.cutoff_time || '' }
                         onChange={ this.valueUpdater('cutoff_time') }
                       />
                       <Select
@@ -211,7 +227,7 @@ class RateEditor extends React.Component {
                           { label: 'Afternoon before delivery', value: 'afternoon' },
                           { label: 'N/A', value: null }
                         ] }
-                        value={ this.state.rate.cook_time }
+                        value={ this.state.rate.cook_time || '' }
                         onChange={ this.valueUpdater('cook_time') }
                         placeholder="Select"
                       />
@@ -223,7 +239,7 @@ class RateEditor extends React.Component {
                           { label: 'Delivery', value: 'delivery' },
                           { label: 'Shipping', value: 'shipping' }
                         ] }
-                        value={ this.state.rate.delivery_method }
+                        value={ this.state.rate.delivery_method || '' }
                         onChange={ this.valueUpdater('delivery_method') }
                         placeholder="Select"
                       />
@@ -235,7 +251,7 @@ class RateEditor extends React.Component {
                           { label: 'Next Day', value: 'next_day' },
                           { label: 'Subscription', value: 'subscription' },
                         ] }
-                        value={ this.state.rate.delivery_type }
+                        value={ this.state.rate.delivery_type || '' }
                         onChange={ this.valueUpdater('delivery_type') }
                         placeholder="Select"
                       />

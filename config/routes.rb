@@ -53,7 +53,8 @@ Rails.application.routes.draw do
   resources :bundle, only: [:index, :update, :create]
 
   resources :rates, only: [:index, :update, :create, :destroy]
-  resources :orders, only: [:index, :update, :create, :destroy]
+  resources :orders, only: [:index, :update]
+  get 'bulk_fulfill', to: 'dashboard#bulk_fulfill'
 
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html

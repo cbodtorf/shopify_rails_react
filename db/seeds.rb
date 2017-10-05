@@ -75,23 +75,24 @@ CookSchedule.create!([
   {id: 2, shop_id: 1, title: "Afternoon Cook", cook_time: 15}
 ])
 Rate.create!([
-  {id: 1, shop_id: 1, title: "Free Local Delivery", description: "free range freedom", delivery_method: "delivery", price: 0, cutoff_time: 15, cook_time: "morning", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
+  {id: 1, shop_id: 1, title: "Free Local Delivery", description: "free range freedom", delivery_method: "delivery", price: 0, cutoff_time: 15, cook_time: "morning", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: 3000, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 2, shop_id: 1, title: "Same Day Delivery", description: "today junior", delivery_method: "delivery", price: 500, cutoff_time: 11, cook_time: "morning", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 3, shop_id: 1, title: "Store Pickup", description: "come and get it", delivery_method: "pickup", price: 0, cutoff_time: 15, cook_time: "morning", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 4, shop_id: 1, title: "Super Fast Delivery", description: "speedy gonzales", delivery_method: "delivery", price: 1500, cutoff_time: 15, cook_time: "afternoon", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 5, shop_id: 1, title: "Free Delivery for Subscribers", description: "Get that steady fix!", delivery_method: "delivery", price: 0, cutoff_time: 11, cook_time: "afternoon", delivery_type: "subscription", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 6, shop_id: 1, title: "FedEx Ground", description: "get your juice anywhere!", delivery_method: "shipping", price: 1953, cutoff_time: 15, cook_time: "N/A", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
-  {id: 7, shop_id: 1, title: "FedEx Priority Overnight", description: "get your juice anywhere, and FAST!", delivery_method: "shipping", price: 7000, cutoff_time: 15, cook_time: "N/A", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0}
+  {id: 7, shop_id: 1, title: "FedEx Priority Overnight", description: "get your juice anywhere, and FAST!", delivery_method: "shipping", price: 7000, cutoff_time: 15, cook_time: "N/A", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
+  {id: 8, shop_id: 1, title: "Local Delivery", description: "Delivered right to your door", delivery_method: "delivery", price: 1000, cutoff_time: 15, cook_time: "morning", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: 2999, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
 ])
 
 CookDay.create!([
-  {id: 1, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Monday"},
-  {id: 2, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Tuesday"},
-  {id: 3, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Wednesday"},
-  {id: 4, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Thursday"},
-  {id: 5, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Friday"},
+  {id: 1, cook_schedule_id: 1, rate_ids: [1,2,3,8], title: "Monday"},
+  {id: 2, cook_schedule_id: 1, rate_ids: [1,2,3,8], title: "Tuesday"},
+  {id: 3, cook_schedule_id: 1, rate_ids: [1,2,3,8], title: "Wednesday"},
+  {id: 4, cook_schedule_id: 1, rate_ids: [1,2,3,8], title: "Thursday"},
+  {id: 5, cook_schedule_id: 1, rate_ids: [1,2,3,8], title: "Friday"},
   {id: 6, cook_schedule_id: 1, rate_ids: [], title: "Saturday"},
-  {id: 7, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Sunday"},
+  {id: 7, cook_schedule_id: 1, rate_ids: [1,2,3,5,8], title: "Sunday"},
   {id: 8, cook_schedule_id: 2, rate_ids: [5], title: "Monday"},
   {id: 9, cook_schedule_id: 2, rate_ids: [4,5], title: "Tuesday"},
   {id: 10, cook_schedule_id: 2, rate_ids: [4,5], title: "Wednesday"},

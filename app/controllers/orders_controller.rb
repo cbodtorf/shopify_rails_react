@@ -26,19 +26,6 @@ class OrdersController < ShopifyApp::AuthenticatedController
     end
   end
 
-  def create
-    # add/save metafield
-    product = ShopifyAPI::Product.find(params[:id])
-    product.add_metafield(ShopifyAPI::Metafield.new({
-       :namespace => 'bundle',
-       :key => 'items',
-       :value => params[:metafield],
-       :value_type => 'string'
-    }))
-
-    redirect_to('/success')
-  end
-
   def destroy
     # TODO: there is an issue where sometimes Can't verify CSRF token authenticity.
     rate = shop.rates.find(params[:id])

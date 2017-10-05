@@ -318,4 +318,24 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     order
   end
+
+  def bulk_fulfill
+    orders = ShopifyAPI::Order.find(:all, :params=>{:ids => params[:ids]})
+    Rails.logger.debug("orders: #{orders.inspect}")
+    Rails.logger.debug("orders size: #{orders.size}")
+    fulfillments = orders.map do |order|
+      ShopifyAPI::Fulfillment.new(:order_id => order.id, :line_items =>[ {"id" => order.line_items.first.id} ] )
+    end
+    Rails.logger.debug("orders: #{fulfillments.inspect}")
+
+    fulfillments.each do |f|
+      if f.save
+        Rails.logger.debug("success: #{f.inspect}")
+      else
+        Rails.logger.error("error: #{f.inspect}")
+      end
+    end
+
+    redirect_back fallback_location: { action: "index" }
+  end
 end
