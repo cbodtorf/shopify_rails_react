@@ -81,8 +81,8 @@ class OrderList extends React.Component {
              this.setState({ ordersChecked: ordersChecked })
            }}/></td>
            <td><Link external="true" url={`${urlBase}orders/${order.id}`}>{ order.status === "ERROR" ? `#${order.id}` : order.name }
-           { order.note !== null ? <Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip> : '' }
-           { order.error ? <Tooltip content={ order.error[0] }><Icon color="red" source="alert"/></Tooltip> : '' }
+           { order.note !== null ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
+           { order.error ? <div className="notice-icon"><Tooltip content={ order.error[0] }><Icon color="red" source="alert"/></Tooltip></div> : '' }
            </Link></td>
            <td>{ customerLink }</td>
            <td>{ createdAtDate.toLocaleDateString() }</td>

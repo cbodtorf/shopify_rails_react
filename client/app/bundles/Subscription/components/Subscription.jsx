@@ -38,7 +38,7 @@ class Subscription extends React.Component {
           <tbody key={ sub.id } className="ui-nested-link-container">
             <tr className="">
               <td><Link external="true" url={ `${urlBase}addresses/${sub.address_id}` }>#{ sub.id }
-              { sub.note !== null ? <Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip> : '' }
+              { sub.note !== null ? <div className="notice-icon"><Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
               </Link></td>
               <td><Link external="true" url={ `${urlBase}customer/${sub.customer_id}/subscription/${sub.id}` }>{ sub.first_name + ' ' + sub.last_name }</Link></td>
               <td>{ new Date(sub.scheduled_at).toLocaleDateString() }</td>
