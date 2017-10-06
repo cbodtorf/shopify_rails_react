@@ -71,6 +71,7 @@ class OrderList extends React.Component {
          status={order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'}
        />
      )
+     
 
      return (
        <tbody key={ order.id } className="ui-nested-link-container">

@@ -70,7 +70,7 @@ class OrderEditor extends React.Component {
     if (this.props.order.customer) {
       customerInfo = <CustomerInfo
                         customerInfo={ this.props.order.customer ? this.props.order.customer : null }
-                        shippingAddress={ this.props.order.shippingAddress ? this.props.order.shippingAddress : null }
+                        shippingAddress={ this.props.order.shipping_address ? this.props.order.shipping_address : null }
                         urlBase={urlBase}
                         />
     } else {

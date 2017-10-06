@@ -16,6 +16,8 @@ class CustomerInfo extends React.Component {
   render() {
     const customer = this.props.customerInfo
     const shippingAddress = this.props.shippingAddress ? this.props.shippingAddress : customer.default_address
+    console.log('this.props.shippingAddress', this.props.shippingAddress);
+    console.log('customer.default_address', customer.default_address);
     const urlBase = this.props.urlBase
 
     return (

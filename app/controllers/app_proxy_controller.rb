@@ -133,7 +133,11 @@ class AppProxyController < ApplicationController
 
         Rails.logger.debug("[args] date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}")
         if  sub_present
-          rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
+          if date == Date.today
+            rate.delivery_type == 'subscription' && cutoff && rate.delivery_method == 'delivery'
+          else
+            rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
+          end
         else
           Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
           rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'
