@@ -89,14 +89,15 @@ class AppProxyController < ApplicationController
   end
 
   def breakCarrierCache
+    Rails.logger.debug("shop: #{params[:shop]}")
     api_token = ENV['SHOPIFY_PRIVATE_API_KEY']
     checkout_token = @checkout.attributes[:token]
-    endpoint = "https://bamboojuices.myshopify.com/admin/checkouts/#{checkout_token}.json"
+    endpoint = "https://#{params[:shop]}/admin/checkouts/#{checkout_token}.json"
     # TODO: need to encode Base64.encode64('username:password')
     # Should also look into whether or not I can use the App's credentials and not the private app.
     # ** note on editing company: Must use a character, just a space does not register as a change, probably trimming space at some point.
     # Need to decide if I should revert changes.
-    token_string="Basic MDRkNmRmMjhmOTQwZmFkYTc2M2I2OTNiODljNzFkOWU6MTViZjdjNzZiMWQ3YmUyNmQwOTJmZjA4ZjA2MWVhNWQ="
+    token_string="Basic #{ENV['SHOPIFY_PRIVATE_AUTH']}"
 
     data = {
       "checkout": {
