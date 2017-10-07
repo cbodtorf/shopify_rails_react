@@ -25,7 +25,7 @@ class Subscription extends React.Component {
   }
 
   render() {
-    let urlBase = 'https://bamboojuices.myshopify.com/admin/apps/shopify-recurring-payments/'
+    let urlBase = `https://${this.props.shop_session.url}/admin/apps/shopify-recurring-payments/`
     let subscriptionList = this.props.subscriptions.filter(
       createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
     ).map(sub => {
@@ -47,13 +47,13 @@ class Subscription extends React.Component {
 
               <td><Link external="true" onClick={() => {
                   this.setState({ modalOpen: true,
-                    modalUrl: `http://bamboojuices.myshopify.com/tools/recurring/customers/${sub.customer_hash}/subscriptions/`
+                    modalUrl: `http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`
                   })
                 }}>Edit</Link></td>
 
               <td><Link onClick={ () => {
                   this.setState({ modalOpen: true,
-                    modalUrl: `http://bamboojuices.myshopify.com/tools/recurring/customers/${sub.customer_hash}/delivery_schedule/`
+                    modalUrl: `http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/delivery_schedule/`
                   })
                 }}>Edit</Link></td>
 

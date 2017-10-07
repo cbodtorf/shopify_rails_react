@@ -40,7 +40,7 @@ class BundleEditor extends React.Component {
     bundlesItems = this.props.bundles.map(bundle => {
       return (
         {
-          url: `https://bamboojuices.myshopify.com/admin/products/${bundle.id}`,
+          url: `https://${this.props.shop_session.url}/admin/products/${bundle.id}`,
           media: <Thumbnail
             source={bundle.image ? bundle.image.src : ''}
             alt={bundle.image ? bundle.image.alt : ''}
@@ -114,7 +114,7 @@ class BundleEditor extends React.Component {
         <Card
           sectioned
           title={"Welcome"}
-          primaryFooterAction={{content: 'New', onAction: () => { window.open('https://bamboojuices.myshopify.com/admin/products/new', '_blank').focus() } }}
+          primaryFooterAction={{content: 'New', onAction: () => { window.open(`https://${this.props.shop_session.url}/admin/products/new`, '_blank').focus() } }}
           >
           <div>
             In order to create a bundle and add product to it, The listing must have a tag called 'bundle'.

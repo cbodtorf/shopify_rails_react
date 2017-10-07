@@ -64,7 +64,7 @@ class OrderEditor extends React.Component {
   }
 
   render() {
-    const urlBase = 'https://bamboojuices.myshopify.com/admin/'
+    const urlBase = `https://${this.props.shop_session.url}/admin/`
     let customerInfo = ''
 
     if (this.props.order.customer) {

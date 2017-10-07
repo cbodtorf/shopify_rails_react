@@ -47,7 +47,7 @@ class OrderList extends React.Component {
      let createdAtDate = new Date(order.created_at)
      let processedAtDate = new Date(order.processed_at)
      let deliveryMethod = order.note_attributes.filter(note => note.name === 'checkout_method' ? note.value : null)
-     let urlBase = 'https://bamboojuices.myshopify.com/admin/'
+     let urlBase = `https://${this.props.shop_session.url}/admin/`
 
      let customerLink = <Link > No Customer </Link>
      if (order.customer_id || order.customer) {
@@ -94,7 +94,7 @@ class OrderList extends React.Component {
            <td>{ fullfillmentBadge }</td>
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
-           <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids=${order.id}` }>Print</Link></td>
+           <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>
            <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>
          </tr>
        </tbody>
@@ -197,12 +197,12 @@ class OrderList extends React.Component {
   }
 
   bulkPrint() {
-    var url = `https://bamboojuices.myshopify.com/admin/apps/order-printer/orders/bulk?shop=bamboojuices.myshopify.com&ids%5B%5D=${this.state.ordersChecked.join('&ids%5B%5D=')}`
+    var url = `https://${this.props.shop_session.url}/admin/apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids%5B%5D=${this.state.ordersChecked.join('&ids%5B%5D=')}`
     window.open(url, '_blank').focus()
   }
 
   bulkFulfill() {
-    // https://bamboojuices.myshopify.com/admin/orders/5064774917/fulfill_and_ship
+
 
   }
 
