@@ -24,7 +24,7 @@ class Shop < ActiveRecord::Base
   def getRechargeData(endpoint)
     # TODO: bamboo specific code,
     # Access Recharge API
-    api_token = '9ddfc399771643169db06e1b162a5b73'
+    api_token = ENV['RECHARGE_API_KEY']
 
     response = HTTParty.get(endpoint,
                              :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})

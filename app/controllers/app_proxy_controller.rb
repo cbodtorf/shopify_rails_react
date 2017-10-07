@@ -89,7 +89,7 @@ class AppProxyController < ApplicationController
   end
 
   def breakCarrierCache
-    api_token = '04d6df28f940fada763b693b89c71d9e'
+    api_token = ENV['SHOPIFY_PRIVATE_API_KEY']
     checkout_token = @checkout.attributes[:token]
     endpoint = "https://bamboojuices.myshopify.com/admin/checkouts/#{checkout_token}.json"
     # TODO: need to encode Base64.encode64('username:password')
@@ -187,14 +187,9 @@ class AppProxyController < ApplicationController
       schedules.each_with_index do |sched, idx|
         # last cook schedule is delivered next day.
         if idx == (schedules.size - 1)
-          Rails.logger.debug("[last date wday] #{date.wday.inspect}")
-          Rails.logger.debug("[old way:  date wday] #{sched.cook_days[date.wday - 2].inspect}")
-          Rails.logger.debug("[new way: date] #{sched.cook_days[(date - 1.day).wday].inspect}")
           rate_dates = rate_dates.concat(sched.cook_days[(date - 1.day).wday].rates)
         else
           # otherwise delivered same day as cook.
-          Rails.logger.debug("[date wday] #{date.wday.inspect}")
-          Rails.logger.debug("[date wday] #{sched.cook_days[date.wday].inspect}")
           rate_dates = rate_dates.concat(sched.cook_days[date.wday].rates)
         end
       end

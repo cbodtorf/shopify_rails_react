@@ -48,9 +48,13 @@ class OrderList extends React.Component {
      let processedAtDate = new Date(order.processed_at)
      let deliveryMethod = order.note_attributes.filter(note => note.name === 'checkout_method' ? note.value : null)
      let urlBase = 'https://bamboojuices.myshopify.com/admin/'
-     let customerLink = order.status === "ERROR" ?
-       <Link external="true" url={ `${urlBase}customers/${order.customer_id}`}>{order.first_name + ' ' + order.last_name }</Link> :
-       <Link external="true" url={ `${urlBase}customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name }</Link>
+
+     let customerLink = <Link > No Customer </Link>
+     if (order.customer_id || order.customer) {
+       customerLink = order.status === "ERROR" ?
+         <Link external="true" url={ `${urlBase}customers/${order.customer_id}`}>{order.first_name + ' ' + order.last_name }</Link> :
+         <Link external="true" url={ `${urlBase}customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name }</Link>
+     }
 
      let editLink = <Link external="true" url={ `${urlBase}orders/${order.id}` }>Edit</Link>
 
@@ -71,7 +75,7 @@ class OrderList extends React.Component {
          status={order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'}
        />
      )
-     
+
 
      return (
        <tbody key={ order.id } className="ui-nested-link-container">

@@ -5,7 +5,26 @@ class DashboardController < ShopifyApp::AuthenticatedController
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true)
 
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
-    @errorOrders = fiveDayOrdersWithErrors[:errorOrders]
+    orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
+    # Missing Delivery Data
+    @errorOrders = []
+    orders.each do |order|
+      # Isolate Delivery Date
+      note_date = order.attributes[:note_attributes].select do |note|
+        note.attributes[:name] === "delivery_date"
+      end
+      # Isolate Checkout method
+      method = order.attributes[:note_attributes].select do |note|
+        note.attributes[:name] === "checkout_method"
+      end
+      # Isolate Delivery Rate
+      rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+
+      if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
+        Rails.logger.debug("order: #{order.attributes[:name].inspect}")
+        @errorOrders.push(self.setError(order, rates[0], method))
+      end
+    end
     # Out of Stock Subs
     subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/?status=ERROR&limit=250")['charges']
     @errorOrders.concat(subs_with_errors)
@@ -118,8 +137,26 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      dates_with_errors = self.formatOrders(params[:shop], true)
-      @orders = dates_with_errors[:errorOrders]
+      orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
+      @orders = []
+      orders.each do |order|
+        # Isolate Delivery Date
+        note_date = order.attributes[:note_attributes].select do |note|
+          note.attributes[:name] === "delivery_date"
+        end
+        # Isolate Checkout method
+        method = order.attributes[:note_attributes].select do |note|
+          note.attributes[:name] === "checkout_method"
+        end
+        # Isolate Delivery Rate
+        rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+
+        if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
+          Rails.logger.debug("order: #{order.attributes[:name].inspect}")
+          @orders.push(self.setError(order, rates[0], method))
+        end
+      end
+
 
       # Out of Stock Subs
       subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/?status=ERROR&limit=250")['charges']
