@@ -131,7 +131,7 @@ class AppProxyController < ApplicationController
       rates: date_rates.select do |rate|
         cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
 
-        Rails.logger.debug("[args] date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}")
+        Rails.logger.debug("[args] rate_id: #{rate.id}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}")
         if  sub_present
           if date == Date.today
             rate.delivery_type == 'subscription' && cutoff && rate.delivery_method == 'delivery'
@@ -183,18 +183,22 @@ class AppProxyController < ApplicationController
     cal_data = date_range.map.with_index do |date, i|
 
       rate_dates = []
+      # This logic accounts for when cooks are delivered.
       schedules.each_with_index do |sched, idx|
-        # last schedule is delivered day after.
+        # last cook schedule is delivered next day.
         if idx == (schedules.size - 1)
           Rails.logger.debug("[last date wday] #{date.wday.inspect}")
-          Rails.logger.debug("[last date wday] #{sched.cook_days[date.wday - 2].inspect}")
-          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 2].rates)
+          Rails.logger.debug("[old way:  date wday] #{sched.cook_days[date.wday - 2].inspect}")
+          Rails.logger.debug("[new way: date] #{sched.cook_days[(date - 1.day).wday].inspect}")
+          rate_dates = rate_dates.concat(sched.cook_days[(date - 1.day).wday].rates)
         else
+          # otherwise delivered same day as cook.
           Rails.logger.debug("[date wday] #{date.wday.inspect}")
-          Rails.logger.debug("[date wday] #{sched.cook_days[date.wday - 1].inspect}")
-          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
+          Rails.logger.debug("[date wday] #{sched.cook_days[date.wday].inspect}")
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday].rates)
         end
       end
+      Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
 
 
       if Time.now < end_of_day # normal
