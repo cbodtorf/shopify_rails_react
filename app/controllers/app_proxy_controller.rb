@@ -188,10 +188,10 @@ class AppProxyController < ApplicationController
       schedules.each_with_index do |sched, idx|
         # last cook schedule is delivered next day.
         if idx == (schedules.size - 1)
-          rate_dates = rate_dates.concat(sched.cook_days[(date - 1.day).wday].rates)
+          rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
         else
           # otherwise delivered same day as cook.
-          rate_dates = rate_dates.concat(sched.cook_days[date.wday].rates)
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
         end
       end
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
