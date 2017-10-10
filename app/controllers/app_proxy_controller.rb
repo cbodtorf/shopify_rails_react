@@ -50,6 +50,7 @@ class AppProxyController < ApplicationController
     else
       Rails.logger.debug("[Order Note does not exist] #{order_note.inspect}")
       # this shouldn't run, order note should already be created
+      # has potential to run if webhooks aren't set up.
       # Shouldn't need to breakCarrierCache either.
 
       # checkouts = ShopifyAPI::Checkout.all
