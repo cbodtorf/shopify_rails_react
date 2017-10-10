@@ -29,14 +29,14 @@ class Dashboard extends React.Component {
           status: order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'
         }
         shippingList.push({
-          attributeOne: <Link external="true" url={`https://bamboojuices.myshopify.com/admin/orders/${order.id}`}>{order.name}</Link>,
+          attributeOne: <Link external="true" url={`https://${this.props.shop_session.url}/admin/orders/${order.id}`}>{order.name}</Link>,
           attributeTwo: new Date(order.created_at).toLocaleDateString(),
           attributeThree: 'items csv',
           badges: [
             fullfillmentBadge,
           ],
           actions: [
-            {content: 'Order Details', onAction: () => { window.open(`https://bamboojuices.myshopify.com/admin/orders/${order.id}`, '_blank').focus() }},
+            {content: 'Order Details', onAction: () => { window.open(`https://${this.props.shop_session.url}/admin/orders/${order.id}`, '_blank').focus() }},
           ],
           persistActions: true,
         })

@@ -3,16 +3,6 @@ class HomeController < ShopifyApp::AuthenticatedController
 
   def index
     Rails.logger.debug("shop index: #{Shop.all}")
-    @rates = shop.rates.order(:title)
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 50 })
-    @bundles = @products.select do |product|
-      product.attributes[:tags].include?("bundle")
-    end
-
-
-    @bundles.each do |bundle|
-      bundle.metafields = ShopifyAPI::Metafield.find(:first ,:params=>{:resource => "products", :resource_id => bundle.id, :namespace => "bundle", :key => "items"})
-    end
 
     haltable do
       handle_unsuccessful_onboarding
