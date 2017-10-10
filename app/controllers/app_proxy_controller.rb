@@ -100,6 +100,7 @@ class AppProxyController < ApplicationController
     # ** note on editing company: Must use a character, just a space does not register as a change, probably trimming space at some point.
     # Need to decide if I should revert changes.
     token_string="Basic #{ENV['SHOPIFY_PRIVATE_AUTH']}"
+    Rails.logger.debug("token_string: #{token_string}")
 
     data = {
       "checkout": {
@@ -110,6 +111,7 @@ class AppProxyController < ApplicationController
         }
       }
     }
+    Rails.logger.debug("data: #{data.to_json}")
 
     response = HTTParty.put(endpoint,
                              :body => data.to_json,
