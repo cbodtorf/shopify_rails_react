@@ -2,7 +2,9 @@ class HomeController < ShopifyApp::AuthenticatedController
   include Haltable
 
   def index
-    Rails.logger.debug("shop index: #{Shop.all}")
+    Rails.logger.debug("shop index: #{Shop.first}")
+    Rails.logger.debug("shop: #{shop}")
+    shop = Shop.find_by(shopify_domain: params[:shop])
 
     haltable do
       handle_unsuccessful_onboarding
