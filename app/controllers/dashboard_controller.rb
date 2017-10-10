@@ -4,6 +4,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true)
 
+    self.delete_orders()
+
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
     orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
     # Missing Delivery Data
@@ -394,5 +396,18 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
 
     redirect_back fallback_location: { action: "index" }
+  end
+
+  def delete_orders
+    shop = ShopifyAPI::Shop.current()
+    shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
+    orders = ShopifyAPI::Order.find(:all, params: { status: "any", fulfillment_status: "unshipped", limit: 250, fields: "id" })
+    orderIds = orders.map{|order| order.attributes[:id]}
+    Rails.logger.debug("orderIds: #{orderIds.inspect}")
+
+    orders.each do |order|
+      order.destroy
+    end
+
   end
 end

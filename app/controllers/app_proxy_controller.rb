@@ -121,10 +121,62 @@ class AppProxyController < ApplicationController
         puts "All good!"
       when 404
         puts "O noes not found!"
+      when 403
+        # api not allowing access break with product weight
+        breakCarrierCacheWeight()
+        puts "api not allowing access break with product weight #{response.code}"
       when 500...600
         puts "ZOMG ERROR #{response.code}"
     end
     Rails.logger.debug("[httparty] #{response.inspect}")
+    puts response.body
+  end
+
+  def breakCarrierCacheWeight
+    Rails.logger.debug("shop: #{params[:shop]}")
+
+    variant = @checkout.attributes[:line_items].first
+    variant_id = variant.attributes[:variant_id]
+    w = variant.attributes[:grams].to_i
+    break_weight = w > 500 ? 0 : w + 100
+
+    Rails.logger.debug("variant: #{variant.attributes.inspect}")
+    Rails.logger.debug("break_weight: #{break_weight.inspect}")
+    Rails.logger.debug("break_weight: #{w.inspect}")
+
+    api_token = ENV['SHOPIFY_PRIVATE_API_KEY']
+    endpoint = "https://#{params[:shop]}/admin/variants/#{variant_id}.json"
+    # TODO: need to encode Base64.encode64('username:password')
+    # Should also look into whether or not I can use the App's credentials and not the private app.
+    # ** note on editing company: Must use a character, just a space does not register as a change, probably trimming space at some point.
+    # Need to decide if I should revert changes.
+    token_string="Basic #{ENV['SHOPIFY_PRIVATE_AUTH']}"
+    Rails.logger.debug("token_string: #{token_string}")
+
+    data = {
+      "variant": {
+        "id": variant_id,
+        "weight": break_weight,
+        "weight_unit": "g"
+      }
+    }
+    Rails.logger.debug("data: #{data.to_json}")
+
+    response = HTTParty.put(endpoint,
+                             :body => data.to_json,
+                             :headers => { "Content-Type" => 'application/json', "Authorization" => token_string})
+   case response.code
+      when 200
+        puts "All good!"
+      when 404
+        puts "O noes not found!"
+      when 403
+
+        puts "api not allowing access #{response.code}"
+      when 500...600
+        puts "ZOMG ERROR #{response.code}"
+    end
+    Rails.logger.debug("[httparty weight] #{response.inspect}")
     puts response.body
   end
 
