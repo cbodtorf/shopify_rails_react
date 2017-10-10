@@ -4,7 +4,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true)
 
-    self.delete_orders()
 
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
     orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
