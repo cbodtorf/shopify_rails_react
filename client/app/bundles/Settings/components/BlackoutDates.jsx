@@ -38,6 +38,7 @@ class BlackoutDates extends React.Component {
   addZ(n){return n<10? '0'+n:''+n;}
 
   componentWillMount() {
+    console.log("this", this);
 
     this.setState({
       blackoutDates: this.props.blackoutDates,
@@ -156,7 +157,7 @@ class BlackoutDates extends React.Component {
                 <FormLayout>
                   <input name="utf8" type="hidden" value="✓" />
                   <input type="hidden" name="_method" value={ this.state.method } />
-                  <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
+                  <input type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
                   <input type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
                   <TextField
                     label="Blackout Date Title"

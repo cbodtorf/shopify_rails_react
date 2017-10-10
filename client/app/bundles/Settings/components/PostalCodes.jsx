@@ -19,7 +19,7 @@ class PostalCodes extends React.Component {
   }
 
   componentWillMount() {
-    console.log('props: ', this.props)
+    console.log("this", this);
   }
 
   render() {
@@ -106,7 +106,7 @@ class PostalCodes extends React.Component {
                   <FormLayout>
                     <input name="utf8" type="hidden" value="✓" />
                     <input type="hidden" name="_method" value={ this.state.postalCodeMethod } />
-                    <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
+                    <input type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
                     <TextField
                       label="Postal Code"
                       name="postal_code[title]"
