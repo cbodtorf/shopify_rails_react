@@ -240,7 +240,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
         rate = shop.rates.find(rates[0].attributes[:value])
 
-        if note_date[0] != nil || note_date[0].attributes[:value] != ''
+        if note_date[0] != nil && note_date[0].attributes[:value] != ''
           note_date = Date.parse(note_date[0].attributes[:value])
 
           # match dates
