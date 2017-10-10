@@ -214,6 +214,7 @@ class BlackoutDates extends React.Component {
   }
 
   handleSave(formType) {
+    console.log("form", formType);
     formType.submit()
   }
 
