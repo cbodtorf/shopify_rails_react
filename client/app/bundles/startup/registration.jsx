@@ -6,6 +6,7 @@ import Onboarding from '../Home/components/Onboarding';
 import Dashboard from '../Dashboard/components/Dashboard';
 import OrderList from '../Dashboard/components/OrderList';
 import BundleEditor from '../Bundle/components/BundleEditor';
+import MetafieldEditor from '../Metafield/components/MetafieldEditor';
 import RateEditor from '../Rate/components/RateEditor';
 import OrderEditor from '../Order/components/OrderEditor';
 import PickupLocations from '../Settings/components/PickupLocations';
@@ -24,6 +25,7 @@ ReactOnRails.register({
   Dashboard,
   OrderList,
   BundleEditor,
+  MetafieldEditor,
   RateEditor,
   OrderEditor,
   BlackoutDates,

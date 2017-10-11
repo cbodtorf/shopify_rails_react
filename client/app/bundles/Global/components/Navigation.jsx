@@ -37,6 +37,12 @@ class Navigation extends React.Component {
                 panelID: 'bundles',
                 url: `/bundle?shop=${this.props.shop}`,
               },
+              {
+                id: 'metafields',
+                title: 'Metafields',
+                panelID: 'metafields',
+                url: `/metafield?shop=${this.props.shop}`,
+              },
               {},
             ]}
           >

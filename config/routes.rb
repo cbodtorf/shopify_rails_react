@@ -51,6 +51,8 @@ Rails.application.routes.draw do
   delete 'destroy_postal_code', to: 'settings#destroy_postal_code'
 
   resources :bundle, only: [:index, :update, :create]
+  resources :metafield, only: [:index, :update, :create]
+  get 'product_metafield/:id', to: 'metafield#get_product_metafield'
 
   resources :rates, only: [:index, :update, :create, :destroy]
   resources :orders, only: [:index, :update]

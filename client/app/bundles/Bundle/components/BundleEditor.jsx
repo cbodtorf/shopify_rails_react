@@ -59,13 +59,13 @@ class BundleEditor extends React.Component {
       )
     })
 
-    const { authenticity_token } = this.props
+    const { form_authenticity_token } = this.props
 
     this.setState({
       bundlesItems,
       method,
       url,
-      authenticity_token
+      form_authenticity_token
     })
   }
 
@@ -189,7 +189,7 @@ class BundleEditor extends React.Component {
                 >
                 <input name="utf8" type="hidden" value="✓" />
                 <input type="hidden" name="_method" value={this.state.method} />
-                <input type="hidden" name="authenticity_token" value={this.state.authenticity_token} />
+                <input type="hidden" name="authenticity_token" value={this.state.form_authenticity_token} />
                 <label htmlFor="metafield">Search for:</label>
                 <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={ () => this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
               </form>
