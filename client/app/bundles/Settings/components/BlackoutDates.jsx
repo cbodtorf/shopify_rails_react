@@ -17,6 +17,8 @@ class BlackoutDates extends React.Component {
       datePickerMonth: new Date().getMonth(),
       datePickerYear: new Date().getUTCFullYear(),
       datePickerSelected: null,
+      datePickerErrors: false,
+      titleErrors: false,
       blackoutDate: {
         blackout_date: undefined,
         title: undefined,
@@ -47,6 +49,19 @@ class BlackoutDates extends React.Component {
 
   render() {
     console.log("render", this.state);
+
+    let datePickerErrors = false
+    if (this.state.datePickerErrors) {
+      datePickerErrors = (
+        <div className="Polaris-Labelled__Error">
+          <div className="Polaris-Labelled__ErrorIcon">
+            <Icon source="alert" color="red" />
+          </div>
+          { this.state.datePickerErrors }
+        </div>
+      )
+    }
+
     const blackoutDates = this.state.blackoutDates.map(date => {
       let d = new Date(date.blackout_date)
       let utc = new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),  d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds())
@@ -58,6 +73,8 @@ class BlackoutDates extends React.Component {
             {content: 'Edit date', onAction: () => this.setState({
               editModal: true,
               method: 'patch',
+              datePickerErrors: false,
+              titleErrors: false,
               formUrl: `/update_blackout_date/${date.id}`,
               datePickerSelected: utc,
               blackoutDate: {
@@ -81,7 +98,7 @@ class BlackoutDates extends React.Component {
       <EmbeddedApp
         apiKey={ this.props.apiKey }
         shopOrigin={ this.props.shopOrigin }
-        forceRedirect={ true }
+        forceRedirect={ false }
       >
         <Page icon={ bambooIcon }>
           <Layout>
@@ -157,28 +174,33 @@ class BlackoutDates extends React.Component {
                 <FormLayout>
                   <input name="utf8" type="hidden" value="✓" />
                   <input type="hidden" name="_method" value={ this.state.method } />
-                  <input type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
-                  <input type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
-                  <TextField
-                    label="Blackout Date Title"
-                    name="blackout_date[title]"
-                    type="text"
-                    value={ this.state.blackoutDate.title }
-                    onChange={ this.valueUpdater('title', 'blackoutDate') }
-                  />
+                  <input required type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
+                  <input required ref={ (input) => { this.blackoutDateDateInput = input } } type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
+                  <input required ref={ (input) => { this.blackoutDateTitleInput = input } } type="hidden" name="blackout_date[title]" value={ this.state.blackoutDate.title } />
                 </FormLayout>
               </form>
               <br />
               <br />
+              <TextField
+                label="Blackout Date Title"
+                name="blackout_date[title]"
+                type="text"
+                pattern={"/^[A-Za-z0-9 ]{3,20}$/"}
+                error={ this.state.titleErrors }
+                value={ this.state.blackoutDate.title }
+                onChange={ this.valueUpdater('title', 'blackoutDate') }
+              />
               <DatePicker
                 month={ this.state.datePickerMonth }
                 year={ this.state.datePickerYear }
+                error={ this.state.datePickerErrors }
                 selected={ this.state.datePickerSelected }
                 disableDatesBefore={ new Date() }
                 onChange={ (selected) => { this.dateChange(selected) } }
                 onMonthChange={ (month,year) => { this.monthChange(month,year) } }
               />
-            </div>
+              { datePickerErrors }
+              </div>
           </ModalForm>
         </Page>
       </EmbeddedApp>
@@ -214,8 +236,20 @@ class BlackoutDates extends React.Component {
   }
 
   handleSave(formType) {
-    console.log("form", formType);
-    formType.submit()
+    console.log("date input", typeof this.blackoutDateDateInput.value );
+    console.log("title input", typeof this.blackoutDateTitleInput.value );
+    const self = this
+
+    if (this.blackoutDateDateInput.value === "" || this.blackoutDateDateInput.value === undefined || this.blackoutDateDateInput.value === null) {
+      self.setState({datePickerErrors: "Must select a date."})
+    }
+    if (this.blackoutDateTitleInput.value === "" || this.blackoutDateTitleInput.value === undefined || this.blackoutDateTitleInput.value === null) {
+      self.setState({titleErrors: "Must enter a title for blackout date."})
+    }
+
+    if(!!this.state.titleErrors && !!this.datePickerErrors){
+      formType.submit()
+    }
   }
 
   handleDelete(url) {
