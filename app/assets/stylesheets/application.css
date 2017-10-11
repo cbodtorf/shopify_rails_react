@@ -393,6 +393,11 @@ div.pickup-count {
   justify-content: space-between;
 }
 
+/* Annotated Sections */
+.bamboo-settings .Polaris-Layout__AnnotatedSection+.Polaris-Layout__AnnotatedSection, .bamboo-settings .Polaris-Layout__Section+.Polaris-Layout__AnnotatedSection {
+  border: none;
+}
+
 /* OrderList */
 .hide {
   display: none;

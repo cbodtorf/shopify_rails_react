@@ -252,44 +252,65 @@ class AppProxyController < ApplicationController
       end
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
 
+      if params[:admin]
+        # ALLOWS all possible/legitimate rates; does not honor cutoffs
+        if Time.now < end_of_day # normal
+          if date.today?
+            # offer same_day
+            createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
+          elsif !date.today?
+            # offer next_day
+            createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
+          else
+            # blank day
+            Rails.logger.debug("[blank] #{date.inspect}")
+            {
+              date: date,
+              disabled: true,
+              rates: []
+            }
+          end
+        end
 
-      if Time.now < end_of_day # normal
-        if date.today?
-          # offer same_day
-          createDateObject(date, 'same_day', rate_dates.uniq, true, sub_present)
-        elsif !date.today?
-          # offer next_day
-          createDateObject(date, 'next_day', rate_dates.uniq, true, sub_present)
+      else # ADMIN
+        if Time.now < end_of_day # normal
+          if date.today?
+            # offer same_day
+            createDateObject(date, 'same_day', rate_dates.uniq, true, sub_present)
+          elsif !date.today?
+            # offer next_day
+            createDateObject(date, 'next_day', rate_dates.uniq, true, sub_present)
+          else
+            # blank day
+            Rails.logger.debug("[blank] #{date.inspect}")
+            {
+              date: date,
+              disabled: true,
+              rates: []
+            }
+          end
+        elsif Time.now > end_of_day # shift rates over one day
+          if (date - 1).today?
+            # offer same_day
+            createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
+          elsif !date.today? && !(date - 1).today?
+            # offer next_day
+            Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.uniq.inspect}")
+            createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
+          else
+            # blank day
+            Rails.logger.debug("[blank] #{date.inspect}")
+            {
+              date: date,
+              disabled: true,
+              rates: []
+            }
+          end
         else
-          # blank day
-          Rails.logger.debug("[blank] #{date.inspect}")
-          {
-            date: date,
-            disabled: true,
-            rates: []
-          }
+          # Should not run
+          Rails.logger.debug("[err] #{date.inspect}")
         end
-      elsif Time.now > end_of_day # shift rates over one day
-        if (date - 1).today?
-          # offer same_day
-          createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
-        elsif !date.today? && !(date - 1).today?
-          # offer next_day
-          Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.uniq.inspect}")
-          createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
-        else
-          # blank day
-          Rails.logger.debug("[blank] #{date.inspect}")
-          {
-            date: date,
-            disabled: true,
-            rates: []
-          }
-        end
-      else
-        # Should not run
-        Rails.logger.debug("[err] #{date.inspect}")
-      end
+      end # NORMAL
 
     end
 
