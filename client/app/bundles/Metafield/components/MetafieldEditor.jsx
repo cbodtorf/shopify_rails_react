@@ -1,10 +1,14 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Stack} from '@shopify/polaris';
 import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 
 import ModalForm from '../../Global/components/ModalForm';
+import SearchBar, {createFilter} from '../../Global/components/SearchBar';
+
 import bambooIcon from 'assets/green-square.jpg';
+
+const KEYS_TO_FILTERS = ['title','product_type']
 
 function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)}
 
@@ -32,6 +36,7 @@ class MetafieldEditor extends React.Component {
       method: '',
       url: '',
       formTab: 0,
+      searchTerm: '',
       editModal: false
     }
   }
@@ -49,48 +54,9 @@ class MetafieldEditor extends React.Component {
     //   }
     // }
 
-    let products = []
-    console.log('products', this.props.products);
-
-    products = this.props.products.map(product => {
-      let health_benefits = []
-      let ingredients = []
-      if (product.metafield.health_benefits) {
-        health_benefits = product.metafield.health_benefits.map((item, i) => {
-          return (
-            <Badge key={i} status="success">{ item }</Badge>
-          )
-        })
-      }
-      if (product.metafield.ingredients) {
-        ingredients = product.metafield.ingredients.map((item, i) => {
-          return (
-            <Badge key={i} status="info">{ item }</Badge>
-          )
-        })
-      }
-      return (
-        {
-          url: `https://${this.props.shop_session.url}/admin/products/${product.id}`,
-          media: <Thumbnail
-            source={ product.image ? product.image.src : '' }
-            alt={ product.image ? product.image.alt : '' }
-            size="small"
-          />,
-          attributeOne: product.title,
-          attributeTwo: <div className="resource-badge">{
-            ingredients.concat(health_benefits)
-        }</div>,
-          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit({...product}) }],
-          persistActions: true,
-        }
-      )
-    })
-
     const { form_authenticity_token } = this.props
 
     this.setState({
-      products,
       method,
       form_authenticity_token
     })
@@ -100,6 +66,28 @@ class MetafieldEditor extends React.Component {
     console.log("render", this);
     console.log('state', this.state);
 
+    let products = []
+    console.log('products', this.props.products);
+
+    products = this.props.products.filter(
+      createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
+    ).map(product => {
+
+      return (
+        {
+          url: `https://${this.props.shop_session.url}/admin/products/${product.id}`,
+          media: <Thumbnail
+            source={ product.image ? product.image.src : '' }
+            alt={ product.image ? product.image.alt : '' }
+            size="small"
+          />,
+          attributeOne: product.title,
+          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit({...product}) }],
+          persistActions: true,
+        }
+      )
+    })
+
     let healthBenefits = []
     let ingredients = []
 
@@ -108,16 +96,23 @@ class MetafieldEditor extends React.Component {
       healthBenefits = this.state.healthBenefitsFormFields.map((item, i) => {
         return (
           <div key={ item.id } className={ `bundle-input ${item.id}` }>
-          <div className="product_details">
-            <TextField
-              placeholder="enter health benefit..."
-              value={ item.title }
-              type="text"
-              name="health_benefit"
-              onChange={ this.valueUpdater(item.id, "title") }
-            />
-          </div>
-          <Button destructive plain icon="delete" onClick={ () => this.removeFormField(item.id, "healthBenefitsFormFields") }></Button>
+            <Stack
+              spacing="loose"
+              alignment="center"
+            >
+              <Stack.Item fill>
+                <div className="product_details">
+                  <TextField
+                    placeholder="enter health benefit..."
+                    value={ item.title }
+                    type="text"
+                    name="health_benefit"
+                    onChange={ this.valueUpdater(item.id, "title", "healthBenefitsFormFields") }
+                  />
+                </div>
+              </Stack.Item>
+              <Button destructive plain icon="delete" onClick={ () => this.removeFormField(item.id, "healthBenefitsFormFields") }></Button>
+            </Stack>
           </div>
         )
       })
@@ -131,16 +126,23 @@ class MetafieldEditor extends React.Component {
       ingredients = this.state.ingredientsFormFields.map((item, i) => {
         return (
           <div key={ item.id } className={ `bundle-input ${item.id}` }>
-          <div className="product_details">
-            <TextField
-              placeholder="enter ingredient..."
-              value={ item.title }
-              type="text"
-              name="ingredient"
-              onChange={ this.valueUpdater(item.id, "title") }
-            />
-          </div>
-          <Button destructive plain icon="delete" onClick={ () => this.removeFormField(item.id, "ingredientsFormFields") }></Button>
+            <Stack
+              spacing="loose"
+              alignment="center"
+            >
+              <Stack.Item fill>
+                <div className="product_details">
+                  <TextField
+                    placeholder="enter ingredient..."
+                    value={ item.title }
+                    type="text"
+                    name="ingredient"
+                    onChange={ this.valueUpdater(item.id, "title", "ingredientsFormFields") }
+                  />
+                </div>
+              </Stack.Item>
+              <Button destructive plain icon="delete" onClick={ () => this.removeFormField(item.id, "ingredientsFormFields") }></Button>
+            </Stack>
           </div>
         )
       })
@@ -151,18 +153,21 @@ class MetafieldEditor extends React.Component {
     }
 
     let mainContainer = (
-        <Card.Section
-          sectioned
-          title={ "Welcome" }
-          primaryFooterAction={ { content: 'New Product', onAction: () => { window.open(`https://${this.props.shop_session.url}/admin/products/new`, '_blank').focus() } } }
-          >
+        <div>
           <div>
             This editor is for adding meta data to Shopify product.
             <br />
+            <br />
             Specifically we are detailing health benefits and ingredients
             <br />
+            <br />
+            <Button
+              onClick={ () => { window.open(`https://${this.props.shop_session.url}/admin/products/new`, '_blank').focus() } }
+            >
+              New Product
+            </Button>
           </div>
-        </Card.Section>
+        </div>
       )
 
       let modalContainer = (
@@ -185,6 +190,7 @@ class MetafieldEditor extends React.Component {
       )
 
     return (
+      <div className="bamboo-settings">
       <EmbeddedApp
         apiKey={ this.props.apiKey }
         shopOrigin={ this.props.shopOrigin }
@@ -195,42 +201,44 @@ class MetafieldEditor extends React.Component {
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={ 3 } shop={ this.props.shop_session.url }/>
+              <Navigation selectedTab={ null } shop={ this.props.shop_session.url }/>
             </Layout.Section>
-            <Layout.Section>
-              { mainContainer }
-
-                <Card
-                  title="Other Product"
-                >
-                  <ResourceList
-                    items={ this.state.products }
-                    renderItem={ (item) => {
-                      return <ResourceList.Item key={ item.id } { ...item } />;
-                    } }
-                  />
-                </Card>
-            </Layout.Section>
+            <Layout.AnnotatedSection
+              description={ mainContainer }
+              title={ "Product Health Benefits and Ingredients" }
+            >
+              <Card>
+                <Card.Section>
+                  <SearchBar placeholder={ "Search by Title or Product Type" } className="search-input" onChange={ this.searchUpdated.bind(this) } />
+                </Card.Section>
+                <ResourceList
+                  items={ products }
+                  renderItem={ (item) => {
+                    return <ResourceList.Item key={ item.id } { ...item } />;
+                  } }
+                />
+              </Card>
+            </Layout.AnnotatedSection>
           </Layout>
           <ModalForm
             open={ this.state.editModal }
             onClose={ () => this.setState({ editModal: false }) }
-            onSave={ () => this.handleSave() }
+            onSave={ () => this.handleSave(this.metaForm) }
             title={ `Edit ${this.state.productToEdit ? "- " + this.state.productToEdit.title : "" }` }
           >
-            <div>
+            <div className="modal-form-container">
               <form
                 action={ this.state.url }
                 acceptCharset="UTF-8" method="post"
                 ref={ (form) => { this.metaForm = form } }
                 style={ { 'display': 'none' } }
-                >
+              >
                 <input name="utf8" type="hidden" value="✓" />
                 <input type="hidden" name="_method" value={this.state.method} />
                 <input type="hidden" name="authenticity_token" value={ this.state.form_authenticity_token } />
                 <label htmlFor="metafield">Search for:</label>
-                <input type="text" name="metafield" id="metafield" value={ this.state.hiddenHealthBenefitsFormInput } onChange={ () => this.formUpdater('hiddenHealthBenefitsFormInput') } ref={ (textInput) => { this.healthBenefitsInput = textInput } }/>
-                <input type="text" name="metafield" id="metafield" value={ this.state.hiddenIngredientsFormInput } onChange={ () => this.formUpdater('hiddenIngredientsFormInput') } ref={ (textInput) => { this.ingredientsInput = textInput } }/>
+                <input type="text" name="metafield[health_benefits]" id="metafield_1" value={ this.state.hiddenHealthBenefitsFormInput } onChange={ () => this.formUpdater('hiddenHealthBenefitsFormInput') } ref={ (textInput) => { this.healthBenefitsInput = textInput } }/>
+                <input type="text" name="metafield[ingredients]" id="metafield_2" value={ this.state.hiddenIngredientsFormInput } onChange={ () => this.formUpdater('hiddenIngredientsFormInput') } ref={ (textInput) => { this.ingredientsInput = textInput } }/>
               </form>
               <Tabs
                 selected={ this.state.formTab }
@@ -256,12 +264,13 @@ class MetafieldEditor extends React.Component {
           </ModalForm>
         </Page>
       </EmbeddedApp>
+      </div>
     );
   }
 
-  valueUpdater(id, name) {
+  valueUpdater(id, name, formFields) {
     return (value) => {
-      let metafield = this.state.formFields.map((field, i) => {
+      let metafield = this.state[formFields].map((field, i) => {
         if (field.id !== id) {
           return field
         } else {
@@ -269,7 +278,7 @@ class MetafieldEditor extends React.Component {
           return field
         }
         })
-        this.setState({formFields: metafield})
+        this.setState({[formFields]: metafield})
       }
   }
 
@@ -279,12 +288,16 @@ class MetafieldEditor extends React.Component {
   }
 
   handleSave(formType) {
-    let dataString = this.state.formFields.map(field => {
-      return field.title.split('_')[0] + ' x' + field.quantity
+    let benefitsString = this.state.healthBenefitsFormFields.map(field => {
+      return field.title
+    }).join(',')
+    let ingredientsString = this.state.ingredientsFormFields.map(field => {
+      return field.title
     }).join(',')
 
-    this.metaInput.value = dataString
-    console.log('data', dataString, formType, this.metaInput.value);
+    this.healthBenefitsInput.value = benefitsString
+    this.ingredientsInput.value = ingredientsString
+    console.log('data', benefitsString, ingredientsString, formType, this.healthBenefitsInput.value, this.ingredientsInput.value);
     formType.submit()
   }
 
@@ -325,8 +338,8 @@ class MetafieldEditor extends React.Component {
         self.setState({
           editModal: true,
           productToEdit: data.product,
-          healthBenefitsFormFields: data.product.metafield,
-          ingredientsFormFields: data.product.metafield,
+          healthBenefitsFormFields: data.product.metafield.health_benefits || [],
+          ingredientsFormFields: data.product.metafield.ingredients || [],
           method: method,
           url: url
         })
@@ -357,6 +370,10 @@ class MetafieldEditor extends React.Component {
       [fields]: formFields,
     })
     console.log('state[fields] remove pst', this.state[fields]);
+  }
+
+  searchUpdated (term) {
+    this.setState({ searchTerm: term })
   }
 
 }

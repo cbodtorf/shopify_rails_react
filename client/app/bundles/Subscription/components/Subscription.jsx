@@ -106,7 +106,7 @@ class Subscription extends React.Component {
                   sectioned
                 >
                   <div>
-                    <SearchBar className="search-input" onChange={ this.searchUpdated.bind(this) } />
+                    <SearchBar placeholder={ "Search by product or customer" } className="search-input" onChange={ this.searchUpdated.bind(this) } />
                   </div>
                     <div className="table-wrapper">
                       <table className="table-hover expanded">

@@ -7,6 +7,7 @@ import { createFilter } from './util'
 const Search = createReactClass({
   propTypes: {
     className: PropTypes.string,
+    placeholder: PropTypes.string,
     inputClassName: PropTypes.string,
     onChange: PropTypes.func,
     caseSensitive: PropTypes.bool,
@@ -23,6 +24,7 @@ const Search = createReactClass({
   getDefaultProps () {
     return {
       className: '',
+      placeholder: 'Search',
       onChange () {},
       caseSensitive: false,
       fuzzy: false,

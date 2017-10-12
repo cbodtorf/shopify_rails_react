@@ -4,10 +4,10 @@ class BundleController < ShopifyApp::AuthenticatedController
     # TODO: Need to have conditional if product is not a bundle right now is handled on Client
 
     @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
-    products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id] })
+    products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id], fields: 'id,title,image,product_type,tags' })
 
     # remove bundles, cleanses, subscriptions for a list of bundle worthy products
-    @products = ShopifyAPI::Product.find(:all, params: { limit: 250 }).select do |product|
+    @products = ShopifyAPI::Product.find(:all, params: { limit: 250, fields: 'id,title,image,product_type,tags' }).select do |product|
       !product.attributes[:title].downcase.include?("auto") ?
         !product.attributes[:tags].downcase.include?("bundle") :
         false
@@ -52,7 +52,7 @@ class BundleController < ShopifyApp::AuthenticatedController
       metafield.update_attributes(:value => params[:metafield])
     end
 
-    redirect_to('/bundle')
+    redirect_to action: :index
   end
 
   def create
@@ -65,6 +65,6 @@ class BundleController < ShopifyApp::AuthenticatedController
        :value_type => 'string'
     }))
 
-    redirect_to('/bundle')
+    redirect_to action: :index
   end
 end

@@ -265,7 +265,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 Rails.logger.debug("day: #{day.title.downcase.inspect}")
                 Rails.logger.debug("day: #{note_date.strftime("%A").downcase.inspect}")
                 Rails.logger.debug("id: #{day.cook_schedule_id.inspect}")
-                if day.title.downcase == note_date.strftime("%A").downcase && sub_first_order
+                if day.title.downcase == note_date.strftime("%A").downcase && sub_first_order # TODO:  && note_date == Date.today ** see Wrong Cook CSV pulse
                   cook_date = (note_date)
                   deliver_next_day = false
                   true # cook on delivery date

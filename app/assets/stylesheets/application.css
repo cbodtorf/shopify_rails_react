@@ -358,7 +358,7 @@ div.pickup-count {
   align-items: flex-end;
   padding: 5px;
 }
-.bundle-input div:first-child {
+.bundle-input .Polaris-Stack {
   width: 100%;
 }
 .bundle-input .quantity .Polaris-TextField {
@@ -391,6 +391,10 @@ div.pickup-count {
 .postalCodes .Polaris-Tag {
   min-width: 100px;
   justify-content: space-between;
+}
+
+.modal-form-container {
+  min-height: 400px;
 }
 
 /* Annotated Sections */

@@ -135,7 +135,7 @@ class BlackoutDates extends React.Component {
             >
               <Card
                 sectioned
-                >
+              >
                 <ResourceList
                   items={ blackoutDates }
                   renderItem={ (item, index) => {

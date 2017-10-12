@@ -1,10 +1,14 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge} from '@shopify/polaris';
+import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge, Stack} from '@shopify/polaris';
 import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 
 import ModalForm from '../../Global/components/ModalForm';
+import SearchBar, {createFilter} from '../../Global/components/SearchBar';
+
 import bambooIcon from 'assets/green-square.jpg';
+
+const KEYS_TO_FILTERS = ['title','product_type']
 
 function uuid(a){return a?(a^Math.random()*16>>a/4).toString(16):([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,uuid)}
 
@@ -17,6 +21,7 @@ class BundleEditor extends React.Component {
       hiddenFormInput: '',
       method: '',
       url: '',
+      searchTerm: '',
       editModal: false
     }
   }
@@ -34,35 +39,9 @@ class BundleEditor extends React.Component {
       }
     }
 
-    let bundlesItems = []
-    console.log('bundle items', this.props.bundles);
-
-    bundlesItems = this.props.bundles.map(bundle => {
-      return (
-        {
-          url: `https://${this.props.shop_session.url}/admin/products/${bundle.id}`,
-          media: <Thumbnail
-            source={bundle.image ? bundle.image.src : ''}
-            alt={bundle.image ? bundle.image.alt : ''}
-          />,
-          attributeOne: bundle.title,
-          attributeTwo: <div className="resource-badge">{
-            bundle.metafield.map((item, i) => {
-              return (
-                <Badge key={i} status="default">{item.title + ' x' + item.quantity}</Badge>
-              )
-          })
-        }</div>,
-          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit({...bundle}) }],
-          persistActions: true,
-        }
-      )
-    })
-
     const { form_authenticity_token } = this.props
 
     this.setState({
-      bundlesItems,
       method,
       url,
       form_authenticity_token
@@ -72,6 +51,35 @@ class BundleEditor extends React.Component {
   render() {
     console.log("render", this);
     console.log('state', this.state);
+
+    let bundlesItems = []
+    console.log('bundle items', this.props.bundles);
+
+    /*
+      attributeTwo: <div className="resource-badge">{
+        bundle.metafield.map((item, i) => {
+          return (
+            <Badge key={ i } status="default">{ item.title + ' x' + item.quantity }</Badge>
+          )
+      })
+    }</div>,
+    */
+    bundlesItems = this.props.bundles.filter(
+      createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
+    ).map(bundle => {
+      return (
+        {
+          url: `https://${this.props.shop_session.url}/admin/products/${bundle.id}`,
+          media: <Thumbnail
+            source={ bundle.image ? bundle.image.src : '' }
+            alt={ bundle.image ? bundle.image.alt : '' }
+          />,
+          attributeOne: bundle.title,
+          actions: [{ content: 'Edit listing', onAction: () => this.handleEdit({...bundle}) }],
+          persistActions: true,
+        }
+      )
+    })
     /**
     * Filtering out Bundles, Cleanses, and Subscriptions on the backend.
     */
@@ -83,24 +91,36 @@ class BundleEditor extends React.Component {
     if (this.state.formFields.length !== 0 ) {
       existingMetafields = this.state.formFields.map((item, i) => {
         return (
-          <div key={item.id} className={`bundle-input ${item.id}`}>
-          <Select
-            label="Bundle Item"
-            value={item.title}
-            options={productOptions}
-            placeholder="Select"
-            onChange={this.valueUpdater(item.id, "title")}
-          />
-          <div className="quantity">
-            <TextField
-              label="Quantity"
-              value={item.quantity || 1}
-              type="number"
-              name="quantity"
-              onChange={this.valueUpdater(item.id, "quantity")}
-            />
-          </div>
-          <Button destructive outline icon="delete" onClick={ () => this.removeFormField(item.id) }></Button>
+          <div key={ item.id } className={ `bundle-input ${item.id}` }>
+            <Stack
+              spacing="loose"
+              alignment="center"
+            >
+              <Stack.Item fill>
+                <div className="product_details">
+                  <Select
+                    label="Bundle Item"
+                    value={ item.title}
+                    options={ productOptions }
+                    placeholder="Select"
+                    onChange={ this.valueUpdater(item.id, "title") }
+                  />
+                </div>
+              </Stack.Item>
+              <div className="quantity">
+                <TextField
+                  label="Quantity"
+                  value={ item.quantity || 1 }
+                  type="number"
+                  name="quantity"
+                  onChange={ this.valueUpdater(item.id, "quantity") }
+                />
+              </div>
+              <div>
+                <label className="Polaris-Label__Text" style={{visibility: "hidden"}}>delete</label>
+                <Button destructive plain icon="delete" onClick={ () => this.removeFormField(item.id) }></Button>
+              </div>
+            </Stack>
           </div>
         )
       })
@@ -111,76 +131,79 @@ class BundleEditor extends React.Component {
     }
 
     let mainContainer = (
-        <Card
-          sectioned
-          title={"Welcome"}
-          primaryFooterAction={{content: 'New', onAction: () => { window.open(`https://${this.props.shop_session.url}/admin/products/new`, '_blank').focus() } }}
-          >
           <div>
             In order to create a bundle and add product to it, The listing must have a tag called 'bundle'.
             <br />
+            <br />
             The next step is to choose it from the list below.
             <br />
+            <br />
             Once selected, bundle items can be added, and product can be selected from a drop down menu.
+            <br />
+            <br />
+            <Button
+              onClick={ () => { window.open(`https://${this.props.shop_session.url}/admin/products/new`, '_blank').focus() } }
+            >
+              New Product
+            </Button>
           </div>
-        </Card>
       )
 
       let modalContainer = (
-        <Card
-          sectioned
-          title={ "Edit Bundle" }
-          >
-        <FormLayout>
-          <FormLayout.Group>
-            <div className="bundle-form">
-              { existingMetafields }
-              <div className="bundle-input">
-                <Button outline icon="add" onClick={ () => this.addFormField() }>
-                  add bundle item
-                </Button>
+        <Card.Section>
+          <FormLayout>
+            <FormLayout.Group>
+              <div className="bundle-form">
+                { existingMetafields }
+                <div className="bundle-input">
+                  <Button outline icon="add" onClick={ () => this.addFormField() }>
+                    add bundle item
+                  </Button>
+                </div>
               </div>
-            </div>
-          </FormLayout.Group>
-        </FormLayout>
-        </Card>
+            </FormLayout.Group>
+          </FormLayout>
+        </Card.Section>
       )
 
     return (
+      <div className="bamboo-settings">
       <EmbeddedApp
-        apiKey={this.props.apiKey}
-        shopOrigin={this.props.shopOrigin}
-        forceRedirect={true}
+        apiKey={ this.props.apiKey }
+        shopOrigin={ this.props.shopOrigin }
+        forceRedirect={ true }
       >
         <Page
-          icon={bambooIcon}
+          icon={ bambooIcon }
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={2} shop={this.props.shop_session.url}/>
+              <Navigation selectedTab={ null } shop={ this.props.shop_session.url }/>
             </Layout.Section>
-            <Layout.Section>
-              {mainContainer}
-
-                <Card
-                  title="Other Bundles"
-                >
+            <Layout.AnnotatedSection
+              title={ "Bundles" }
+              description={ mainContainer }
+            >
+                <Card>
+                  <Card.Section>
+                    <SearchBar placeholder={ "Search by Title or Product Type" } className="search-input" onChange={ this.searchUpdated.bind(this) } />
+                  </Card.Section>
                   <ResourceList
-                    items={ this.state.bundlesItems }
-                    renderItem={(item) => {
-                      return <ResourceList.Item key={item.id} {...item} />;
-                    }}
+                    items={ bundlesItems }
+                    renderItem={ (item) => {
+                      return <ResourceList.Item key={ item.id } { ...item } />;
+                    } }
                   />
                 </Card>
-            </Layout.Section>
+            </Layout.AnnotatedSection>
           </Layout>
           <ModalForm
             open={ this.state.editModal }
-            onClose={ () => this.setState({editModal: false}) }
+            onClose={ () => this.setState({ editModal: false }) }
             onSave={ () => this.handleSave() }
-            title="Bundle Editor"
+            title={ `Edit ${this.state.bundleToEdit ? "- " + this.state.bundleToEdit.title : "" }` }
           >
-            <div>
+            <div className="modal-form-container">
               <form
                 action={this.state.url}
                 acceptCharset="UTF-8" method="post"
@@ -188,16 +211,17 @@ class BundleEditor extends React.Component {
                 style={{'display': 'none'}}
                 >
                 <input name="utf8" type="hidden" value="✓" />
-                <input type="hidden" name="_method" value={this.state.method} />
-                <input type="hidden" name="authenticity_token" value={this.state.form_authenticity_token} />
+                <input type="hidden" name="_method" value={ this.state.method } />
+                <input type="hidden" name="authenticity_token" value={ this.state.form_authenticity_token } />
                 <label htmlFor="metafield">Search for:</label>
-                <input type="text" name="metafield" id="metafield" value={this.state.hiddenFormInput} onChange={ () => this.formUpdater('hiddenFormInput')} ref={(textInput) => {this.metaInput = textInput}}/>
+                <input type="text" name="metafield" id="metafield" value={ this.state.hiddenFormInput } onChange={ () => this.formUpdater('hiddenFormInput')} ref={(textInput) => { this.metaInput = textInput } }/>
               </form>
               { modalContainer }
             </div>
           </ModalForm>
         </Page>
       </EmbeddedApp>
+      </div>
     );
   }
 
@@ -242,6 +266,7 @@ class BundleEditor extends React.Component {
     }
 
     this.setState({
+      bundleToEdit: bundle,
       editModal: true,
       formFields: fields,
       method: method,
@@ -272,6 +297,10 @@ class BundleEditor extends React.Component {
       formFields: formFields,
     })
     console.log('state.formFields remove pst', this.state.formFields);
+  }
+
+  searchUpdated (term) {
+    this.setState({ searchTerm: term })
   }
 
 }
