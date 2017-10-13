@@ -208,6 +208,10 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
+    @admin = ActiveModel::Type::Boolean.new.cast(params[:admin])
+
+    Rails.logger.debug("[admin] #{@admin.inspect}")
+
     sub_present = params[:subscriptionPresent] == 'true'
 
     pickup_rate = shop.rates.where(delivery_method: "pickup")
@@ -252,9 +256,9 @@ class AppProxyController < ApplicationController
       end
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
 
-      if params[:admin]
+      if @admin
+        Rails.logger.debug("[admin] #{@admin.inspect}")
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
-        if Time.now < end_of_day # normal
           if date.today?
             # offer same_day
             createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
@@ -270,10 +274,10 @@ class AppProxyController < ApplicationController
               rates: []
             }
           end
-        end
 
       else # ADMIN
         if Time.now < end_of_day # normal
+          Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
           if date.today?
             # offer same_day
             createDateObject(date, 'same_day', rate_dates.uniq, true, sub_present)
@@ -290,6 +294,7 @@ class AppProxyController < ApplicationController
             }
           end
         elsif Time.now > end_of_day # shift rates over one day
+          Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
           if (date - 1).today?
             # offer same_day
             createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
