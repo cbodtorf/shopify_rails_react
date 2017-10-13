@@ -16,7 +16,7 @@ class Navigation extends React.Component {
     return (
       <div className="Navigation__Bamboo">
           <Tabs
-            selected={ this.props.selectedTab !== null ? this.props.selectedTab : 2 }
+            selected={ this.props.selectedTab !== null ? this.props.selectedTab : 3 }
             fitted={ false }
             tabs={ [
               {
@@ -30,6 +30,12 @@ class Navigation extends React.Component {
                 title: 'Subscriptions',
                 panelID: 'subscriptions',
                 url: `/subscription?shop=${this.props.shop}`,
+              },
+              {
+                id: 'errors',
+                title: <span>Errors<span className="ui-nav__badge">3</span></span>,
+                panelID: 'errors',
+                url: `/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop}`,
               },
               {},
             ] }

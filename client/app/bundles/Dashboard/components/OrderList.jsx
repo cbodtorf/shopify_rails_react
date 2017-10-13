@@ -112,7 +112,7 @@ class OrderList extends React.Component {
           >
           <Layout>
             <Layout.Section>
-              <Navigation selectedTab={ 0 } shop={ this.props.shop_session.url }/>
+              <Navigation selectedTab={ this.props.attribute.toLowerCase() === 'errors' ? 2 : 0 } shop={ this.props.shop_session.url }/>
             </Layout.Section>
             <Layout.Section>
 

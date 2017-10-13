@@ -113,6 +113,16 @@ div.Polaris-Page {
   padding-left: 3.2rem;
   z-index: 30;
 }
+.ui-nav__badge {
+    font-weight: 600;
+    margin: 0 0.8rem;
+    padding: 0 0.6rem 1px;
+    background-color: #47c1bf;
+    border-radius: 0.8rem;
+    font-size: 1.1rem;
+    line-height: 1.6rem;
+    color: #ffffff;
+}
 .bamboo-nav {
   display: inline-flex;
   justify-content: space-between;

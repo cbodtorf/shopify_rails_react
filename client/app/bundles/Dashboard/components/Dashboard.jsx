@@ -53,6 +53,19 @@ class Dashboard extends React.Component {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 
+    let errorBanner = this.props.errorOrders.length > 0 ? (
+      <Banner
+        title="Orders with Errors"
+        status="critical"
+        action={{
+          content: 'Go to Errors',
+          url: `/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop_session.url}`,
+        }}
+      >
+        <p>There are { this.props.errorOrders.length } orders that need attention.</p>
+      </Banner>
+    ) : '';
+
     let dates = this.state.fiveDayOrders.map((date, i) => {
       const formatedDate = new Date(date.date.split('-').join('/'))
       const m = monthNames[formatedDate.getMonth()]
@@ -147,20 +160,7 @@ class Dashboard extends React.Component {
               </Layout.Section>
 
               <Layout.Section>
-                <div className="errors counts">
-                  <Heading>Order Info</Heading>
-                  <Stack
-                    spacing="default"
-                    distribution="leading"
-                    >
-                    <div className="count-block">
-                      <Link url={`/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop_session.url}`}>
-                        <div className="count-icon errors"><Icon color="yellow" source="alert"></Icon></div>
-                        <Card sectioned title="Orders with Errors" ><h5 className="count-content">{ this.props.errorOrders.length }</h5></Card>
-                      </Link>
-                    </div>
-                  </Stack>
-                </div>
+                { errorBanner }
               </Layout.Section>
 
               <Layout.Section>
