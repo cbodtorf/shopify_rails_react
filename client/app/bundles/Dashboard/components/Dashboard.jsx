@@ -147,28 +147,6 @@ class Dashboard extends React.Component {
               </Layout.Section>
 
               <Layout.Section>
-                <div className="counts">
-                  <Heading>Store Overview</Heading>
-                  <Stack
-                    spacing="default"
-                    distribution="leading"
-                    >
-                    <div className="count-block">
-                      <div className="count-icon"><img src={packageIcon}></img></div>
-                      <Card sectioned title="Active Subscriptions" ><h5 className="count-content">{ this.props.activeSubscriberCount }</h5></Card>
-                    </div>
-                    <div className="count-block">
-                      <div className="count-icon"><img src={customerIcon}></img></div>
-                      <Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card>
-                    </div>
-                    <div className="count-block">
-                      <div className="count-icon"><img src={productIcon}></img></div>
-                      <Card sectioned title="Total Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card>
-                    </div>
-                  </Stack>
-                </div>
-              </Layout.Section>
-              <Layout.Section>
                 <div className="errors counts">
                   <Heading>Order Info</Heading>
                   <Stack
@@ -216,6 +194,29 @@ class Dashboard extends React.Component {
                     </div>
                     </Card>
                   </div>
+                  </Stack>
+                </div>
+              </Layout.Section>
+
+              <Layout.Section>
+                <div className="counts">
+                  <Heading>Store Overview</Heading>
+                  <Stack
+                    spacing="default"
+                    distribution="leading"
+                    >
+                    <div className="count-block">
+                      <div className="count-icon"><img src={packageIcon}></img></div>
+                      <Card sectioned title="Active Subscriptions" ><h5 className="count-content">{ this.props.activeSubscriberCount }</h5></Card>
+                    </div>
+                    <div className="count-block">
+                      <div className="count-icon"><img src={customerIcon}></img></div>
+                      <Card sectioned title="Total Customers" ><h5 className="count-content">{ this.props.customerCount }</h5></Card>
+                    </div>
+                    <div className="count-block">
+                      <div className="count-icon"><img src={productIcon}></img></div>
+                      <Card sectioned title="Total Products" ><h5 className="count-content">{ this.props.productCount }</h5></Card>
+                    </div>
                   </Stack>
                 </div>
               </Layout.Section>
