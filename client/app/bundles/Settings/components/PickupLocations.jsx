@@ -40,7 +40,8 @@ class PickupLocations extends React.Component {
         {
           attributeOne: location.title,
           attributeTwo: <TextStyle variation="subdued">{ location.address }</TextStyle>,
-          attributeThree: location.days_available.map((day, i) => { return (<Badge key={ i } status="info">{ weekNames[day] }</Badge>) }),
+          attributeThree: <TextStyle variation="subdued">{ location.description }</TextStyle>,
+          badges: location.days_available.map((day, i) => { return ({ content: weekNames[day], status: "info" }) }),
           actions: [
             { content: 'Edit location', onAction: () => { this.handleEdit(location) } },
             { content: <Icon source="delete" color="red" />, onAction: () => { this.setState({ deleteAlertPickupOpen: true, locationToDelete: location }) } },
@@ -170,6 +171,14 @@ class PickupLocations extends React.Component {
                     ] }
                     selected={ this.state.pickupLocation.days_available ? this.state.pickupLocation.days_available : [] }
                     onChange={ this.valueUpdater('days_available', 'pickupLocation') }
+                  />
+                  <TextField
+                    label="Description (ex. M-F: 8am to 5pm)"
+                    name="pickup_location[description]"
+                    type="text"
+                    multiline
+                    value={ this.state.pickupLocation.description }
+                    onChange={ this.valueUpdater('description', 'pickupLocation') }
                   />
                 </FormLayout>
               </form>

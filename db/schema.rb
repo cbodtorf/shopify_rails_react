@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170801155131) do
+ActiveRecord::Schema.define(version: 20171016200310) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -75,6 +75,7 @@ ActiveRecord::Schema.define(version: 20170801155131) do
     t.string   "days_available", default: [],              array: true
     t.datetime "created_at",                  null: false
     t.datetime "updated_at",                  null: false
+    t.text     "description"
     t.index ["shop_id"], name: "index_pickup_locations_on_shop_id", using: :btree
   end
 

@@ -117,6 +117,7 @@ class SettingsController < ShopifyApp::AuthenticatedController
     params.require(:pickup_location).permit(
       :title,
       :address,
+      :description,
       :days_available => [],
     )
   end
