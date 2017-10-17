@@ -1,12 +1,14 @@
 class CSVGenerator
   def self.generateItemCSV(orders)
-    Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
+    # Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
 
     attributes = %w{product quantity}
     itemsArray = []
     orders.each do |order|
       order.attributes[:line_items].each do |item|
-
+        if item.attributes[:title].include?("Auto renew") # modify name of Subscriptions
+          item.attributes[:title] = item.attributes[:title].split('Auto renew').first.strip
+        end
         if item.attributes[:properties].any?{|prop| prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != "" }
           # account for bundle line items properties
           item.attributes[:properties].each do |prop|
@@ -14,7 +16,8 @@ class CSVGenerator
             if prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != ""
               # make sure we note quantity of line item properties.
               itemAndQuantity = prop.attributes["value"].split(' x')
-              itemsArray.push([itemAndQuantity.first, itemAndQuantity.last.to_i])
+
+              itemsArray.push([itemAndQuantity.first, (itemAndQuantity.last.to_i * item.attributes[:quantity])])
             end
           end
         else
@@ -23,6 +26,7 @@ class CSVGenerator
         end
       end
     end
+    Rails.logger.debug("items 4 csv (model): #{itemsArray.inspect}")
     # Reduce duplicates
     reducedItems = itemsArray.inject(Hash.new(0)) do |result, item|
       result[item.first] += item.last
