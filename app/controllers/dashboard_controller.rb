@@ -253,6 +253,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
             if rate[:delivery_method].downcase == "delivery" || rate[:delivery_method].downcase == "pickup"
               cook_date = nil
 
+              # Subscription?
+              sub_order = order.attributes[:tags].split(', ').include?("Subscription")
               # Subscription First Order?
               sub_first_order = order.attributes[:tags].split(', ').include?("Subscription First Order")
               Rails.logger.debug("first sub?: #{sub_first_order.inspect}")
@@ -262,27 +264,41 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
               # Find cook_day and cook_schedule that rate belongs to
               cook_days = rate.cook_day.select do |day|
-                Rails.logger.debug("day: #{day.title.downcase.inspect}")
-                Rails.logger.debug("day: #{note_date.strftime("%A").downcase.inspect}")
+                Rails.logger.debug("cook day: #{day.title.downcase.inspect}")
+                Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
                 Rails.logger.debug("id: #{day.cook_schedule_id.inspect}")
-                if day.title.downcase == note_date.strftime("%A").downcase && sub_first_order # TODO:  && note_date == Date.today ** see Wrong Cook CSV pulse
+                if day.title.downcase == note_date.strftime("%A").downcase && sub_order && note_date == Date.today
                   cook_date = (note_date)
                   deliver_next_day = false
                   true # cook on delivery date
-                elsif day.title.downcase == note_date.strftime("%A").downcase && day.cook_schedule_id != schedules.last.id
-                  cook_date = (note_date)
-                  deliver_next_day = false
-                  true # cook on delivery date
-                elsif day.title.downcase == note_date.strftime("%A").downcase && day.cook_schedule_id == schedules.last.id
-                  cook_date = (note_date - 1.day)
-                  deliver_next_day = true
-                  true # cook day before delivery date
+                elsif day.cook_schedule_id == schedules.last.id && note_date != Date.today
+                  if day.title.downcase == (note_date - 1.day).strftime("%A").downcase
+                    cook_date = (note_date - 1.day)
+                    deliver_next_day = true
+                    true # cook day before delivery date
+                  else
+                    cook_date = (note_date)
+                    Rails.logger.debug("err: #{day.inspect}")
+                    false
+                  end
+                elsif day.cook_schedule_id != schedules.last.id
+                  if day.title.downcase == note_date.strftime("%A").downcase
+                    cook_date = (note_date)
+                    deliver_next_day = false
+                    true # cook on delivery date
+                  else
+                    cook_date = (note_date)
+                    Rails.logger.debug("err: #{day.inspect}")
+                    false
+                  end
                 else
                   cook_date = (note_date)
                   Rails.logger.debug("err: #{day.inspect}")
                   false
                 end
               end
+
+              Rails.logger.debug("deliver_next_day: #{deliver_next_day.inspect}")
 
               Rails.logger.debug("rate: #{rate.inspect}")
               Rails.logger.debug("rate cook_days: #{rate.cook_day.inspect}")
