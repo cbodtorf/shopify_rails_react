@@ -4,5 +4,6 @@ class PickupLocation < ActiveRecord::Base
   validates :title, presence: true
   validates :address, presence: true
   validates :days_available, presence: true
+  validates :description, presence: true
 
 end
