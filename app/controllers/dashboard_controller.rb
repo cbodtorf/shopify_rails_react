@@ -102,11 +102,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
       Rails.logger.debug("orders: #{orders.size.inspect}")
       shop = ShopifyAPI::Shop.current()
+
       respond_to do |format|
         format.html
         format.csv {
           send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(orders) : CSVGenerator.generateAddressesCSV(orders, shop),
-          filename: "#{Date.parse(params[:date])}_#{cook_title}-#{params[:attribute]}.csv"
+          filename: "#{Date.parse(params[:date])}_#{cook_title.split(' ').first}-#{params[:attribute]}.csv"
         }
       end
     else

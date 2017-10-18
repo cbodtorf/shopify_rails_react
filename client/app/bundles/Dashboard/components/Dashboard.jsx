@@ -80,6 +80,7 @@ class Dashboard extends React.Component {
       const cookSchedule = date.cook_schedules.map((sched, idx) => {
         return (
           <div key={sched.title + "_" + idx} className="time-button {{ sched.title.toLowerCase().split(' ').join('') }}">
+            {/* title is typically "Afternoon Cook", remove cook so we just get the general time. */}
             <Heading>{ sched.title.split(' ')[0] }</Heading>
             <ButtonGroup>
                 <Button disabled={ sched.orders.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Items</Button>
