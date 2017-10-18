@@ -307,6 +307,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
               Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("delivery date: #{note_date.inspect} - #{note_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("order name: #{order.name.inspect}")
+              Rails.logger.debug("order method: #{method[0].attributes[:value].inspect}")
 
               if cook_days.size > 1
                 # rate appears in multiple cook days ie. multiple cook times
@@ -314,18 +315,23 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 Rails.logger.debug("err - cook_days.size > 1: #{cook_days.inspect}")
               else
                 if deliver_next_day
-                  Rails.logger.debug("delivery next day")
                   # DELIVERED NEXT DAY AFTER COOK
+
+                  Rails.logger.debug("delivery next day")
                   # prevent index from cycling to last item in array
                   dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:cook_schedules].select do |sched|
                     sched[:title] == cook_days.first.cook_schedule.title
                   end.first[:orders].push(order) : nil
 
                   # Last cooks go into the first delivery addresses of next day.
-                  @fiveDayOrders[dateIndex][:cook_schedules].first[:addresses].push(order)
+                  # filter out Pickups
+                  if method[0].attributes[:value] != "pickup"
+                    @fiveDayOrders[dateIndex][:cook_schedules].first[:addresses].push(order)
+                  end
                 else
-                  Rails.logger.debug("delivery same day")
                   # DELIVERED SAME DAY AS COOK
+
+                  Rails.logger.debug("delivery same day")
                   sched = @fiveDayOrders[dateIndex][:cook_schedules].select do |sched|
                     sched[:title] == cook_days.first.cook_schedule.title
                   end
@@ -335,13 +341,19 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     # cooks that go out same day go into the next schedule's addresses.
                     Rails.logger.debug("index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)}")
                     Rails.logger.debug("index: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)].inspect}")
-                    @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)][:addresses].push(order)
+                    # filter out Pickups
+                    if method[0].attributes[:value] != "pickup"
+                      @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)][:addresses].push(order)
+                    end
                   else
                     sched.first[:orders].push(order)
                     # cooks that go out same day go into the next schedule's addresses.
                     Rails.logger.debug("index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
                     Rails.logger.debug("index: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
-                    @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
+                    # filter out Pickups
+                    if method[0].attributes[:value] != "pickup"
+                      @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
+                    end
                   end
 
                 end
