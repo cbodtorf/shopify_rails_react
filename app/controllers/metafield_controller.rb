@@ -94,4 +94,14 @@ class MetafieldController < ShopifyApp::AuthenticatedController
     render json: {product: product} , status: 200
   end
 
+  def metafield_product_bundle
+    # Redirect to index or bundle depending on product
+    product = ShopifyAPI::Product.find(params[:id], params: { fields: 'id,product_type' })
+
+    if product.attributes[:product_type] == "bundle" || product.attributes[:product_type] == "juice kits" || product.attributes[:product_type] == "cleanse"
+      redirect_to :controller => 'bundle', :action => 'index'
+    else
+      redirect_to action: :index
+    end
+  end
 end

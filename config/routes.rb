@@ -50,6 +50,7 @@ Rails.application.routes.draw do
   post 'create_postal_code', to: 'settings#create_postal_code'
   delete 'destroy_postal_code', to: 'settings#destroy_postal_code'
 
+  get 'metafield_product_bundle', to: 'metafield#metafield_product_bundle'
   resources :bundle, only: [:index, :update, :create]
   resources :metafield, only: [:index, :update, :create]
   get 'product_metafield/:id', to: 'metafield#get_product_metafield'
