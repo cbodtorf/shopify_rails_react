@@ -277,7 +277,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                   deliver_next_day = false
                   Rails.logger.debug("#sub  cook same day as delivery date")
                   true # cook on delivery date
-                elsif day.cook_schedule_id == schedules.last.id && note_date != order_created_at.to_date
+                elsif day.cook_schedule_id == schedules.last.id && note_date != Date.today
                   if day.title.downcase == (note_date - 1.day).strftime("%A").downcase
                     cook_date = (note_date - 1.day)
                     deliver_next_day = true
