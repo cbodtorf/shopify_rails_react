@@ -272,7 +272,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 Rails.logger.debug("cook day: #{day.title.downcase.inspect}")
                 Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
                 Rails.logger.debug("id: #{day.cook_schedule_id.inspect}")
-                if day.title.downcase == note_date.strftime("%A").downcase && sub_order && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date - 1.day) && order_created_at.hour >= 15))
+                if day.title.downcase == note_date.strftime("%A").downcase && sub_order && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15))
                   cook_date = (note_date)
                   deliver_next_day = false
                   Rails.logger.debug("#sub  cook same day as delivery date")
