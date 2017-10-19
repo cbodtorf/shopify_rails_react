@@ -219,7 +219,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
         # Format order created_at
         Rails.logger.debug("order created_at: #{order.attributes[:created_at].inspect}")
-        order_created_at = Date.parse(order.attributes[:created_at])
+        order_created_at = DateTime.parse(order.attributes[:created_at])
 
         Rails.logger.debug("order: #{order.attributes[:name].inspect}")
         # Isolate Delivery Date
@@ -272,12 +272,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 Rails.logger.debug("cook day: #{day.title.downcase.inspect}")
                 Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
                 Rails.logger.debug("id: #{day.cook_schedule_id.inspect}")
-                if day.title.downcase == note_date.strftime("%A").downcase && sub_order && note_date == order_created_at
+                if day.title.downcase == note_date.strftime("%A").downcase && sub_order && (note_date == order_created_at.to_date && order_created_at.hour < 15)
                   cook_date = (note_date)
                   deliver_next_day = false
                   Rails.logger.debug("#sub  cook same day as delivery date")
                   true # cook on delivery date
-                elsif day.cook_schedule_id == schedules.last.id && note_date != order_created_at
+                elsif day.cook_schedule_id == schedules.last.id && note_date != order_created_at.to_date
                   if day.title.downcase == (note_date - 1.day).strftime("%A").downcase
                     cook_date = (note_date - 1.day)
                     deliver_next_day = true
