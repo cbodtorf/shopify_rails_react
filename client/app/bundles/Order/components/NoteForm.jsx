@@ -10,6 +10,9 @@ import {
   Label
 } from '@shopify/polaris';
 
+const monthNames = ["January","February","March","April","May","June","July",
+"August","September","October","November","December"]
+
 
 class NoteForm extends Component {
   constructor(props) {
@@ -113,7 +116,7 @@ class NoteForm extends Component {
               <Stack vertical>
 
                 <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "delivery_date" } />
-                <input type="hidden" name="order[note_attributes][][value]" id="order_note_attributes__value" value={ this.props.datePickerSelected ? `${this.props.deliveryDate.month}-${this.props.deliveryDate.day}-${this.props.deliveryDate.year}` : deliveryDate.value } />
+                <input type="hidden" name="order[note_attributes][][value]" id="order_note_attributes__value" value={ this.props.datePickerSelected ? `${this.props.deliveryDate.wday}, ${monthNames[this.props.deliveryDate.month - 1]} ${this.props.deliveryDate.day}, ${this.props.deliveryDate.year}` : deliveryDate.value } />
               </Stack>
             </Stack>
 

@@ -9,6 +9,9 @@ import {
   DatePicker
 } from '@shopify/polaris';
 
+const monthNames = ["January","February","March","April","May","June","July",
+"August","September","October","November","December"]
+
 
 class NoteFormElement extends Component {
   constructor(props) {
@@ -76,10 +79,10 @@ class NoteFormElement extends Component {
                 <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ this.props.noteAttribute.name } />
                 <TextField
                   label="Delivery Date"
-                  value={ this.props.datePickerSelected ? `${this.props.deliveryDate.month}-${this.props.deliveryDate.day}-${this.props.deliveryDate.year}` : this.props.noteAttribute.value }
+                  value={ this.props.datePickerSelected ? `${this.props.deliveryDate.wday}, ${monthNames[this.props.deliveryDate.month - 1]} ${this.props.deliveryDate.day}, ${this.props.deliveryDate.year}` : this.props.noteAttribute.value }
                   readOnly={true}
                   disabled
-                  placeholder='mm-dd-yyyy'
+                  placeholder='mm/dd/yyyy'
                 />
               </Stack>
             )
