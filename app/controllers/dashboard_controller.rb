@@ -345,14 +345,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     sched[:title] == cook_days.first.cook_schedule.title
                   end
 
-                  if sub_first_order
+                  if sub_order
                     @fiveDayOrders[dateIndex][:cook_schedules].first[:orders].push(order)
                     # cooks that go out same day go into the next schedule's addresses.
-                    Rails.logger.debug("sub_first_order same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)}")
-                    Rails.logger.debug("sub_first_order same day cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)].inspect}")
+                    Rails.logger.debug("sub_first_order same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
+                    Rails.logger.debug("sub_first_order same day cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
                     # filter out Pickups
                     if method[0].attributes[:value] != "pickup"
-                      @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first)][:addresses].push(order)
+                      @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
                     end
                   else
                     sched.first[:orders].push(order)

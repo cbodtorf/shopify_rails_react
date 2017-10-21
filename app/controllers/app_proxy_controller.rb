@@ -210,7 +210,7 @@ class AppProxyController < ApplicationController
 
     @admin = ActiveModel::Type::Boolean.new.cast(params[:admin])
 
-    Rails.logger.debug("[admin] #{@admin.inspect}")
+    Rails.logger.debug("[admin +] #{@admin.inspect}")
 
     sub_present = params[:subscriptionPresent] == 'true'
 
@@ -257,7 +257,7 @@ class AppProxyController < ApplicationController
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
 
       if @admin
-        Rails.logger.debug("[admin] #{@admin.inspect}")
+        Rails.logger.debug("[admin true] #{@admin.inspect}")
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
           if date.today?
             # offer same_day
@@ -295,10 +295,11 @@ class AppProxyController < ApplicationController
           end
         elsif Time.now > end_of_day # shift rates over one day
           Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
-          if (date - 1).today?
+          Rails.logger.debug("[(date + 1.day).today?] #{(date + 1.day).today?} #{date + 1.day}")
+          if (date + 1.day).today?
             # offer same_day
             createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
-          elsif !date.today? && !(date - 1).today?
+          elsif !date.today? && !(date + 1.day).today?
             # offer next_day
             Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.uniq.inspect}")
             createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
