@@ -72,11 +72,6 @@ class Dashboard extends React.Component {
       const w = weekNames[formatedDate.getDay()]
       const d = formatedDate.getDate()
 
-      let disabledMorningItems = date.morning_items.length === 0
-      let disabledAfternoonItems = date.afternoon_items.length === 0
-      let disabledMorningAddresses = date.morning_addresses.length === 0
-      let disabledAfternoonAddresses = date.afternoon_addresses.length === 0
-
       const cookSchedule = date.cook_schedules.map((sched, idx) => {
         return (
           <div key={sched.title + "_" + idx} className="time-button {{ sched.title.toLowerCase().split(' ').join('') }}">
@@ -101,6 +96,7 @@ class Dashboard extends React.Component {
               <div className="date">
                 <h5>{w}</h5>
                 <h5>{m + ' ' + d}</h5>
+                <p> { date.blackout ? <span style={{display: "flex"}}><Icon source="alert"/>blackout date</span> : "" }</p>
               </div>
             </Card>
 

@@ -242,12 +242,16 @@ class BlackoutDates extends React.Component {
 
     if (this.blackoutDateDateInput.value === "" || this.blackoutDateDateInput.value === undefined || this.blackoutDateDateInput.value === null) {
       self.setState({datePickerErrors: "Must select a date."})
+    } else {
+      self.setState({datePickerErrors: false})
     }
     if (this.blackoutDateTitleInput.value === "" || this.blackoutDateTitleInput.value === undefined || this.blackoutDateTitleInput.value === null) {
       self.setState({titleErrors: "Must enter a title for blackout date."})
+    } else {
+      self.setState({titleErrors: false})
     }
 
-    if(!!this.state.titleErrors && !!this.datePickerErrors){
+    if(!this.state.titleErrors && !this.state.datePickerErrors){
       formType.submit()
     }
   }

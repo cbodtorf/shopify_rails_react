@@ -180,15 +180,14 @@ class AppProxyController < ApplicationController
     puts response.body
   end
 
-  def createDateObject(date, delivery_type, date_rates, honor_cutoff, sub_present)
+  def createDateObject(date, delivery_type, date_rates, honor_cutoff, sub_present, day_before_blackout)
 
     dateObj = {
       date: date,
       disabled: false,
       rates: date_rates.select do |rate|
         cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
-
-        Rails.logger.debug("[args] rate_id: #{rate.id}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}")
+        Rails.logger.debug("[args] rate_id: #{rate.id}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}, day_before_blackout?: #{day_before_blackout}")
         if  sub_present
           if date == Date.today
             rate.delivery_type == 'subscription' && cutoff && rate.delivery_method == 'delivery'
@@ -242,18 +241,26 @@ class AppProxyController < ApplicationController
 
     # loop through dates:
     cal_data = date_range.map.with_index do |date, i|
+      day_before_blackout = blackout_dates.any? {|blackout| Rails.logger.debug("date: #{date}, day_before: #{(date - 1.day)}, blackout: #{blackout.blackout_date.to_date}, = #{(date - 1.day) == blackout.blackout_date.to_date}"); (date - 1.day) == blackout.blackout_date.to_date}
+      blackout = blackout_dates.any? {|blackout| Rails.logger.debug("date: #{date}, day_before: #{(date - 1.day)}, blackout: #{blackout.blackout_date.to_date}, = #{(date - 1.day) == blackout.blackout_date.to_date}"); (date) == blackout.blackout_date.to_date}
+      Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
 
       rate_dates = []
       # This logic accounts for when cooks are delivered.
       schedules.each_with_index do |sched, idx|
         # last cook schedule is delivered next day.
         if idx == (schedules.size - 1)
-          rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+          if day_before_blackout
+            # rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+          else
+            rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+          end
         else
           # otherwise delivered same day as cook.
           rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
         end
       end
+      rate_dates = rate_dates.uniq
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
 
       if @admin
@@ -261,10 +268,10 @@ class AppProxyController < ApplicationController
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
           if date.today?
             # offer same_day
-            createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
+            createDateObject(date, 'same_day', rate_dates, false, sub_present)
           elsif !date.today?
             # offer next_day
-            createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
+            createDateObject(date, 'next_day', rate_dates, false, sub_present)
           else
             # blank day
             Rails.logger.debug("[blank] #{date.inspect}")
@@ -276,45 +283,56 @@ class AppProxyController < ApplicationController
           end
 
       else # ADMIN
-        if Time.now < end_of_day # normal
-          Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
-          if date.today?
-            # offer same_day
-            createDateObject(date, 'same_day', rate_dates.uniq, true, sub_present)
-          elsif !date.today?
-            # offer next_day
-            createDateObject(date, 'next_day', rate_dates.uniq, true, sub_present)
-          else
-            # blank day
-            Rails.logger.debug("[blank] #{date.inspect}")
-            {
-              date: date,
-              disabled: true,
-              rates: []
-            }
-          end
-        elsif Time.now > end_of_day # shift rates over one day
-          Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
-          Rails.logger.debug("[(date + 1.day).today?] #{(date + 1.day).today?} #{date + 1.day}")
-          if (date + 1.day).today?
-            # offer same_day
-            createDateObject(date, 'same_day', rate_dates.uniq, false, sub_present)
-          elsif !date.today? && !(date + 1.day).today?
-            # offer next_day
-            Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.uniq.inspect}")
-            createDateObject(date, 'next_day', rate_dates.uniq, false, sub_present)
-          else
-            # blank day
-            Rails.logger.debug("[blank] #{date.inspect}")
-            {
-              date: date,
-              disabled: true,
-              rates: []
-            }
-          end
+        if blackout
+          # blank day
+          Rails.logger.debug("[blank] #{date.inspect}")
+          {
+            date: date,
+            disabled: true,
+            rates: []
+          }
         else
-          # Should not run
-          Rails.logger.debug("[err] #{date.inspect}")
+          if Time.now < end_of_day # normal
+            Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
+            if date.today?
+              # offer same_day
+              createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout)
+            elsif !date.today?
+              # offer next_day
+              createDateObject(date, 'next_day', rate_dates, true, sub_present, day_before_blackout)
+            else
+              # blank day
+              Rails.logger.debug("[blank] #{date.inspect}")
+              {
+                date: date,
+                disabled: true,
+                rates: []
+              }
+            end
+          elsif Time.now > end_of_day # shift rates over one day
+            tomorrow = Date.tomorrow
+            Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
+            Rails.logger.debug("[tomorrow] #{date == tomorrow} d: #{date} t: #{tomorrow}")
+            Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.inspect}")
+            if date == tomorrow
+              # offer same_day
+              createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout)
+            elsif !date.today? && !(date == tomorrow)
+              # offer next_day
+              createDateObject(date, 'next_day', rate_dates, false, sub_present, day_before_blackout)
+            else
+              # blank day
+              Rails.logger.debug("[blank] #{date.inspect}")
+              {
+                date: date,
+                disabled: true,
+                rates: []
+              }
+            end
+          else
+            # Should not run
+            Rails.logger.debug("[err] #{date.inspect}")
+          end
         end
       end # NORMAL
 
