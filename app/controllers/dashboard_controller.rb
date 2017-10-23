@@ -10,20 +10,17 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Missing Delivery Data
     @errorOrders = []
     orders.each do |order|
+      orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
       # Isolate Delivery Date
-      note_date = order.attributes[:note_attributes].select do |note|
-        note.attributes[:name] === "delivery_date"
-      end
+      note_date = orderAttributes[:delivery_date]
       # Isolate Checkout method
-      method = order.attributes[:note_attributes].select do |note|
-        note.attributes[:name] === "checkout_method"
-      end
+      checkout_method = orderAttributes[:checkout_method]
       # Isolate Delivery Rate
-      rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+      rate_id = orderAttributes[:rate_id]
 
-      if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
-        Rails.logger.debug("order: #{order.attributes[:name].inspect}")
-        @errorOrders.push(self.setError(order, rates[0], method))
+      if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
+        @errorOrders.push(self.setError(order, checkout_method, rate_id, note_date))
+        next
       end
     end
     # Out of Stock Subs
@@ -142,20 +139,17 @@ class DashboardController < ShopifyApp::AuthenticatedController
       orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
       @orders = []
       orders.each do |order|
+        orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
         # Isolate Delivery Date
-        note_date = order.attributes[:note_attributes].select do |note|
-          note.attributes[:name] === "delivery_date"
-        end
+        note_date = orderAttributes[:delivery_date]
         # Isolate Checkout method
-        method = order.attributes[:note_attributes].select do |note|
-          note.attributes[:name] === "checkout_method"
-        end
+        checkout_method = orderAttributes[:checkout_method]
         # Isolate Delivery Rate
-        rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
+        rate_id = orderAttributes[:rate_id]
 
-        if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
-          Rails.logger.debug("order: #{order.attributes[:name].inspect}")
-          @orders.push(self.setError(order, rates[0], method))
+        if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
+          @orders.push(self.setError(order, checkout_method, rate_id, note_date))
+          next
         end
       end
 
@@ -182,6 +176,18 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
   end
 
+  def orderAttributesToHash(_attr)
+    obj = {}
+    _attr.each do |a|
+      obj[a.attributes[:name].to_sym] = a.attributes[:value]
+    end
+    Rails.logger.debug("obj attr: #{obj.inspect}")
+    Rails.logger.debug("date: #{obj[:delivery_date].inspect}")
+    Rails.logger.debug("rate: #{obj[:rate_id].inspect}")
+    Rails.logger.debug("method: #{obj[:checkout_method].inspect}")
+    return obj
+  end
+
   def formatOrders(shop_domain = params[:shop], showErrors = false)
     # Shopify requires time to be iso8601 format
     # Order Information 7 day range ( limit for which orders )
@@ -190,7 +196,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
-    @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo })
+    @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo, limit: 250 })
     errorOrders = []
     # Sort by cook time
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
@@ -216,37 +222,28 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders.each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
-
+        orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
         # Format order created_at
         Rails.logger.debug("order created_at: #{order.attributes[:created_at].inspect}")
         order_created_at = DateTime.parse(order.attributes[:created_at])
 
         Rails.logger.debug("order: #{order.attributes[:name].inspect}")
         # Isolate Delivery Date
-        note_date = order.attributes[:note_attributes].select do |note|
-          note.attributes[:name] === "delivery_date"
-        end
-        Rails.logger.debug("note_date?: #{note_date[0].inspect}")
-
+        note_date = orderAttributes[:delivery_date]
         # Isolate Checkout method
-        method = order.attributes[:note_attributes].select do |note|
-          note.attributes[:name] === "checkout_method"
-        end
-        Rails.logger.debug("method?: #{method[0].inspect}")
-
+        checkout_method = orderAttributes[:checkout_method]
         # Isolate Delivery Rate
-        rates = order.attributes[:note_attributes].select {|note| note.attributes[:name] === "rate_id"}
-        Rails.logger.debug("rate?: #{rates[0].inspect}")
+        rate_id = orderAttributes[:rate_id]
 
-        if order.attributes[:note_attributes].size == 0 || rates[0] == nil || method == nil
-          errorOrders.push(self.setError(order, rates[0], method))
+        if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
+          errorOrders.push(self.setError(order, checkout_method, rate_id, note_date))
           next
         end
 
-        rate = shop.rates.find(rates[0].attributes[:value])
+        rate = shop.rates.find(rate_id)
 
-        if note_date[0] != nil && note_date[0].attributes[:value] != ''
-          note_date = Date.parse(note_date[0].attributes[:value])
+        if note_date != nil && note_date != ''
+          note_date = Date.parse(note_date)
 
           # match dates
           dateIndex = @fiveDayOrders.index { |date| date[:date] == note_date }
@@ -357,7 +354,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
               Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("delivery date: #{note_date.inspect} - #{note_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("order name: #{order.name.inspect}")
-              Rails.logger.debug("order method: #{method[0].attributes[:value].inspect}")
+              Rails.logger.debug("order method: #{checkout_method.inspect}")
 
               if cook_days.size > 1
                 # rate appears in multiple cook days ie. multiple cook times
@@ -377,7 +374,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
                   # Last cooks go into the first delivery addresses of next day.
                   # filter out Pickups
-                  if method[0].attributes[:value] != "pickup"
+                  if checkout_method != "pickup"
                     @fiveDayOrders[dateIndex][:cook_schedules].first[:addresses].push(order)
                   end
                 else
@@ -394,7 +391,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     Rails.logger.debug("sub_first_order same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
                     Rails.logger.debug("sub_first_order same day cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
                     # filter out Pickups
-                    if method[0].attributes[:value] != "pickup"
+                    if checkout_method != "pickup"
                       @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
                     end
                   else
@@ -403,7 +400,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     Rails.logger.debug("reg same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
                     Rails.logger.debug("reg same day next cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
                     # filter out Pickups
-                    if method[0].attributes[:value] != "pickup"
+                    if checkout_method != "pickup"
                       @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
                     end
                   end
@@ -441,18 +438,22 @@ class DashboardController < ShopifyApp::AuthenticatedController
     return shippingOrders
   end
 
-  def setError(order, method, rate)
+  def setError(order, method, rate, note_date)
+    Rails.logger.debug("set error: order_#{order.attributes[:name].inspect}, method_#{method.inspect}, rate_#{rate.inspect} ")
     order.attributes[:error] = []
 
     if order.attributes[:note_attributes].size == 0
       order.attributes[:error].push("MISSING DELIVERY DATA - Please make sure the order has a delivery method, date, rate, etc.")
       order.attributes[:error_type] = "MISSING_DELIVERY_DATA"
     end
-    if rate == nil
+    if rate == nil || rate == ""
       order.attributes[:error].push("MISSING RATE DATA - Please make sure the order has a delivery method, date, rate, etc.")
     end
-    if method == nil
+    if method == nil || method == ""
       order.attributes[:error].push("MISSING METHOD DATA - Please make sure the order has a delivery method, date, rate, etc.")
+    end
+    if note_date == nil || note_date == ""
+      order.attributes[:error].push("MISSING DELIVERY DATE - Please make sure the order has a delivery method, date, rate, etc.")
     end
 
     order
