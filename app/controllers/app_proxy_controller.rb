@@ -4,6 +4,9 @@ class AppProxyController < ApplicationController
   def index
     Rails.logger.debug("[signature?] #{params[:signature].inspect}")
     Rails.logger.debug("[checkout_token?] #{params[:checkout_token].inspect}")
+    co = ShopifyAPI::Checkout.find(params[:checkout_token])
+    addy = co.attributes[:shipping_address].attributes.to_hash
+    Rails.logger.debug("[addy?] #{addy.inspect}")
 
     shop = Shop.find_by(shopify_domain: params[:shop])
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
@@ -42,7 +45,7 @@ class AppProxyController < ApplicationController
             order_note.shipping_address.update_attributes(company: @checkout.attributes[:shipping_address].attributes[:company] += " ")
           end
         else
-          order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address])
+          order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address].attributes.to_hash)
         end
         Rails.logger.debug("[about to break cache] ")
         breakCarrierCache()
