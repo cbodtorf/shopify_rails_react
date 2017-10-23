@@ -10,7 +10,15 @@ class AppProxyController < ApplicationController
     ShopifyAPI::Base.activate_session(session)
 
     co = ShopifyAPI::Checkout.find(params[:checkout_token])
-    addy = co.attributes[:shipping_address].attributes.to_hash
+    addy = {}
+    co.attributes[:shipping_address].attributes.each do |att|
+      Rails.logger.debug("[att?] #{att[0] == "id"}")
+      if att[0] == "id"
+      else
+        addy[att[0].to_sym] = att[1]
+      end
+    end
+    Rails.logger.debug("[addy no id?] #{addy.inspect}")
     Rails.logger.debug("[addy?] #{addy.inspect}")
 
     # iterate over order notes
@@ -46,7 +54,16 @@ class AppProxyController < ApplicationController
             order_note.shipping_address.update_attributes(company: @checkout.attributes[:shipping_address].attributes[:company] += " ")
           end
         else
-          order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address].attributes.to_hash)
+          address = {}
+          @checkout.attributes[:shipping_address].attributes.each do |att|
+            Rails.logger.debug("[att?] #{att[0].inspect}")
+            if att[0] == "id"
+            else
+              address[att[0].to_sym] = att[1]
+            end
+          end
+          address[:company] = ""
+          order_note.shipping_address = ShippingAddress.create(address)
         end
         Rails.logger.debug("[about to break cache] ")
         breakCarrierCache()
