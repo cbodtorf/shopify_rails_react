@@ -49,7 +49,7 @@ class ContextualRate
   end
 
   def items_grams
-    @items_grams ||= items.sum { |item| item['grams'] * item['quantity'] }
+    @items_grams ||= items.sum { |item| item['grams'] == nil ? 0 : item['grams'] * item['quantity'] }
   end
 
   def valid_price?

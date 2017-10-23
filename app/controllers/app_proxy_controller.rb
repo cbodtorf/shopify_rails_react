@@ -12,12 +12,15 @@ class AppProxyController < ApplicationController
     # Choose the one that was created most recently or double check checkout_token and delete if completed
     order_note = shop.order_notes.where(cart_token: params[:cart_token])
     order_note = order_note.select do |order|
-      checkout = ShopifyAPI::Checkout.find(order[:checkout_token])
-      Rails.logger.debug("[token?] #{order[:checkout_token].inspect}")
-      Rails.logger.debug("[checkout? expired?] #{checkout.attributes[:completed_at].inspect}")
-      if checkout.attributes[:completed_at] == nil
-        Rails.logger.debug("[order note?] #{checkout.inspect}")
-        order
+      if order[:checkout_token] != ""
+        Rails.logger.debug("[order?] #{order.inspect}")
+        checkout = ShopifyAPI::Checkout.find(order[:checkout_token])
+        Rails.logger.debug("[token?] #{order[:checkout_token].inspect}")
+        Rails.logger.debug("[checkout? expired?] #{checkout.attributes[:completed_at].inspect}")
+        if checkout.attributes[:completed_at] == nil
+          Rails.logger.debug("[order note?] #{checkout.inspect}")
+          order
+        end
       end
     end
     Rails.logger.debug("[order note?] #{order_note.inspect}")
