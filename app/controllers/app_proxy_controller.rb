@@ -4,13 +4,14 @@ class AppProxyController < ApplicationController
   def index
     Rails.logger.debug("[signature?] #{params[:signature].inspect}")
     Rails.logger.debug("[checkout_token?] #{params[:checkout_token].inspect}")
-    co = ShopifyAPI::Checkout.find(params[:checkout_token])
-    addy = co.attributes[:shipping_address].attributes.to_hash
-    Rails.logger.debug("[addy?] #{addy.inspect}")
 
     shop = Shop.find_by(shopify_domain: params[:shop])
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
+
+    co = ShopifyAPI::Checkout.find(params[:checkout_token])
+    addy = co.attributes[:shipping_address].attributes.to_hash
+    Rails.logger.debug("[addy?] #{addy.inspect}")
 
     # iterate over order notes
     # Choose the one that was created most recently or double check checkout_token and delete if completed
