@@ -3,6 +3,7 @@ class AppProxyController < ApplicationController
 
   def index
     Rails.logger.debug("[signature?] #{params[:signature].inspect}")
+    Rails.logger.debug("[checkout_token?] #{params[:checkout_token].inspect}")
 
     shop = Shop.find_by(shopify_domain: params[:shop])
     session = ShopifyApp::SessionRepository.retrieve(shop.id)

@@ -317,8 +317,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                   deliver_next_day = false
                   Rails.logger.debug("#sub  cook same day as delivery date")
                   true
-                elsif day.cook_schedule_id == schedules.last.id && day.title.downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15)
-                  Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                elsif day.cook_schedule_id == schedules.last.id && day.title.downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15)
                   cook_date = (note_date - 1.day)
                   deliver_next_day = true
                   Rails.logger.debug("# cook day before delivery date")
