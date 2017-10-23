@@ -271,10 +271,10 @@ class AppProxyController < ApplicationController
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
           if date.today?
             # offer same_day
-            createDateObject(date, 'same_day', rate_dates, false, sub_present)
+            createDateObject(date, 'same_day', rate_dates, false, sub_present, false)
           elsif !date.today?
             # offer next_day
-            createDateObject(date, 'next_day', rate_dates, false, sub_present)
+            createDateObject(date, 'next_day', rate_dates, false, sub_present, false)
           else
             # blank day
             Rails.logger.debug("[blank] #{date.inspect}")
