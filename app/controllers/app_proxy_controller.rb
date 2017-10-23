@@ -44,6 +44,7 @@ class AppProxyController < ApplicationController
         else
           order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address])
         end
+        Rails.logger.debug("[about to break cache] ")
         breakCarrierCache()
         render json: order_note, status: 200
       else

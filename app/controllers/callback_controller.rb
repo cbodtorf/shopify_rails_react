@@ -5,6 +5,7 @@ class CallbackController < ApplicationController
     value = params.fetch('rate', {})
     addrs = value.fetch('destination', {})
     items = value.fetch('items', [])
+    postal_codes = shop.postal_codes.all
 
     Rails.logger.info("[Shipping?] #{ShippingAddress.all.inspect}")
 
@@ -23,7 +24,8 @@ class CallbackController < ApplicationController
 
     if shipping_address.empty?
       # Gotta find order note (maybe most recently created?)
-      @order_note = shop.order_notes.all.sort_by(&:created_at).last
+      # 10/23/17 commented this out because it was causing a problem with recharge.
+      # @order_note = shop.order_notes.all.sort_by(&:created_at).last
 
       Rails.logger.info("[no shipping, all order notes] #{@order_note.inspect}")
     else
@@ -36,7 +38,7 @@ class CallbackController < ApplicationController
     # Rails.logger.info("[ORDER NOTES] #{@order_note.inspect}")
 
     rates = shop.rates.includes(:conditions, :product_specific_prices).map do |rate|
-      ContextualRate.new(rate, items, addrs, @order_note)
+      ContextualRate.new(rate, items, addrs, @order_note, postal_codes)
     end.select do |rate_instance|
       rate_instance.valid?
     end
