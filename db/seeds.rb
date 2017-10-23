@@ -85,11 +85,11 @@ Rate.create!([
 ])
 
 CookDay.create!([
-  {id: 1, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Monday"},
-  {id: 2, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Tuesday"},
-  {id: 3, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Wednesday"},
-  {id: 4, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Thursday"},
-  {id: 5, cook_schedule_id: 1, rate_ids: [1,2,3], title: "Friday"},
+  {id: 1, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Monday"},
+  {id: 2, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Tuesday"},
+  {id: 3, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Wednesday"},
+  {id: 4, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Thursday"},
+  {id: 5, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Friday"},
   {id: 6, cook_schedule_id: 1, rate_ids: [], title: "Saturday"},
   {id: 7, cook_schedule_id: 1, rate_ids: [1,2,3,5], title: "Sunday"},
   {id: 8, cook_schedule_id: 2, rate_ids: [4,5], title: "Monday"},
