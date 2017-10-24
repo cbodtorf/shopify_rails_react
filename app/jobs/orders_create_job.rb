@@ -24,12 +24,15 @@ class OrdersCreateJob < ApplicationJob
 
       end
 
-      order_note = shop.order_notes.where(checkout_token: webhook[:checkout_token]).first
-      Rails.logger.info("[Order Create - note]: #{order_note.inspect}")
-      Rails.logger.info("[Order Create - sa]: #{order_note.shipping_address.inspect}")
+      order_notes = shop.order_notes.where(checkout_token: webhook[:checkout_token])
+      Rails.logger.info("[Order Delete - note]: #{order_note.inspect}")
+      Rails.logger.info("[Order Delete - sa]: #{order_note.shipping_address.inspect}")
       # order has been created, we can do clear these unneeded records.
-      order_note.shipping_address.destroy
-      order_note.destroy
+      order_notes.each do |note|
+        note.shipping_address.destroy
+        note.destroy
+      end
+
     end
   end
 
