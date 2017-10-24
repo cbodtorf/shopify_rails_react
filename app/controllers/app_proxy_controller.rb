@@ -9,18 +9,6 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    co = ShopifyAPI::Checkout.find(params[:checkout_token])
-    addy = {}
-    co.attributes[:shipping_address].attributes.each do |att|
-      Rails.logger.debug("[att?] #{att[0] == "id"}")
-      if att[0] == "id"
-      else
-        addy[att[0].to_sym] = att[1]
-      end
-    end
-    Rails.logger.debug("[addy no id?] #{addy.inspect}")
-    Rails.logger.debug("[addy?] #{addy.inspect}")
-
     # iterate over order notes
     # Choose the one that was created most recently or double check checkout_token and delete if completed
     order_note = shop.order_notes.where(cart_token: params[:cart_token])
