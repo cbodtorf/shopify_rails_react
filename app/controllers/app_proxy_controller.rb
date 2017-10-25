@@ -9,105 +9,43 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    # iterate over order notes
-    # Choose the one that was created most recently or double check checkout_token and delete if completed
-    order_note = shop.order_notes.where(cart_token: params[:cart_token])
-    order_note = order_note.select do |order|
-      if order[:checkout_token] != ""
-        Rails.logger.debug("[order?] #{order.inspect}")
-        checkout = ShopifyAPI::Checkout.find(order[:checkout_token])
-        Rails.logger.debug("[token?] #{order[:checkout_token].inspect}")
-        Rails.logger.debug("[checkout? expired?] #{checkout.attributes[:completed_at].inspect}")
-        if checkout.attributes[:completed_at] == nil
-          Rails.logger.debug("[order note?] #{checkout.inspect}")
-          order
-        end
+    shopify_checkout_token = nil
+    shopify_checkout = nil
+    recharge_checkout = false
+
+    Rails.logger.debug("[params[:checkout_token] != ""?] #{params[:checkout_token] != ""}")
+    Rails.logger.debug("[params[:checkout_token] != nil?] #{params[:checkout_token] != nil}")
+    Rails.logger.debug("params[:checkout_token] != "" || params[:checkout_token] != nil #{params[:checkout_token] != "" || params[:checkout_token] != nil}")
+    if params[:checkout_token].present?
+      shopify_checkout_token = params[:checkout_token]
+      Rails.logger.debug("[shopify_checkout_token?] #{shopify_checkout_token.inspect}")
+      shopify_checkout = ShopifyAPI::Checkout.find(shopify_checkout_token)
+
+      recharge_items = shopify_checkout.attributes[:line_items].select{|item| item.attributes[:title].include?("Auto renew")}
+      recharge_items.empty? ? recharge_checkout = false : recharge_checkout = true
+
+      # Clear Cache, unless no shipping address
+      unless shopify_checkout.attributes[:shipping_address] == nil
+        breakCarrierCache(shopify_checkout)
       end
-    end
-    Rails.logger.debug("[order note?] #{order_note.inspect}")
-    order_note = order_note.first
-    # order_note = shop.order_notes.where(cart_token: params[:cart_token]).first
 
-    if order_note
-      Rails.logger.debug("[Order Note Exists] #{order_note.inspect}")
-      @checkout = ShopifyAPI::Checkout.find(order_note[:checkout_token])
-      Rails.logger.debug("[Checkout] #{@checkout.inspect}")
-
-      if order_note.update_attributes(order_note_params) && @checkout.attributes[:shipping_address]
-        if order_note.shipping_address
-          Rails.logger.debug("[sa] #{order_note.shipping_address.inspect}")
-          if @checkout.attributes[:shipping_address].attributes[:company] == nil
-            @checkout.attributes[:shipping_address].attributes[:company] = "_"
-          else
-            order_note.shipping_address.update_attributes(company: @checkout.attributes[:shipping_address].attributes[:company] += " ")
-          end
-        else
-          address = {}
-          @checkout.attributes[:shipping_address].attributes.each do |att|
-            Rails.logger.debug("[att?] #{att[0].inspect}")
-            if att[0] == "id"
-            else
-              address[att[0].to_sym] = att[1]
-            end
-          end
-          address[:company] = ""
-          order_note.shipping_address = ShippingAddress.create(address)
-        end
-        Rails.logger.debug("[about to break cache] ")
-        breakCarrierCache()
-        render json: order_note, status: 200
+      if recharge_checkout
+        Rails.logger.debug("Recharge Checkout")
       else
-        # render json: { errors: order_note.errors }, status: 422
-        # TODO: might need to handle some errors, but right now this is when a shipping address is not entered on checkout initially.
-        render json: order_note, status: 200
+        Rails.logger.debug("Shopify Checkout")
       end
     else
-      Rails.logger.debug("[Order Note does not exist] #{order_note.inspect}")
-      # this shouldn't run, order note should already be created
-      # has potential to run if webhooks aren't set up.
-      # Shouldn't need to breakCarrierCache either.
-
-      # checkouts = ShopifyAPI::Checkout.all
-      # Rails.logger.debug("[Checkouts] #{checkouts.inspect}")
-      # @checkout = checkouts.select do |checkout|
-      #   checkout.attributes[:cart_token] == params[:cart_token]
-      # end.first
-      # Rails.logger.debug("[Checkout no note] #{@checkout.inspect}")
-
-      # @order_note = OrderNote.create(order_note_params)
-      # @order_note.shipping_address = ShippingAddress.create(@checkout.attributes[:shipping_address].attributes)
-
-      # if @order_note.save
-      #   # breakCarrierCache()
-      #   render json: @order_note, status: 200
-      # else
-      #   # This just for reference if I wanted to render a page
-      #   # render layout: false, content_type: 'application/liquid'
-      #   render json: { errors: @order_note.errors }, status: 422
-      # end
-      render json: order_note, status: 200
+      # error
+      render json: { errors: "No Cart Token or Checkout Token" }, status: 200
     end
-
-
-
-    Rails.logger.debug("[Checkout edit] #{@checkout.inspect}")
   end
 
-  def order_note_params
-    params.permit(
-      :checkout_token,
-      :cart_token,
-      :rate_id,
-      :checkout_method,
-      :postal_code,
-      :delivery_date
-    )
-  end
 
-  def breakCarrierCache
+  def breakCarrierCache(checkout)
     Rails.logger.debug("shop: #{params[:shop]}")
+    Rails.logger.debug("checkout: #{checkout.inspect}")
     api_token = ENV['SHOPIFY_PRIVATE_API_KEY']
-    checkout_token = @checkout.attributes[:token]
+    checkout_token = checkout.attributes[:token]
     endpoint = "https://#{params[:shop]}/admin/checkouts/#{checkout_token}.json"
     # TODO: need to encode Base64.encode64('username:password')
     # Should also look into whether or not I can use the App's credentials and not the private app.
@@ -120,8 +58,9 @@ class AppProxyController < ApplicationController
       "checkout": {
         "token": checkout_token,
         "shipping_address": {
-          "id": @checkout.attributes[:shipping_address].attributes[:id],
-          "company": @checkout.attributes[:shipping_address].attributes[:company] += "_",
+          "id": checkout.attributes[:shipping_address].attributes[:id],
+          "company": checkout.attributes[:shipping_address].attributes[:company] += "_",
+          "fax": params[:cart][:rate_id],
         }
       }
     }
@@ -137,7 +76,7 @@ class AppProxyController < ApplicationController
         puts "O noes not found!"
       when 403
         # api not allowing access break with product weight
-        breakCarrierCacheWeight()
+        breakCarrierCacheWeight(checkout)
         puts "api not allowing access break with product weight #{response.code}"
       when 500...600
         puts "ZOMG ERROR #{response.code}"
@@ -146,10 +85,10 @@ class AppProxyController < ApplicationController
     puts response.body
   end
 
-  def breakCarrierCacheWeight
+  def breakCarrierCacheWeight(checkout)
     Rails.logger.debug("shop: #{params[:shop]}")
 
-    variant = @checkout.attributes[:line_items].first
+    variant = checkout.attributes[:line_items].first
     variant_id = variant.attributes[:variant_id]
     w = variant.attributes[:grams].to_i
     break_weight = w > 500 ? 0 : w + 100
@@ -235,11 +174,6 @@ class AppProxyController < ApplicationController
     pickup_locations = shop.pickup_locations.all
 
     blackout_dates = shop.blackout_dates.all
-    # TODO: black out days. This is still being handled on the front end, but we are passing it the dates.
-    # bo = blackout_dates.map do |d|
-    #   if Date.parse(d) == date
-    #   Date.parse(d) == date ? "disable" : "clear"
-    # end
 
     date_from  = Date.current
     Rails.logger.debug("[date] #{date_from.inspect}")
@@ -249,8 +183,7 @@ class AppProxyController < ApplicationController
     # Sort by cook time
     schedules = cook_schedules.sort_by { |sched| sched[:cook_time] }
 
-    # TODO: hour should be a variable maybe held in a config/settings from the admin.
-    # We'll use last cook_schedule cook_time
+    # We'll use last cook_schedule cook_time as end of day
     end_of_day = DateTime.now.change({ hour: cook_schedules.last.cook_time })
 
     # loop through dates:

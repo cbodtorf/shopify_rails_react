@@ -1,11 +1,10 @@
 class ContextualRate
-  attr_accessor :rate, :items, :addrs, :order_notes, :postal_codes
+  attr_accessor :rate, :items, :addrs, :postal_codes
 
-  def initialize(rate, items, addrs, order_notes, postal_codes)
+  def initialize(rate, items, addrs, postal_codes)
     @rate = rate
     @items = items
     @addrs = addrs
-    @order_notes = order_notes
     @postal_codes = postal_codes
   end
 
@@ -95,17 +94,16 @@ class ContextualRate
 
   def valid_rate?
     postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
+    rate_id = items.first['properties']['Delivery rate id']
+    Rails.logger.debug("rate_id: #{rate_id}")
 
-    if order_notes != nil
-      Rails.logger.debug("checkout_method: #{order_notes.checkout_method.inspect}")
-      Rails.logger.debug("delivery_method: #{rate.inspect}")
-      Rails.logger.debug("rate_id: #{order_notes.rate_id.inspect}")
-
+    if rate_id != nil
       if postal_codes_match.empty?
         rate.delivery_method.downcase == 'shipping'
       else
-        rate.id == order_notes.rate_id.to_i
+        rate.id == rate_id.to_i
       end
+
     elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
       # return subscription rate
       # TODO: recharge doesn't intiate checkout through Shopify so no webhook data.

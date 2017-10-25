@@ -202,6 +202,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
     # blackout dates
     blackout_dates = shop.blackout_dates.all
+    # TODO: Figure this out We'll use last cook_schedule cook_time as end of day
+    # end_of_day = DateTime.now.change({ hour: schedules.last.cook_time })
 
     date_from  = Date.current
     date_to    = date_from + 4
