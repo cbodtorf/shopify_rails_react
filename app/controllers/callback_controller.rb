@@ -25,7 +25,6 @@ class CallbackController < ApplicationController
 
   def shop
     @shop ||= Shop.find(params[:id])
-    Rails.logger.info("[@shop] #{@shop.inspect}")
   end
 
 end
