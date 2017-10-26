@@ -267,44 +267,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
               deliver_next_day = false
 
               # Find cook_day and cook_schedule that rate belongs to
-              # cook_days = rate.cook_day.select do |day|
-              #   Rails.logger.debug("cook day: #{day.title.downcase.inspect}")
-              #   Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
-              #   Rails.logger.debug("id: #{day.cook_schedule_id.inspect}")
-              #   if day.title.downcase == note_date.strftime("%A").downcase && sub_order && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15))
-              #     cook_date = (note_date)
-              #     deliver_next_day = false
-              #     Rails.logger.debug("#sub  cook same day as delivery date")
-              #     true # cook on delivery date
-              #   elsif day.cook_schedule_id == schedules.last.id && note_date != Date.today
-              #     if day.title.downcase == (note_date - 1.day).strftime("%A").downcase
-              #       cook_date = (note_date - 1.day)
-              #       deliver_next_day = true
-              #       Rails.logger.debug("# cook day before delivery date")
-              #       true # cook day before delivery date
-              #     else
-              #       cook_date = (note_date)
-              #       Rails.logger.debug("err: #{day.inspect}")
-              #       false
-              #     end
-              #   elsif day.cook_schedule_id != schedules.last.id
-              #     if day.title.downcase == note_date.strftime("%A").downcase
-              #       cook_date = (note_date)
-              #       deliver_next_day = false
-              #       Rails.logger.debug("# cook same day as delivery date")
-              #       true # cook on delivery date
-              #     else
-              #       cook_date = (note_date)
-              #       Rails.logger.debug("err: #{day.inspect}")
-              #       false
-              #     end
-              #   else
-              #     cook_date = (note_date)
-              #     Rails.logger.debug("err: #{day.inspect}")
-              #     false
-              #   end
-              # end
-
               day_before_blackout = blackout_dates.any? {|date| (note_date - 1.day) == date.blackout_date.to_date}
               Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
               last_cook_not_available_day_before = schedules.last.cook_days.any? {|day| day.title.downcase == (note_date - 1.day).strftime("%A").downcase && day.rates.empty?}

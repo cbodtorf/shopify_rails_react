@@ -187,6 +187,7 @@ class AppProxyController < ApplicationController
 
     # We'll use last cook_schedule cook_time as end of day
     end_of_day = DateTime.now.change({ hour: cook_schedules.last.cook_time })
+    end_of_first_cook = DateTime.now.change({ hour: cook_schedules.first.cook_time })
 
     # loop through dates:
     cal_data = date_range.map.with_index do |date, i|
@@ -289,18 +290,43 @@ class AppProxyController < ApplicationController
 
     Rails.logger.debug("[cal_data] #{cal_data.inspect}")
 
-    date_from  = Date.current + 1
-    date_to    = date_from + 6
-    pickup_range = (date_from..date_to).map()
+    # PICKUP RATES
+    pickupEnabled = {
+      date: date,
+      disabled: false,
+      locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
+      rates: pickup_rate
+    }
+    pickupDisabled = {
+      date: date,
+      disabled: true,
+      rates: []
+    }
 
-    pickup_data = pickup_range.map do |date|
-      dateObj = {
-        date: date,
-        disabled: false,
-        locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
-        rates: pickup_rate
-      }
-    end
+    pickup_data = date_range.map do |date|
+      blackout = blackout_dates.any? {|blackout| (date) == blackout.blackout_date.to_date}
+      if @admin
+        # ALLOWS all possible/legitimate rates; does not honor cutoffs
+        pickupEnabled
+      else # NOT ADMIN
+        if blackout
+          pickupDisabled
+        else
+          if Time.now < end_of_first_cook # normal
+            pickupEnabled
+          elsif Time.now > end_of_first_cook # end of first cook (ie. 11am)
+            if date.today?
+              pickupDisabled
+            elsif !date.today?
+              pickupEnabled
+            end
+          else
+            # Should not run
+            Rails.logger.debug("[err] #{date.inspect}")
+          end
+        end
+      end
+    end # END OF PICKUP DATES
 
     render json: {deliveryDates: cal_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates, postalCodes: postal_codes} , status: 200
   end
