@@ -95,13 +95,13 @@ class ContextualRate
   def valid_rate?
     postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
     rate_id = items.first['properties']['Delivery rate id']
-    Rails.logger.debug("rate_id: #{rate_id}")
+    Rails.logger.debug("rate_id: #{rate.id} #{rate_id} #{rate.id.to_i == rate_id.to_i}")
 
     if rate_id != nil
       if postal_codes_match.empty?
         rate.delivery_method.downcase == 'shipping'
       else
-        rate.id == rate_id.to_i
+        rate.id.to_i == rate_id.to_i
       end
 
     elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)

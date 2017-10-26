@@ -7,11 +7,24 @@ class OrdersCreateJob < ApplicationJob
       Rails.logger.info("[Order tags]: #{webhook[:tags].split(', ').inspect}")
       cart_token = ''
       order = ShopifyAPI::Order.find(webhook[:id])
-
+      rates = shop.rates.select("id, title")
+      saveOrder = false
 
       if webhook[:tags].split(', ').include?('Subscription')
+        # TODO: change rate id note attribute if order shipping line is different
+        # TODO: this is temporary fix, should prevent this from happening
         subscriptionOrder = order
         Rails.logger.info("[subscriptionOrder]: #{subscriptionOrder.inspect}")
+
+        subscriptionOrder.attributes[:note_attributes].each do |note|
+          if note.attributes[:name] == "rate_id"
+            if rates.find(5)[:title] != webhook[:shipping_lines].attributes[:title]
+              note.attributes[:value] = rates.find_by(title: webhook[:shipping_lines].attributes[:title])[:id]
+              Rails.logger.info("[change shipping rate?]: #{note.attributes[:value].inspect}")
+              saveOrder = true
+            end
+          end
+        end
 
 
         # Re-adjusting the delivery date on subsequent subscription orders.
@@ -25,13 +38,16 @@ class OrdersCreateJob < ApplicationJob
             if note.attributes[:name] == "delivery_date"
               note.attributes[:value] = delivery_date.readable_inspect
               Rails.logger.info("[change delivery date?]: #{note.attributes[:value].inspect} -vs- #{delivery_date.readable_inspect}")
+              saveOrder = true
             end
           end
           Rails.logger.info("[Recurring delivery date]: #{subscriptionOrder.attributes[:note_attributes].inspect}")
-          subscriptionOrder.save
         end
       end
 
+      if saveOrder
+        subscriptionOrder.save
+      end
     end
   end
 
