@@ -20,8 +20,11 @@ class ContextualRate
 
   def valid?
     return false unless valid_price?
+    Rails.logger.debug("valid_price?: #{valid_price?}")
     return false unless valid_grams?
+    Rails.logger.debug("valid_grams?: #{valid_grams?}")
     return false unless valid_conditions?
+    Rails.logger.debug("valid_conditions?: #{valid_conditions?}")
     return false unless valid_rate?
 
     true
