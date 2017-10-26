@@ -8,8 +8,10 @@ class CallbackController < ApplicationController
     postal_codes = shop.postal_codes.all
 
     rates = shop.rates.includes(:conditions, :product_specific_prices).map do |rate|
+      Rails.logger.debug("rate?: #{rate}")
       ContextualRate.new(rate, items, addrs, postal_codes)
     end.select do |rate_instance|
+      Rails.logger.debug("rate_instance?: #{rate_instance}")
       rate_instance.valid?
     end
 
