@@ -34,6 +34,8 @@ class AppProxyController < ApplicationController
       else
         Rails.logger.debug("Shopify Checkout")
       end
+
+      render json: { breakCache: "success" }, status: 200
     else
       # error
       render json: { errors: "No Cart Token or Checkout Token" }, status: 200
