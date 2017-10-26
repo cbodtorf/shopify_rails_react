@@ -20,11 +20,11 @@ class ContextualRate
 
   def valid?
     return false unless valid_price?
-    Rails.logger.debug("valid_price?: #{valid_price?}")
+    # Rails.logger.debug("valid_price?: #{valid_price?}")
     return false unless valid_grams?
-    Rails.logger.debug("valid_grams?: #{valid_grams?}")
+    # Rails.logger.debug("valid_grams?: #{valid_grams?}")
     return false unless valid_conditions?
-    Rails.logger.debug("valid_conditions?: #{valid_conditions?}")
+    # Rails.logger.debug("valid_conditions?: #{valid_conditions?}")
     return false unless valid_rate?
 
     true
@@ -98,7 +98,6 @@ class ContextualRate
   def valid_rate?
     postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
     rate_id = items.first['properties']['Delivery rate id']
-    Rails.logger.debug("rate_id: #{rate.id} #{rate_id} #{rate.id.to_i == rate_id.to_i}")
 
     if rate_id != nil
       if postal_codes_match.empty?
