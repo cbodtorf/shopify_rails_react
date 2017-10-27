@@ -1,6 +1,6 @@
 import React from 'react';
 import {Page, Card, Banner, Tabs, Badge, Layout, Stack, Button, ButtonGroup, Heading, Subheading, Link, Icon, Tooltip, ResourceList, Pagination} from '@shopify/polaris';
-import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
+import {EmbeddedApp, Modal, Alert} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
@@ -14,6 +14,7 @@ class Subscription extends React.Component {
 
     this.state = {
       modalOpen: false,
+      openAlert: false,
       modalUrl: '',
       searchTerm: '',
       showProduct: {}
@@ -37,25 +38,29 @@ class Subscription extends React.Component {
       return (
           <tbody key={ sub.id } className="ui-nested-link-container">
             <tr className="">
-              <td><Link external="true" url={ `${urlBase}addresses/${sub.address_id}` }>#{ sub.id }
-              { sub.note !== null ? <div className="notice-icon"><Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
-              </Link></td>
-              <td><Link external="true" url={ `${urlBase}customer/${sub.customer_id}/subscription/${sub.id}` }>{ sub.first_name + ' ' + sub.last_name }</Link></td>
+              <td>
+                #{ sub.id }
+                { sub.note !== null ? <div className="notice-icon"><Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
+              </td>
+              <td>{ sub.first_name + ' ' + sub.last_name }</td>
               <td>{ new Date(sub.scheduled_at).toLocaleDateString() }</td>
               <td>{ new Date(new Date(sub.scheduled_at).setDate(new Date(sub.scheduled_at).getDate() + 1)).toLocaleDateString() }</td>
               <td>${ sub.total_price }</td>
 
-              <td><Link external="true" onClick={() => {
-                  this.setState({ modalOpen: true,
-                    modalUrl: `http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`
-                  })
-                }}>Edit</Link></td>
+              <td>
+                <Link
+                  external="true"
+                  url={`http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`}
+                >
+                  Edit
+                </Link>
+              </td>
 
               <td><Link onClick={ () => {
-                  this.setState({ modalOpen: true,
-                    modalUrl: `http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/delivery_schedule/`
+                  this.setState({ openAlert: true,
+                    modalUrl: `${urlBase}addresses/${sub.address_id}`
                   })
-                }}>Edit</Link></td>
+                }}>View</Link></td>
 
               <td><Link onClick={ () => {
                   let showProduct = this.state.showProduct || {}
@@ -118,7 +123,7 @@ class Subscription extends React.Component {
                             <th>Delivery Date</th>
                             <th>Total</th>
                             <th>Subscription</th>
-                            <th>Schedule</th>
+                            <th>Recharge</th>
                             <th>Product</th>
                           </tr>
                         </thead>
@@ -128,15 +133,19 @@ class Subscription extends React.Component {
                 </Card>
             </Layout.Section>
           </Layout>
-          <Modal
-            src={ this.state.modalUrl }
-            open={ this.state.modalOpen }
-            width="large"
-            title={ `Edit Subscription` }
-            onClose={() => {
-              this.setState({ modalOpen: false })
-            }}
-          />
+          <Alert
+            title="Are you sure you want to leave Bamboo App and go to Recharge?"
+            open={ this.state.openAlert }
+            confirmContent="Continue"
+            onConfirm={() => {
+                window.open(this.state.modalUrl, '_blank').focus();
+                this.setState({ openAlert: false })
+              }
+            }
+          >
+            There are advanced features in Recharge that aren't fully documented in our User Doc.
+            Please contact us if you have any questions.
+          </Alert>
         </Page>
       </EmbeddedApp>
       </div>
