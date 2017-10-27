@@ -290,20 +290,20 @@ class AppProxyController < ApplicationController
 
     Rails.logger.debug("[cal_data] #{cal_data.inspect}")
 
-    # PICKUP RATES
-    pickupEnabled = {
-      date: date,
-      disabled: false,
-      locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
-      rates: pickup_rate
-    }
-    pickupDisabled = {
-      date: date,
-      disabled: true,
-      rates: []
-    }
-
     pickup_data = date_range.map do |date|
+      # PICKUP RATES
+      pickupEnabled = {
+        date: date,
+        disabled: false,
+        locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
+        rates: pickup_rate
+      }
+      pickupDisabled = {
+        date: date,
+        disabled: true,
+        rates: []
+      }
+      
       blackout = blackout_dates.any? {|blackout| (date) == blackout.blackout_date.to_date}
       if @admin
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
