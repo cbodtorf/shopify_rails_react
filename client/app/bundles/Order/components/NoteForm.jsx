@@ -7,7 +7,8 @@ import {
   Stack,
   TextField,
   DatePicker,
-  Label
+  Label,
+  Banner
 } from '@shopify/polaris';
 
 const monthNames = ["January","February","March","April","May","June","July",
@@ -28,13 +29,6 @@ class NoteForm extends Component {
           postalCode = {name: "", value: ""};
 
     let noteElement = ''
-
-    const rateOptions = this.props.rates.map(rate => {
-      return {
-        label: `${rate.title}: $${rate.price / 100}`,
-        value: rate.id
-      }
-    })
 
     let locationOptions = this.props.pickupLocations.map(location => {
       return {
@@ -63,8 +57,65 @@ class NoteForm extends Component {
       }
     })
 
+    let datePickerInputs = null
+    let datePicker = null
+
+    if ((this.props.checkout || checkoutMethod.value) !== "shipping") {
+      datePicker = (
+            <div>
+              <Label>Delivery Date</Label><br />
+              <DatePicker
+                month={ this.props.datePickerMonth }
+                year={ this.props.datePickerYear }
+                selected={ this.props.datePickerSelected }
+                disableDatesBefore={ new Date() }
+                onChange={ (selected) => { this.props.onDateChange(selected) } }
+                onMonthChange={ (month,year) => { this.props.onMonthChange(month,year) } }
+              />
+            </div>
+      )
+      datePickerInputs = (
+            <div>
+              <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "delivery_date" } />
+              <input type="hidden" name="order[note_attributes][][value]" id="order_note_attributes__value" value={ this.props.datePickerSelected ? `${this.props.deliveryDate.wday}, ${monthNames[this.props.deliveryDate.month - 1]} ${this.props.deliveryDate.day}, ${this.props.deliveryDate.year}` : deliveryDate.value } />
+            </div>
+      )
+    }
+
+    let pickupLocations = null
+    if ((this.props.checkout || checkoutMethod.value) === "pickup") {
+      pickupLocations = (
+        <div>
+          <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "location_id" } />
+          <Select
+            label="Location"
+            name="order[note_attributes][][value]"
+            options={ locationOptions }
+            value={ this.props.location || locationId.value }
+            onChange={ (value) => { this.props.onLocationChange(value) } }
+            placeholder="Select"
+          />
+        </div>
+      )
+    }
+
+    const rateOptions = this.props.rates.filter((rate) => {return rate.delivery_method === (this.props.checkout || checkoutMethod.value)}).map(rate => {
+      return {
+        label: `${rate.title}: $${rate.price / 100}`,
+        value: rate.id
+      }
+    })
+    console.log("rateOptions", rateOptions);
+
     return (
       <div>
+        <Banner
+          icon="notes"
+          title="Note about editing delivery attributes."
+          status="default"
+        >
+          <p>This process will move the order into the correct delivery or pickup bucket and appropriate juicing and address CSV.  It will not charge or refund the customer.</p>
+        </Banner>
         <form
           action={ this.props.formUrl }
           acceptCharset="UTF-8" method="post"
@@ -103,35 +154,20 @@ class NoteForm extends Component {
                 />
               </Stack>
               <Stack vertical>
-                <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "location_id" } />
-                <Select
-                  label="Location"
-                  name="order[note_attributes][][value]"
-                  options={ locationOptions }
-                  value={ this.props.location || locationId.value }
-                  onChange={ (value) => { this.props.onLocationChange(value) } }
-                  placeholder="Select"
-                />
+                { pickupLocations }
               </Stack>
               <Stack vertical>
 
-                <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "delivery_date" } />
-                <input type="hidden" name="order[note_attributes][][value]" id="order_note_attributes__value" value={ this.props.datePickerSelected ? `${this.props.deliveryDate.wday}, ${monthNames[this.props.deliveryDate.month - 1]} ${this.props.deliveryDate.day}, ${this.props.deliveryDate.year}` : deliveryDate.value } />
+                { datePickerInputs }
+
               </Stack>
             </Stack>
 
           </FormLayout>
         </form>
-        <Label>Delivery Date</Label><br />
 
-        <DatePicker
-          month={ this.props.datePickerMonth }
-          year={ this.props.datePickerYear }
-          selected={ this.props.datePickerSelected }
-          disableDatesBefore={ new Date() }
-          onChange={ (selected) => { this.props.onDateChange(selected) } }
-          onMonthChange={ (month,year) => { this.props.onMonthChange(month,year) } }
-        />
+        { datePicker }
+
       </div>
     );
   }
