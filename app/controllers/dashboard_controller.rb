@@ -7,33 +7,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
 
-    orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
-    # Missing Delivery Data
-    @errorOrders = []
-    orders.each do |order|
-      orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
-      # Isolate Delivery Date
-      note_date = orderAttributes[:delivery_date]
-      # Isolate Checkout method
-      checkout_method = orderAttributes[:checkout_method]
-      # Isolate Delivery Rate
-      rate_id = orderAttributes[:rate_id]
-      rate = rate_id.present? ? shop.rates.find(rate_id.to_i) : nil
-      # cook_days
-      cook_days = rate.present? && note_date.present? ? rate.cook_day.select{|day| day.title.downcase == Date.parse(note_date).strftime("%A").downcase} : nil
+    # filterErrors returns {:error_orders, :orders}
+    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 }))
+    @errorOrders = orders[:error_orders]
 
-      if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
 
-        @errorOrders.push(self.setError(order, checkout_method, rate_id, note_date))
-        next
-      end
-
-      cook_day_error = cook_days.blank? && rate[:delivery_type] == "same_day" ? true : false
-      if cook_day_error
-        @errorOrders.push(self.setError(order, checkout_method, rate_id, note_date, cook_day_error))
-        next
-      end
-    end
     # Out of Stock Subs
     subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/?status=ERROR&limit=250")['charges']
     @errorOrders.concat(subs_with_errors)
@@ -64,7 +42,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @activeSubscriberCount = activeSubscribers.count
 
     # Shipping Orders:
-    @shippingOrders = getShippingOrders
+    @shippingOrders = getShippingOrders(orders[:orders])
 
     @shippingOrdersCount = @shippingOrders.count
 
@@ -147,31 +125,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      orders = ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 })
-      @orders = []
-      orders.each do |order|
-        orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
-        # Isolate Delivery Date
-        note_date = orderAttributes[:delivery_date]
-        # Isolate Checkout method
-        checkout_method = orderAttributes[:checkout_method]
-        # Isolate Delivery Rate
-        rate_id = orderAttributes[:rate_id]
-        rate = rate_id.present? ? shop.rates.find(rate_id.to_i) : nil
-        # cook_days
-        cook_days = rate.present? && note_date.present? ? rate.cook_day.select{|day| day.title.downcase == Date.parse(note_date).strftime("%A").downcase} : nil
-
-        if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
-          @orders.push(self.setError(order, checkout_method, rate_id, note_date))
-          next
-        end
-
-        cook_day_error = cook_days.blank? && rate[:delivery_type] == "same_day" ? true : false
-        if cook_day_error
-          @orders.push(self.setError(order, checkout_method, rate_id, note_date, cook_day_error))
-          next
-        end
-      end
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 }))
+      @orders = orders[:error_orders]
 
 
       # Out of Stock Subs
@@ -216,8 +171,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
-    @orders = ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo, limit: 250 })
-    errorOrders = []
+    @orders = filterErrors(ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo, limit: 250 }))
+    errorOrders = @orders[:error_orders]
     # Sort by cook time
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
     # blackout dates
@@ -241,7 +196,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
 
 
-      @orders.each do |order|
+      @orders[:orders].each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
         orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
@@ -257,10 +212,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
         # Isolate Delivery Rate
         rate_id = orderAttributes[:rate_id]
 
-        if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
-          errorOrders.push(self.setError(order, checkout_method, rate_id, note_date))
-          next
-        end
+        # if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
+        #   errorOrders.push(self.setError(order, checkout_method, rate_id, note_date))
+        #   next
+        # end
 
         rate = shop.rates.find(rate_id)
 
@@ -406,10 +361,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
   end
 
-  def getShippingOrders
-    orders = ShopifyAPI::Order.find(:all, params: { fulfillment_status: "unshipped", limit: 250 })
+  def getShippingOrders(orders = false)
+    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fulfillment_status: "unshipped", limit: 250 }))[:orders] : orders
     shippingOrders = []
-    orders.select do |order|
+    shipping_orders.select do |order|
       order.attributes[:note_attributes].each do |note|
         if note.attributes[:name] == "checkout_method"
           if note.attributes[:value].downcase == "shipping"
@@ -422,7 +377,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     return shippingOrders
   end
 
-  def setError(order, method, rate, note_date, no_cook_days = false)
+  def setError(order, method, rate, note_date, no_cook_days = false, product_does_not_exist = false)
     Rails.logger.debug("set error: order_#{order.attributes[:name].inspect}, method_#{method.inspect}, rate_#{rate.inspect} ")
     order.attributes[:error] = []
 
@@ -443,7 +398,45 @@ class DashboardController < ShopifyApp::AuthenticatedController
       order.attributes[:error].push("NO AVAILABLE COOKS - Delivery date is probably set to a day where there are no cooks. Please Change the rate and/or delivery date.")
     end
 
+    if product_does_not_exist
+      order.attributes[:error].push("PRODUCT DOES NOT EXIST - Product may have been deleted. Make sure to sync product in Recharge if changes are made.")
+    end
+
     order
+  end
+
+  def filterErrors(orders_to_be_filtered)
+    error_orders = []
+    reg_orders = []
+    orders_to_be_filtered.each do |order|
+      # order line item presence
+      product_does_not_exist = order.attributes[:line_items].select{|item| !item.attributes[:product_exists]}
+
+      orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
+      # Isolate Delivery Date
+      note_date = orderAttributes[:delivery_date]
+      # Isolate Checkout method
+      checkout_method = orderAttributes[:checkout_method]
+      # Isolate Delivery Rate
+      rate_id = orderAttributes[:rate_id]
+      rate = rate_id.present? ? shop.rates.find(rate_id.to_i) : nil
+      # cook_days
+      cook_days = rate.present? && note_date.present? ? rate.cook_day.select{|day| day.title.downcase == Date.parse(note_date).strftime("%A").downcase} : nil
+
+      if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == "")) || product_does_not_exist.present?
+
+        self.setError(order, checkout_method, rate_id, note_date, false, product_does_not_exist)
+      else
+        cook_day_error = cook_days.blank? && rate[:delivery_type] == "same_day" ? true : false
+        if cook_day_error
+          self.setError(order, checkout_method, rate_id, note_date, cook_day_error)
+        end
+      end
+
+      order.attributes[:error].blank? ? reg_orders.push(order) : error_orders.push(order)
+    end
+
+    return { :error_orders => error_orders, :orders => reg_orders}
   end
 
   def bulk_fulfill
