@@ -33,7 +33,7 @@ class Navigation extends React.Component {
               },
               {
                 id: 'errors',
-                title: <span>Errors<span className="ui-nav__badge">3</span></span>,
+                title: 'Errors',
                 panelID: 'errors',
                 url: `/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop}`,
               },
