@@ -41,7 +41,8 @@ const determineFulfillment = function(status) {
       statusText = 'Fulfilled'
       break;
     default:
-
+    statusColor = 'attention'
+    statusText = 'Unfulfilled'
   }
 
   return {
@@ -96,7 +97,7 @@ class OrderList extends React.Component {
        if (order.error_type === "CUSTOMER_NEEDS_TO_UPDATE_CARD") {
          editLink = <Link external="true" url={ `https://checkout.rechargeapps.com/customer/${order.customer_hash}/card_edit/` }>Update Billing</Link>
        } else if (order.error_type === "SHOPIFY_REJECTED") {
-         editLink = (<Link onClick={ () => { this.removeAndRecharge(order) }}>Remove Out of Stock Product, Retry charge</Link>)
+         editLink = (<Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link>)
        } else if (order.error_type === "MISSING_DELIVERY_DATA") {
          editLink = (<Link external="true" url={ `/orders?id=${order.id}` }>Edit</Link>)
        }

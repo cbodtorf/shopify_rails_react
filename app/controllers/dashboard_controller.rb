@@ -144,6 +144,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
           sub['out_of_stock_variants'] = sub_out_variants.map{|s| s['shopify_variant_id']}
         elsif sub['error_type'] == "CUSTOMER_NEEDS_TO_UPDATE_CARD"
           sub['error'] = [sub['error']].unshift("FAILED PAYMENT - the subscription could not create an order because the payment method failed. #{sub['first_name']} #{sub['last_name']} needs to update card")
+        elsif sub['error_type'] == "SHOPIFY_REJECTED" && sub['error'].include?("list index out of range")
+          sub['error'] = [sub['error']].unshift("PRODUCT DOES NOT EXIST - Product may have been deleted. Make sure to sync product in Recharge if changes are made.")
+        else
+          sub['error'] = [sub['error']]
         end
       end
 
@@ -211,11 +215,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
         checkout_method = orderAttributes[:checkout_method]
         # Isolate Delivery Rate
         rate_id = orderAttributes[:rate_id]
-
-        # if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == ""))
-        #   errorOrders.push(self.setError(order, checkout_method, rate_id, note_date))
-        #   next
-        # end
 
         rate = shop.rates.find(rate_id)
 
@@ -300,7 +299,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 Rails.logger.debug("err - cook_days.size > 1: #{cook_days.inspect}")
               elsif cook_days.size == 0
                 Rails.logger.debug("no cook days #{cook_days.inspect}")
-                errorOrders.push(self.setError(order, checkout_method, rate_id, note_date, !!cook_days))
               else
                 if deliver_next_day
                   # DELIVERED NEXT DAY AFTER COOK
@@ -379,29 +377,28 @@ class DashboardController < ShopifyApp::AuthenticatedController
     return shippingOrders
   end
 
-  def setError(order, method, rate, note_date, no_cook_days = false, product_does_not_exist = false)
-    Rails.logger.debug("set error: order_#{order.attributes[:name].inspect}, method_#{method.inspect}, rate_#{rate.inspect} ")
+  def setError(order, error_string)
+    Rails.logger.debug("set error: order_#{order.attributes[:name].inspect}, error#{error_string} ")
     order.attributes[:error] = []
 
-    if order.attributes[:note_attributes].size == 0
+    case error_string
+    when "notes_blank"
       order.attributes[:error].push("MISSING DELIVERY DATA - Please make sure the order has a delivery method, date, rate, etc.")
       order.attributes[:error_type] = "MISSING_DELIVERY_DATA"
-    end
-    if rate == nil || rate == ""
+    when "rate_blank"
       order.attributes[:error].push("MISSING RATE DATA - Please make sure the order has a delivery method, date, rate, etc.")
-    end
-    if method == nil || method == ""
+    when "method_blank"
       order.attributes[:error].push("MISSING METHOD DATA - Please make sure the order has a delivery method, date, rate, etc.")
-    end
-    if note_date == nil || note_date == ""
-      order.attributes[:error].push("MISSING DELIVERY DATE - Please make sure the order has a delivery method, date, rate, etc.")
-    end
-    if no_cook_days
-      order.attributes[:error].push("NO AVAILABLE COOKS - Delivery date is probably set to a day where there are no cooks. Please Change the rate and/or delivery date.")
-    end
-
-    if product_does_not_exist
+    when "product_does_not_exist"
       order.attributes[:error].push("PRODUCT DOES NOT EXIST - Product may have been deleted. Make sure to sync product in Recharge if changes are made.")
+    when "delivery_in_past"
+      order.attributes[:error].push("DELIVERY DATE IS SET IN THE PAST - Date may not have been updated from Recurring Subscription. Please update.")
+    when "note_date_blank"
+      order.attributes[:error].push("MISSING DELIVERY DATE - Please make sure the order has a delivery method, date, rate, etc.")
+    when "cook_day_error"
+      order.attributes[:error].push("NO AVAILABLE COOKS - Delivery date is probably set to a day where there are no cooks. Please Change the rate and/or delivery date.")
+    else
+      order.attributes[:error].push("UNKNOWN ERROR - Please contact support.")
     end
 
     order
@@ -425,13 +422,30 @@ class DashboardController < ShopifyApp::AuthenticatedController
       # cook_days
       cook_days = rate.present? && note_date.present? ? rate.cook_day.select{|day| day.title.downcase == Date.parse(note_date).strftime("%A").downcase} : nil
 
-      if order.attributes[:note_attributes].size == 0 || rate_id == nil || rate_id == "" || checkout_method == nil || checkout_method == "" || (checkout_method != "shipping" && (note_date == nil || note_date == "")) || product_does_not_exist.present?
-
-        self.setError(order, checkout_method, rate_id, note_date, false, product_does_not_exist)
+      # Error catch
+      if order.attributes[:note_attributes].size == 0
+        self.setError(order, "notes_blank")
+      elsif rate_id.blank?
+        self.setError(order, "rate_blank")
+      elsif checkout_method.blank?
+        self.setError(order, "method_blank")
+      elsif product_does_not_exist.present?
+        self.setError(order, "product_does_not_exist")
+      elsif note_date.present? && checkout_method != 'shipping'
+          new_date = note_date
+          unless new_date.class == Date
+            new_date = Date.parse(note_date)
+          end
+          if new_date < Date.parse(order.attributes[:created_at])
+            self.setError(order, "delivery_in_past")
+          end
+      elsif checkout_method != "shipping" && note_date.blank?
+        self.setError(order, "note_date_blank")
       else
+        # TODO: this needs attention
         cook_day_error = cook_days.blank? && rate[:delivery_type] == "same_day" ? true : false
         if cook_day_error
-          self.setError(order, checkout_method, rate_id, note_date, cook_day_error)
+          self.setError(order, "cook_day_error")
         end
       end
 
