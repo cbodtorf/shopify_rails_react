@@ -62,7 +62,7 @@ class AppProxyController < ApplicationController
         "shipping_address": {
           "id": checkout.attributes[:shipping_address].attributes[:id],
           "company": checkout.attributes[:shipping_address].attributes[:company] += "_",
-          "fax": params[:cart][:rate_id],
+          "fax": params[:rate_id],
         }
       }
     }
@@ -303,7 +303,7 @@ class AppProxyController < ApplicationController
         disabled: true,
         rates: []
       }
-      
+
       blackout = blackout_dates.any? {|blackout| (date) == blackout.blackout_date.to_date}
       if @admin
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
