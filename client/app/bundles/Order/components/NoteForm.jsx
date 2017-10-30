@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 import {
-  Card,
-  Icon,
   FormLayout,
   Select,
   Stack,

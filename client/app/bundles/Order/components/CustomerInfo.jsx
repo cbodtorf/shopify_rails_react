@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Stack, Button, Icon, TextStyle, Avatar, Link } from '@shopify/polaris';
+import { Card, TextStyle, Avatar, Link } from '@shopify/polaris';
 
 
 

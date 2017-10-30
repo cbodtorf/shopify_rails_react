@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Stack, FormLayout, Select, Layout, Button, Icon, Label, Thumbnail, TextStyle, TextField, Subheading, DisplayText, Avatar, Tabs, Link} from '@shopify/polaris';
+import {Page, Card, Stack, Layout, Icon, Thumbnail, TextStyle, TextField, Subheading, DisplayText, Link} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Bar} from '@shopify/polaris/embedded';
 
 import CustomerInfo from './CustomerInfo';
@@ -55,7 +55,7 @@ class OrderEditor extends React.Component {
       method: '',
       formUrl: '',
       deleteAlertOpen: false,
-      editModal: false
+      editModal: false,
     }
   }
 
@@ -95,33 +95,13 @@ class OrderEditor extends React.Component {
 
     console.log("render", this.state);
 
-    // const noteAttributes = this.props.order.note_attributes.map((note, i) => {
-    //   return (
-    //     <Stack.Item>
-    //       { note.name }: { note.value }
-    //     </Stack.Item>
-    //   )
-    // })
-
     const noteAttributes = this.props.order.note_attributes.map((note, i) => {
       return (
         <NoteFormElement
           key={ `${i}_${note.value}` }
           noteAttribute={ note }
-          deliveryDate={ this.state.deliveryDate }
-          datePickerMonth={ this.state.datePickerMonth }
-          datePickerYear={ this.state.datePickerYear }
-          datePickerSelected={ this.state.datePickerSelected }
-          rate={ this.state.rate }
-          onRateChange={ (value) => this.setState({rate: value}) }
-          location={ this.state.location }
-          onLocationChange={ (value) => this.setState({location: value}) }
-          checkout={ this.state.checkout }
-          onCheckoutChange={ (value) => this.setState({checkout: value}) }
           pickupLocations={ this.props.pickupLocations }
           rates={ this.props.rates }
-          onDateChange={ (selected) => { this.dateChange(selected) } }
-          onMonthChange={ (month,year) => { this.monthChange(month,year) } }
         />
       )
     })
@@ -260,10 +240,6 @@ class OrderEditor extends React.Component {
                     <Layout>
                       <Layout.Section>
                         <TextField readOnly placeholder="No notes on this order." label={ <TextStyle variation="subdued">{ `Note` }</TextStyle> } value={ this.props.order.note || '' } />
-                        {/* Comment
-                        <Label>Note</Label>
-                        <TextStyle variation="subdued">{ this.props.order.note || 'No notes on this order' }</TextStyle>
-                        */}
                       </Layout.Section>
 
                       <Layout.Section secondary>
