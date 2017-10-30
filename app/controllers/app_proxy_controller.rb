@@ -328,7 +328,7 @@ class AppProxyController < ApplicationController
       end
     end # END OF PICKUP DATES
 
-    render json: {deliveryDates: cal_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates, postalCodes: postal_codes} , status: 200
+    render json: {deliveryDates: cal_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates.sort_by {|a| a[:price]}, postalCodes: postal_codes} , status: 200
   end
 
   def customerPortal
