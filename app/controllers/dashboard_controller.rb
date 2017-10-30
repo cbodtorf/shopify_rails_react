@@ -1,4 +1,6 @@
 class DashboardController < ShopifyApp::AuthenticatedController
+  before_action :check_date, only: [:showOrders, :generateCSV]
+
   def index
     shop = ShopifyAPI::Shop.current()
     shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
@@ -473,6 +475,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
 
     redirect_back fallback_location: { action: "index" }
+  end
+
+  private
+
+  def check_date
+    if Date.parse(params[:date]) < Date.today
+      redirect_to action: "index"
+    end
   end
 
   def delete_orders

@@ -35,7 +35,7 @@ class Navigation extends React.Component {
                 id: 'errors',
                 title: 'Errors',
                 panelID: 'errors',
-                url: `/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop}`,
+                url: `/showOrders?attribute=errors&date=${new Date().toDateString()}&shop=${this.props.shop}`,
               },
               {},
             ] }

@@ -59,7 +59,7 @@ class Dashboard extends React.Component {
         status="critical"
         action={{
           content: 'Go to Errors',
-          url: `/showOrders?attribute=errors&date=${new Date().toLocaleDateString()}&shop=${this.props.shop_session.url}`,
+          url: `/showOrders?attribute=errors&date=${new Date().toDateString()}&shop=${this.props.shop_session.url}`,
         }}
       >
         <p>There are { this.props.errorOrders.length } orders that need attention.</p>

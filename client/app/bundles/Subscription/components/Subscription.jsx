@@ -35,6 +35,19 @@ class Subscription extends React.Component {
             <Badge key={i} status="success">{item.title.replace('Auto renew', '') + ' x' + item.quantity}</Badge>
           )
         })
+
+
+      let chargeDate = new Date(sub.scheduled_at).toLocaleDateString()
+      let deliveryDate = new Date(new Date(sub.scheduled_at).setDate(new Date(sub.scheduled_at).getDate() + 1)).toLocaleDateString()
+      /**
+      * Catch error :
+      * Recharge won't set a scheduled_at if there is no payment record.
+      */
+      if (sub.scheduled_at === null) {
+        chargeDate = "None -"
+        deliveryDate = <Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`}>Must edit Payment</Link>
+      }
+
       return (
           <tbody key={ sub.id } className="ui-nested-link-container">
             <tr className="">
@@ -43,8 +56,8 @@ class Subscription extends React.Component {
                 { sub.note !== null ? <div className="notice-icon"><Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
               </td>
               <td>{ sub.first_name + ' ' + sub.last_name }</td>
-              <td>{ new Date(sub.scheduled_at).toLocaleDateString() }</td>
-              <td>{ new Date(new Date(sub.scheduled_at).setDate(new Date(sub.scheduled_at).getDate() + 1)).toLocaleDateString() }</td>
+              <td>{ chargeDate }</td>
+              <td>{ deliveryDate }</td>
               <td>${ sub.total_price }</td>
 
               <td>
