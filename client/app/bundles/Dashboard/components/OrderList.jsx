@@ -16,6 +16,40 @@ const isJSON = (input) => (
   )
 );
 
+const determineFulfillment = function(status) {
+  let statusColor,
+      statusText;
+  switch (status) {
+    case null:
+      statusColor = 'attention'
+      statusText = 'Unfulfilled'
+      break;
+    case 'partial':
+      statusColor = 'warning'
+      statusText = 'Partially Fulfilled'
+      break;
+    case 'shipped':
+      statusColor = 'default'
+      statusText = 'Fulfilled'
+      break;
+    case 'unshipped':
+      statusColor = 'attention'
+      statusText = 'Unfulfilled'
+      break;
+    case 'fulfilled':
+      statusColor = 'default'
+      statusText = 'Fulfilled'
+      break;
+    default:
+
+  }
+
+  return {
+    statusColor: statusColor,
+    statusText: statusText
+  }
+}
+
 class OrderList extends React.Component {
   constructor(props) {
     super(props)
@@ -69,10 +103,12 @@ class OrderList extends React.Component {
      }
 
 
+
+     const fulfillmentStatus = determineFulfillment(order.fulfillment_status)
      let fullfillmentBadge = (
        <Badge
-         children={order.fulfillment_status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled'}
-         status={order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'}
+         children={fulfillmentStatus.statusText}
+         status={fulfillmentStatus.statusColor}
        />
      )
 

@@ -8,7 +8,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
 
     # filterErrors returns {:error_orders, :orders}
-    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 }))
+    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", limit: 250 }))
     @errorOrders = orders[:error_orders]
 
 
@@ -125,7 +125,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", fulfillment_status: "unshipped", limit: 250 }))
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", limit: 250 }))
       @orders = orders[:error_orders]
 
 
@@ -362,13 +362,15 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def getShippingOrders(orders = false)
-    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fulfillment_status: "unshipped", limit: 250 }))[:orders] : orders
+    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", limit: 250 }))[:orders] : orders
     shippingOrders = []
     shipping_orders.select do |order|
-      order.attributes[:note_attributes].each do |note|
-        if note.attributes[:name] == "checkout_method"
-          if note.attributes[:value].downcase == "shipping"
-             shippingOrders.push(order)
+      unless order.attributes[:fulfillment_status] == 'fulfilled' || order.attributes[:fulfillment_status] == 'shipped'
+        order.attributes[:note_attributes].each do |note|
+          if note.attributes[:name] == "checkout_method"
+            if note.attributes[:value].downcase == "shipping"
+               shippingOrders.push(order)
+            end
           end
         end
       end
