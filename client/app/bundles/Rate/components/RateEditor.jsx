@@ -178,7 +178,7 @@ class RateEditor extends React.Component {
                           type="number"
                           labelHidden
                           prefix={ <TextStyle variation="strong">Price: </TextStyle> }
-                          value={ this.state.rate.price || '' }
+                          value={ this.state.rate.price || '0' }
                           onChange={ this.valueUpdater('price') }
                           suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
                           />
