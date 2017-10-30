@@ -164,7 +164,7 @@ class RateEditor extends React.Component {
                 <FormLayout>
                     <input name="utf8" type="hidden" value="✓" />
                     <input type="hidden" name="_method" value={ this.state.method } />
-                    <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
+                    <input type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
                     <TextField
                       label="Title"
                       name="rate[title]"
