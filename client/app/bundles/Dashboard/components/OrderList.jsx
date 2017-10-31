@@ -108,7 +108,9 @@ class OrderList extends React.Component {
      let urlBase = `https://${this.props.shop_session.url}/admin/`
 
      // SET ORDER NUMBER
-     let orderNumber = upcomingSub ? order.id : order.order_number
+     let orderLink = upcomingSub ?
+       <TextStyle subdued>#{ order.id }</TextStyle> :
+       <Link external="true" url={`${urlBase}orders/${order.id}`}>#{ order.order_number }</Link>
      // SET CUSTOMER NAME
      let customerName = "No Customer"
      if (order.customer_id || order.customer) {
@@ -165,7 +167,7 @@ class OrderList extends React.Component {
              this.state.ordersChecked.indexOf(order.id) !== -1 ? ordersChecked.splice(ordersChecked.indexOf(order.id), 1) : ordersChecked.push(order.id)
              this.setState({ ordersChecked: ordersChecked })
            }}/></td>
-           <td>#{ orderNumber }
+           <td>{ orderLink }
            { order.note !== null || order.note !== "" ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
            { order.error ? <div className="notice-icon"><Tooltip content={ order.error[0] }><Icon color="red" source="alert"/></Tooltip></div> : '' }
            </td>
