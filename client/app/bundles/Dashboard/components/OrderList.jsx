@@ -78,9 +78,16 @@ class OrderList extends React.Component {
   }
 
   render() {
-    let orderPageTitle = this.props.attribute.toLowerCase() === "shipping" ?
-                         'Pending Shipping Orders' :
-                         `${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`;
+    const attributeLowerCase = this.props.attribute.toLowerCase()
+
+    let orderPageTitle = ""
+    if (attributeLowerCase === "shipping") {
+      orderPageTitle = 'Pending Shipping Orders'
+    } else if (attributeLowerCase === "errors") {
+      orderPageTitle = 'Errors'
+    } else {
+      orderPageTitle = `${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`
+    }
 
     // DYNAMIC HEADERS
     let showPrintHeader = <th>Print</th>
@@ -89,7 +96,7 @@ class OrderList extends React.Component {
         showViewRechargeHeader = null,
         showErrorsHeader = null;
 
-    if (this.props.attribute.toLowerCase() === "errors") {
+    if (attributeLowerCase === "errors") {
       showPrintHeader = null
       showFulfillHeader = null
       showEditSubHeader = <th>Subscription</th>
@@ -125,7 +132,7 @@ class OrderList extends React.Component {
           showErrorsButton = null,
           printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
           fulfillLink = <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>;
-      if (this.props.attribute.toLowerCase() === "errors") {
+      if (attributeLowerCase === "errors") {
         editSubscriptionLink = upcomingSub ?
          <td><Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link></td> : <td></td>
         viewRechargeLink = upcomingSub ?
@@ -169,7 +176,6 @@ class OrderList extends React.Component {
            }}/></td>
            <td>{ orderLink }
            { order.note !== null || order.note !== "" ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
-           { order.error ? <div className="notice-icon"><Tooltip content={ order.error[0] }><Icon color="red" source="alert"/></Tooltip></div> : '' }
            </td>
            <td>{ customerName }</td>
            <td>{ createdAtDate.toLocaleDateString() }</td>
