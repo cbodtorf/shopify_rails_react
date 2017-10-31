@@ -196,8 +196,8 @@ class OrderEditor extends React.Component {
         <Page
           icon={ bambooIcon }
           primaryAction={ {
-            content: 'Back',
-            url: (urlBase + this.props.order.id),
+            content: 'View Shopify Order Page',
+            url: (urlBase + "/orders/" + this.props.order.id),
           } }
           >
           <Layout>

@@ -6,7 +6,7 @@ import bambooIcon from 'assets/green-square.jpg';
 
 import SearchBar, {createFilter} from '../../Global/components/SearchBar';
 
-const KEYS_TO_FILTERS = ['line_items.title', 'first_name', 'last_name']
+const KEYS_TO_FILTERS = ['line_items.title', 'first_name', 'last_name', 'scheduled_at', ]
 
 class Subscription extends React.Component {
   constructor(props) {
@@ -43,6 +43,7 @@ class Subscription extends React.Component {
       * Catch error :
       * Recharge won't set a scheduled_at if there is no payment record.
       */
+
       if (sub.scheduled_at === null) {
         chargeDate = "None -"
         deliveryDate = <Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`}>Must edit Payment</Link>

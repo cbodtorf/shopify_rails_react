@@ -4,6 +4,10 @@ import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 
+import SearchBar, {createFilter} from '../../Global/components/SearchBar';
+
+const KEYS_TO_FILTERS = ['line_items.title', 'first_name', 'last_name', 'order_number', 'customer.last_name', 'customer.first_name', 'created_at']
+
 const rxOne = /^[\],:{}\s]*$/;
 const rxTwo = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
 const rxThree = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
@@ -62,7 +66,8 @@ class OrderList extends React.Component {
       orders: [],
       fulfillModal: false,
       fulFillModalOrderId: '',
-      ordersChecked: []
+      ordersChecked: [],
+      searchTerm: ''
     }
   }
 
@@ -76,34 +81,50 @@ class OrderList extends React.Component {
                          'Pending Shipping Orders' :
                          `${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`;
 
-   let orderItems = this.props.orders.map((order) => {
-     console.log('id: ', order.id);
-     console.log('error: ', order.error);
+    // DYNAMIC HEADERS
+    let showPrint = <th>Print</th>
+    let showFulfill = <th>Fulfill</th>
+    let showEditSub = null,
+        showViewRecharge = null;
+    if (this.props.attribute.toLowerCase() === "errors") {
+      showPrint = null
+      showFulfill = null
+      showEditSub = <th>Edit Subscription</th>
+      showViewRecharge = <th>View in Recharge</th>
+    }
+
+   let orderItems = this.props.orders.filter(
+     createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
+   ).map((order) => {
+     let subItem = order.tags.split(', ').includes('Subscription')
+     let upcomingSub = order.address_id !== undefined
      let createdAtDate = new Date(order.created_at)
      let processedAtDate = new Date(order.processed_at)
      let deliveryMethod = order.note_attributes.filter(note => note.name === 'checkout_method' ? note.value : null)
      let urlBase = `https://${this.props.shop_session.url}/admin/`
 
-     let customerLink = <Link > No Customer </Link>
+     // SET ORDER NUMBER
+     let orderNumber = upcomingSub ? order.id : order.order_number
+     // SET CUSTOMER NAME
+     let customerName = "No Customer"
      if (order.customer_id || order.customer) {
-       customerLink = order.status === "ERROR" ?
-         <Link external="true" url={ `${urlBase}customers/${order.customer_id}`}>{order.first_name + ' ' + order.last_name }</Link> :
-         <Link external="true" url={ `${urlBase}customers/${order.customer.id}`}>{order.customer.first_name + ' ' + order.customer.last_name }</Link>
+       customerName = upcomingSub ? (order.first_name + ' ' + order.last_name) : (order.customer.first_name + ' ' + order.customer.last_name)
      }
+     // SET EDIT ORDER/ATTRIBUTES
+     let editLink = upcomingSub ? null : <Link url={ `/orders?id=${order.id}` }>Edit</Link>
 
-     let editLink = <Link external="true" url={ `${urlBase}orders/${order.id}` }>Edit</Link>
-
-     if (order.error_type) {
-       if (order.error_type === "CUSTOMER_NEEDS_TO_UPDATE_CARD") {
-         editLink = <Link external="true" url={ `https://checkout.rechargeapps.com/customer/${order.customer_hash}/card_edit/` }>Update Billing</Link>
-       } else if (order.error_type === "SHOPIFY_REJECTED") {
-         editLink = (<Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link>)
-       } else if (order.error_type === "MISSING_DELIVERY_DATA") {
-         editLink = (<Link external="true" url={ `/orders?id=${order.id}` }>Edit</Link>)
-       }
-     }
-
-
+      let editSubscriptionLink = null,
+          viewRechargeLink = null,
+          printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
+          fulfillLink = <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>;
+      if (this.props.attribute.toLowerCase() === "errors") {
+        editSubscriptionLink = upcomingSub ?
+         <td><Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link></td> : null
+        viewRechargeLink = upcomingSub ?
+         <td><Link external="true" url={ `${urlBase}apps/shopify-recurring-payments/addresses/${order.address_id}` }>View</Link></td> : null
+        printLink = null
+        fulfillLink = null
+      }
 
      const fulfillmentStatus = determineFulfillment(order.fulfillment_status)
      let fullfillmentBadge = (
@@ -122,17 +143,19 @@ class OrderList extends React.Component {
              this.state.ordersChecked.indexOf(order.id) !== -1 ? ordersChecked.splice(ordersChecked.indexOf(order.id), 1) : ordersChecked.push(order.id)
              this.setState({ ordersChecked: ordersChecked })
            }}/></td>
-           <td><Link external="true" url={`${urlBase}orders/${order.id}`}>{ order.status === "ERROR" ? `#${order.id}` : order.name }
-           { order.note !== null ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
+           <td>#{ orderNumber }
+           { order.note !== null || order.note !== "" ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
            { order.error ? <div className="notice-icon"><Tooltip content={ order.error[0] }><Icon color="red" source="alert"/></Tooltip></div> : '' }
-           </Link></td>
-           <td>{ customerLink }</td>
+           </td>
+           <td>{ customerName }</td>
            <td>{ createdAtDate.toLocaleDateString() }</td>
            <td>{ fullfillmentBadge }</td>
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
-           <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>
-           <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>
+           { editSubscriptionLink }
+           { viewRechargeLink }
+           { printLink }
+           { fulfillLink }
          </tr>
        </tbody>
      )
@@ -157,6 +180,9 @@ class OrderList extends React.Component {
                   title={ orderPageTitle }
                   sectioned
                 >
+                  <div>
+                    <SearchBar placeholder={ "Search by product or customer" } className="search-input" onChange={ this.searchUpdated.bind(this) } />
+                  </div>
                   <div className="table-wrapper">
                     <table className="table-hover expanded">
                       <thead>
@@ -203,9 +229,11 @@ class OrderList extends React.Component {
                           <th>Order Created</th>
                           <th>Status</th>
                           <th>Total</th>
-                          <th>Edit</th>
-                          <th>Print</th>
-                          <th>Fulfill</th>
+                          <th>Edit Order/Attributes</th>
+                          { showEditSub }
+                          { showViewRecharge }
+                          { showPrint }
+                          { showFulfill }
                         </tr>
                       </thead>
                         { orderItems }
@@ -293,6 +321,10 @@ class OrderList extends React.Component {
           console.error('Hmm something went wrong:', error)
       });
     })
+  }
+
+  searchUpdated (term) {
+    this.setState({ searchTerm: term })
   }
 
 }

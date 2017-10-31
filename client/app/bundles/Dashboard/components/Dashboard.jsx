@@ -170,7 +170,7 @@ class Dashboard extends React.Component {
                 <Heading>Shipping Information</Heading>
                 <Stack>
                   <div className="delivery-wrapper">
-                    <Link url={`/showOrders?attribute=shipping&date=${new Date().toLocaleDateString()}`}>
+                    <Link url={`/showOrders?attribute=shipping&date=${new Date().toDateString()}`}>
                       <Card sectioned title="Shipping">
                         <div className="count-revenue">
                           <div className="pickup-count">
