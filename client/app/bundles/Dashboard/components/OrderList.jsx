@@ -92,8 +92,8 @@ class OrderList extends React.Component {
     if (this.props.attribute.toLowerCase() === "errors") {
       showPrintHeader = null
       showFulfillHeader = null
-      showEditSubHeader = <th>Edit Subscription</th>
-      showViewRechargeHeader = <th>View in Recharge</th>
+      showEditSubHeader = <th>Subscription</th>
+      showViewRechargeHeader = <th>Recharge</th>
       showErrorsHeader = <th>Show Errors</th>
     }
 
@@ -259,7 +259,7 @@ class OrderList extends React.Component {
                           <th>Order Created</th>
                           <th>Status</th>
                           <th>Total</th>
-                          <th>Edit Order/Attributes</th>
+                          <th>Order</th>
                           { showEditSubHeader }
                           { showViewRechargeHeader }
                           { showPrintHeader }
