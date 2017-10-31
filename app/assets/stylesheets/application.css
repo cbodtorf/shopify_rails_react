@@ -459,11 +459,11 @@ div.pickup-count {
 }
 
 /* Upcoming Subscription */
-.product {
+.product, .errors {
   display: none;
   background-color: #f4f5fa;
 }
-.product.show-product {
+.product.show-product, .errors.show-errors {
   display: table-row;
 }
 .table-wrapper {

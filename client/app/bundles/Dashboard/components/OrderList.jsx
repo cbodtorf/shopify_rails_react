@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Layout, ButtonGroup, Button, Icon, TextStyle, Badge, Tooltip, Link, Checkbox, ActionList, Popover} from '@shopify/polaris';
+import {Page, Card, Layout, ButtonGroup, Button, Icon, TextStyle, Badge, Tooltip, Link, Checkbox, ActionList, Popover, Stack} from '@shopify/polaris';
 import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
@@ -67,7 +67,8 @@ class OrderList extends React.Component {
       fulfillModal: false,
       fulFillModalOrderId: '',
       ordersChecked: [],
-      searchTerm: ''
+      searchTerm: '',
+      showErrors: {}
     }
   }
 
@@ -82,15 +83,18 @@ class OrderList extends React.Component {
                          `${this.props.attribute} Date: ${new Date(this.props.date).toLocaleDateString()}`;
 
     // DYNAMIC HEADERS
-    let showPrint = <th>Print</th>
-    let showFulfill = <th>Fulfill</th>
-    let showEditSub = null,
-        showViewRecharge = null;
+    let showPrintHeader = <th>Print</th>
+    let showFulfillHeader = <th>Fulfill</th>
+    let showEditSubHeader = null,
+        showViewRechargeHeader = null,
+        showErrorsHeader = null;
+
     if (this.props.attribute.toLowerCase() === "errors") {
-      showPrint = null
-      showFulfill = null
-      showEditSub = <th>Edit Subscription</th>
-      showViewRecharge = <th>View in Recharge</th>
+      showPrintHeader = null
+      showFulfillHeader = null
+      showEditSubHeader = <th>Edit Subscription</th>
+      showViewRechargeHeader = <th>View in Recharge</th>
+      showErrorsHeader = <th>Show Errors</th>
     }
 
    let orderItems = this.props.orders.filter(
@@ -115,15 +119,33 @@ class OrderList extends React.Component {
 
       let editSubscriptionLink = null,
           viewRechargeLink = null,
+          errorMessages = null,
+          showErrorsButton = null,
           printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
           fulfillLink = <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>;
       if (this.props.attribute.toLowerCase() === "errors") {
         editSubscriptionLink = upcomingSub ?
-         <td><Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link></td> : null
+         <td><Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link></td> : <td></td>
         viewRechargeLink = upcomingSub ?
-         <td><Link external="true" url={ `${urlBase}apps/shopify-recurring-payments/addresses/${order.address_id}` }>View</Link></td> : null
+         <td><Link external="true" url={ `${urlBase}apps/shopify-recurring-payments/addresses/${order.address_id}` }>View</Link></td> : <td></td>
         printLink = null
         fulfillLink = null
+
+        // ERROR BUTTON
+        showErrorsButton = <td><Link onClick={ () => {
+            let showErrorsState = this.state.showErrors || {}
+            showErrorsState[order.id] === true ? showErrorsState[order.id] = false : showErrorsState[order.id] = true
+            this.setState({
+              showErrors: showErrorsState
+            })
+          }}>{ this.state.showErrors[order.id] === true ? 'Hide' : 'Show' }</Link></td>
+
+        // ERROR MESSAGES
+        errorMessages = order.error.map((error, i) => {
+            return (
+              <Stack.Item key={i}><span style={{display: "inline-block", verticalAlign: "middle"}}><Icon source="risk"/></span> - { error }</Stack.Item>
+            )
+          })
       }
 
      const fulfillmentStatus = determineFulfillment(order.fulfillment_status)
@@ -156,6 +178,14 @@ class OrderList extends React.Component {
            { viewRechargeLink }
            { printLink }
            { fulfillLink }
+           { showErrorsButton }
+         </tr>
+         <tr className={`ui-nested-link-container errors ${this.state.showErrors[order.id] === true ? 'show-errors' : 'hide-errors'}`}>
+           <th colSpan="10">
+             <Stack vertical spacing="tight" distribution="leading">
+              { errorMessages }
+             </Stack>
+           </th>
          </tr>
        </tbody>
      )
@@ -230,10 +260,11 @@ class OrderList extends React.Component {
                           <th>Status</th>
                           <th>Total</th>
                           <th>Edit Order/Attributes</th>
-                          { showEditSub }
-                          { showViewRecharge }
-                          { showPrint }
-                          { showFulfill }
+                          { showEditSubHeader }
+                          { showViewRechargeHeader }
+                          { showPrintHeader }
+                          { showFulfillHeader }
+                          { showErrorsHeader }
                         </tr>
                       </thead>
                         { orderItems }
