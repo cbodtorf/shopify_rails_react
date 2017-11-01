@@ -191,23 +191,29 @@ class AppProxyController < ApplicationController
 
     # loop through dates:
     cal_data = date_range.map.with_index do |date, i|
-      day_before_blackout = blackout_dates.any? {|blackout| Rails.logger.debug("date: #{date}, day_before: #{(date - 1.day)}, blackout: #{blackout.blackout_date.to_date}, = #{(date - 1.day) == blackout.blackout_date.to_date}"); (date - 1.day) == blackout.blackout_date.to_date}
-      blackout = blackout_dates.any? {|blackout| Rails.logger.debug("date: #{date}, day_before: #{(date - 1.day)}, blackout: #{blackout.blackout_date.to_date}, = #{(date - 1.day) == blackout.blackout_date.to_date}"); (date) == blackout.blackout_date.to_date}
+      day_before_blackout = blackout_dates.any? {|blackout| (date - 1.day) == blackout.blackout_date.to_date}
+      blackout = blackout_dates.any? {|blackout| (date) == blackout.blackout_date.to_date}
+      Rails.logger.debug("++++++++++++++++++++++++++++")
       Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
+      Rails.logger.debug("[DATE]: #{date}")
 
       rate_dates = []
       # This logic accounts for when cooks are delivered.
       schedules.each_with_index do |sched, idx|
+        # Rails.logger.debug("[sched] #{sched.inspect} ")
         # last cook schedule is delivered next day.
         if idx == (schedules.size - 1)
-          if day_before_blackout
+          if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
             # rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+            # Rails.logger.debug("[last no rates] #{rate_dates}")
           else
             rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+            # Rails.logger.debug("[last rates selecte] #{rate_dates}")
           end
         else
           # otherwise delivered same day as cook.
           rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
+          # Rails.logger.debug("[same rates selecte] #{rate_dates}")
         end
       end
       rate_dates = rate_dates.uniq
@@ -243,7 +249,7 @@ class AppProxyController < ApplicationController
           }
         else
           if Time.now < end_of_day # normal
-            Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
+            # Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
             if date.today?
               # offer same_day
               createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout)
@@ -261,9 +267,9 @@ class AppProxyController < ApplicationController
             end
           elsif Time.now > end_of_day # shift rates over one day
             tomorrow = Date.tomorrow
-            Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
-            Rails.logger.debug("[tomorrow] #{date == tomorrow} d: #{date} t: #{tomorrow}")
-            Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.inspect}")
+            # Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
+            # Rails.logger.debug("[tomorrow] #{date == tomorrow} d: #{date} t: #{tomorrow}")
+            # Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.inspect}")
             if date == tomorrow
               # offer same_day
               createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout)
