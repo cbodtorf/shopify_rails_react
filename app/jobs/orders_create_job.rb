@@ -42,7 +42,7 @@ class OrdersCreateJob < ApplicationJob
           Rails.logger.info("[Recurring Sub Order]: #{subscriptionOrder.attributes[:note_attributes].inspect}")
           subscriptionOrder.attributes[:note_attributes].each do |note|
             if note.attributes[:name] == "delivery_date"
-              note.attributes[:value] = delivery_date.readable_inspect
+              note.attributes[:value] = delivery_date.strftime("%a, %B %e, %Y")
               Rails.logger.info("[change delivery date?]: #{note.attributes[:value].inspect} -vs- #{delivery_date.readable_inspect}")
               saveOrder = true
             end
