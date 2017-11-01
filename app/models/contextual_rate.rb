@@ -97,7 +97,8 @@ class ContextualRate
 
   def valid_rate?
     postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
-    Rails.logger.debug("properties: ", )
+    Rails.logger.debug("properties: #{items.first['properties'].inspect}")
+    Rails.logger.debug("properties: #{items.first['properties']['_Delivery rate id'].inspect}")
     if items.first['properties'].present?
       rate_id = items.first['properties']['_Delivery rate id']
 
