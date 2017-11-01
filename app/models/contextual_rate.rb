@@ -97,25 +97,30 @@ class ContextualRate
 
   def valid_rate?
     postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
-    rate_id = items.first['properties']['_Delivery rate id']
+    Rails.logger.debug("properties: ", )
+    if items.first['properties'].present?
+      rate_id = items.first['properties']['_Delivery rate id']
 
-    if rate_id != nil
-      if postal_codes_match.empty?
-        rate.delivery_method.downcase == 'shipping'
+      if rate_id != nil
+        if postal_codes_match.empty?
+          rate.delivery_method.downcase == 'shipping'
+        else
+          rate.id.to_i == rate_id.to_i
+        end
+
+      elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
+        # return subscription rate
+
+        if postal_codes_match.empty?
+          rate.delivery_method.downcase == 'shipping'
+        else
+          rate.delivery_type.downcase == 'subscription'
+        end
       else
-        rate.id.to_i == rate_id.to_i
-      end
-
-    elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
-      # return subscription rate
-
-      if postal_codes_match.empty?
-        rate.delivery_method.downcase == 'shipping'
-      else
-        rate.delivery_type.downcase == 'subscription'
+        true
       end
     else
-      true
+      false
     end
   end
 end
