@@ -20,6 +20,7 @@ class AppProxyController < ApplicationController
       shopify_checkout_token = params[:checkout_token]
       Rails.logger.debug("[shopify_checkout_token?] #{shopify_checkout_token.inspect}")
       shopify_checkout = ShopifyAPI::Checkout.find(shopify_checkout_token)
+      Rails.logger.debug("[shopify_checkout?] #{shopify_checkout.inspect}")
 
       recharge_items = shopify_checkout.attributes[:line_items].select{|item| item.attributes[:title].include?("Auto renew")}
       recharge_items.empty? ? recharge_checkout = false : recharge_checkout = true
