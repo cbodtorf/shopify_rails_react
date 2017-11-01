@@ -97,7 +97,7 @@ class ContextualRate
 
   def valid_rate?
     postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
-    rate_id = items.first['properties']['Delivery rate id']
+    rate_id = items.first['properties']['_Delivery rate id']
 
     if rate_id != nil
       if postal_codes_match.empty?
@@ -108,7 +108,6 @@ class ContextualRate
 
     elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
       # return subscription rate
-      # TODO: recharge doesn't intiate checkout through Shopify so no webhook data.
 
       if postal_codes_match.empty?
         rate.delivery_method.downcase == 'shipping'
