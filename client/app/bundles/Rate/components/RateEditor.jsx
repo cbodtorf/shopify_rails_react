@@ -22,7 +22,8 @@ class RateEditor extends React.Component {
       conditions: [],
       conditionsToDelete: [],
       tab: 1,
-      editModal: false
+      editModal: false,
+      titleErrors: false
     }
   }
 
@@ -60,6 +61,8 @@ class RateEditor extends React.Component {
   render() {
     console.log("render", this.state);
 
+    {/* ADMIN ONLY - NO DELETE RATES - was in actions array */}
+    {/* {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({ deleteAlertOpen: true, rateToDelete: rate }) } } */}
     const rates = this.props.rates.map(rate => {
       return (
         {
@@ -70,8 +73,7 @@ class RateEditor extends React.Component {
           attributeOne: `${rate.title} - ${rate.price / 100.0} ${this.props.shop.currency}`,
           attributeTwo: <TextStyle variation="subdued">{ rate.description }</TextStyle>,
           actions: [
-            {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }},
-            {content: <Icon source="delete" color="red" />, onAction: () => { this.setState({ deleteAlertOpen: true, rateToDelete: rate }) } },
+            {content: 'Edit rate', onAction: () => { this.handleEdit(rate) }}
           ],
           persistActions: true,
         }
@@ -116,14 +118,16 @@ class RateEditor extends React.Component {
             </Layout.Section>
 
             <Layout.Section>
+                {/* ADMIN ONLY - NO NEW RATES */}
                 <Card
                   title="My Rates"
                   sectioned
                   actions={ [{
                     content: (
-                    <Button icon='add'>
+                    <div className="admin-only hide">
+                    <Button disabled icon='add'>
                       New rate
-                    </Button>),
+                    </Button></div>),
                     onAction: () => { this.handleEdit() }
                   }] }
                 >
@@ -153,7 +157,7 @@ class RateEditor extends React.Component {
             open={ this.state.editModal }
             onClose={ () => this.setState({ editModal: false }) }
             onSave={ () => this.handleSave() }
-            title={ this.state.rate.title }
+            title={ this.state.rate.title || " " }
           >
             <div>
               <form
@@ -169,6 +173,7 @@ class RateEditor extends React.Component {
                       label="Title"
                       name="rate[title]"
                       type="text"
+                      error={ this.state.titleErrors }
                       value={ this.state.rate.title || '' }
                       onChange={ this.valueUpdater('title') }
                       connectedRight={
@@ -192,75 +197,79 @@ class RateEditor extends React.Component {
                         onChange={ this.valueUpdater('description') }
                         multiline
                       />
-                      <TextField
-                        label="Min Price"
-                        name="rate[min_price]"
-                        type="number"
-                        value={ this.state.rate.min_price || '' }
-                        onChange={ this.valueUpdater('min_price') }
-                        suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
-                      />
-                      <TextField
-                        label="Max Price"
-                        name="rate[max_price]"
-                        type="number"
-                        value={ this.state.rate.max_price || '' }
-                        onChange={ this.valueUpdater('max_price') }
-                        suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
-                      />
-                      <TextField
-                        label="Cutoff Time (Hour of day between 0-23)"
-                        name="rate[cutoff_time]"
-                        type="number"
-                        minLength={ 2 }
-                        maxLength={ 2 }
-                        max={ 23 }
-                        min={ 0 }
-                        value={ this.state.rate.cutoff_time || '' }
-                        onChange={ this.valueUpdater('cutoff_time') }
-                      />
-                      <Select
-                        label="Cook Time"
-                        name="rate[cook_time]"
-                        options={ [
-                          { label: 'Morning of delivery', value: 'morning' },
-                          { label: 'Afternoon before delivery', value: 'afternoon' },
-                          { label: 'N/A', value: null }
-                        ] }
-                        value={ this.state.rate.cook_time || '' }
-                        onChange={ this.valueUpdater('cook_time') }
-                        placeholder="Select"
-                      />
-                      <Select
-                        label="Delivery Method"
-                        name="rate[delivery_method]"
-                        options={ [
-                          { label: 'Pickup', value: 'pickup' },
-                          { label: 'Delivery', value: 'delivery' },
-                          { label: 'Shipping', value: 'shipping' }
-                        ] }
-                        value={ this.state.rate.delivery_method || '' }
-                        onChange={ this.valueUpdater('delivery_method') }
-                        placeholder="Select"
-                      />
-                      <Select
-                        label="Delivery Type"
-                        name="rate[delivery_type]"
-                        options={ [
-                          { label: 'Same Day', value: 'same_day' },
-                          { label: 'Next Day', value: 'next_day' },
-                          { label: 'Subscription', value: 'subscription' },
-                        ] }
-                        value={ this.state.rate.delivery_type || '' }
-                        onChange={ this.valueUpdater('delivery_type') }
-                        placeholder="Select"
-                      />
-                      <Subheading>Conditions</Subheading>
-                      <Button size="slim" icon="add" onClick={ this.addCondition() }>New Condition</Button>
-                      <div data-condition-list>
-                        { conditions }
-                        { conditionsToDelete }
+                      {/* ADMIN ONLY FIELDS HIDING FROM VIEW */}
+                      <div className="admin-only hide">
+                        <TextField
+                          label="Min Price"
+                          name="rate[min_price]"
+                          type="number"
+                          value={ this.state.rate.min_price || '' }
+                          onChange={ this.valueUpdater('min_price') }
+                          suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
+                        />
+                        <TextField
+                          label="Max Price"
+                          name="rate[max_price]"
+                          type="number"
+                          value={ this.state.rate.max_price || '' }
+                          onChange={ this.valueUpdater('max_price') }
+                          suffix={ <TextStyle variation="strong">{ this.props.shop.currency }</TextStyle> }
+                        />
+                        <TextField
+                          label="Cutoff Time (Hour of day between 0-23)"
+                          name="rate[cutoff_time]"
+                          type="number"
+                          minLength={ 2 }
+                          maxLength={ 2 }
+                          max={ 23 }
+                          min={ 0 }
+                          value={ this.state.rate.cutoff_time || '' }
+                          onChange={ this.valueUpdater('cutoff_time') }
+                        />
+                        <Select
+                          label="Cook Time"
+                          name="rate[cook_time]"
+                          options={ [
+                            { label: 'N/A', value: null },
+                            { label: 'Morning of delivery', value: 'morning' },
+                            { label: 'Afternoon before delivery', value: 'afternoon' }
+                          ] }
+                          value={ this.state.rate.cook_time || '' }
+                          onChange={ this.valueUpdater('cook_time') }
+                          placeholder="Select"
+                        />
+                        <Select
+                          label="Delivery Method"
+                          name="rate[delivery_method]"
+                          options={ [
+                            { label: 'Delivery', value: 'delivery' },
+                            { label: 'Pickup', value: 'pickup' },
+                            { label: 'Shipping', value: 'shipping' }
+                          ] }
+                          value={ this.state.rate.delivery_method || '' }
+                          onChange={ this.valueUpdater('delivery_method') }
+                          placeholder="Select"
+                        />
+                        <Select
+                          label="Delivery Type"
+                          name="rate[delivery_type]"
+                          options={ [
+                            { label: 'Next Day', value: 'next_day' },
+                            { label: 'Same Day', value: 'same_day' },
+                            { label: 'Subscription', value: 'subscription' }
+                          ] }
+                          value={ this.state.rate.delivery_type || '' }
+                          onChange={ this.valueUpdater('delivery_type') }
+                          placeholder="Select"
+                        />
+                        <Subheading>Conditions</Subheading>
+                        <Button size="slim" icon="add" onClick={ this.addCondition() }>New Condition</Button>
+                        <div data-condition-list>
+                          { conditions }
+                          { conditionsToDelete }
+                        </div>
                       </div>
+                      {/* END ADMIN ONLY FIELDS */}
                 </FormLayout>
               </form>
             </div>
@@ -276,7 +285,13 @@ class RateEditor extends React.Component {
 
   handleSave() {
 
-    this.rateForm.submit()
+    if (this.state.rate.title === "" || this.state.rate.title  === undefined || this.state.rate.title  === null) {
+      this.setState({titleErrors: "Must enter a title for rate."})
+    } else {
+      this.setState({titleErrors: false})
+
+      this.rateForm.submit()
+    }
   }
 
   handleCancel() {
