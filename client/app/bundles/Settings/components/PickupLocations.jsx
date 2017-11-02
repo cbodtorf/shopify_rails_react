@@ -19,7 +19,11 @@ class PickupLocations extends React.Component {
       deleteAlertPickupOpen: false,
       pickupLocation: {},
       pickupLocations: this.props.pickupLocations,
-      editModal: false
+      editModal: false,
+      titleErrors: false,
+      addressErrors: false,
+      daysAvailableErrors: false,
+      descriptionErrors: false
     }
   }
   /**
@@ -34,6 +38,18 @@ class PickupLocations extends React.Component {
 
   render() {
     console.log("render", this.state);
+
+    let daysAvailableErrors = false
+    if (this.state.daysAvailableErrors) {
+      daysAvailableErrors = (
+        <div className="Polaris-Labelled__Error">
+          <div className="Polaris-Labelled__ErrorIcon">
+            <Icon source="alert" color="red" />
+          </div>
+          { this.state.daysAvailableErrors }
+        </div>
+      )
+    }
 
     const pickupLocations = this.state.pickupLocations.map(location => {
       return (
@@ -125,6 +141,7 @@ class PickupLocations extends React.Component {
                     label="Store name"
                     name="pickup_location[title]"
                     type="text"
+                    error={ this.state.titleErrors }
                     value={ this.state.pickupLocation.title }
                     onChange={ this.valueUpdater('title', 'pickupLocation') }
                   />
@@ -132,6 +149,7 @@ class PickupLocations extends React.Component {
                     label="Address"
                     name="pickup_location[address]"
                     type="text"
+                    error={ this.state.addressErrors }
                     value={ this.state.pickupLocation.address }
                     onChange={ this.valueUpdater('address', 'pickupLocation') }
                   />
@@ -172,11 +190,13 @@ class PickupLocations extends React.Component {
                     selected={ this.state.pickupLocation.days_available ? this.state.pickupLocation.days_available : [] }
                     onChange={ this.valueUpdater('days_available', 'pickupLocation') }
                   />
+                  { daysAvailableErrors }
                   <TextField
                     label="Description (ex. M-F: 8am to 5pm)"
                     name="pickup_location[description]"
                     type="text"
                     multiline
+                    error={ this.state.descriptionErrors }
                     value={ this.state.pickupLocation.description }
                     onChange={ this.valueUpdater('description', 'pickupLocation') }
                   />
@@ -203,12 +223,44 @@ class PickupLocations extends React.Component {
       title: location.title,
       method: 'patch',
       formUrl: `/update_pickup_location/${location.id}`,
-      editModal: true
+      editModal: true,
+      titleErrors: false,
+      addressErrors: false,
+      daysAvailableErrors: false,
+      descriptionErrors: false
     })
   }
 
   handleSave(formType) {
+    let self = this
+    let daysAvailableRule = this.state.pickupLocation.days_available === [] || this.state.pickupLocation.days_available === undefined || this.state.pickupLocation.days_available === null
+    let addressRule = this.state.pickupLocation.address === "" || this.state.pickupLocation.address === undefined || this.state.pickupLocation.address === null
+    let descriptionRule = this.state.pickupLocation.description === "" || this.state.pickupLocation.description === undefined || this.state.pickupLocation.description === null
+    let titleRule = this.state.pickupLocation.title === "" || this.state.pickupLocation.title === undefined || this.state.pickupLocation.title === null
+    if (daysAvailableRule) {
+      self.setState({daysAvailableErrors: "Must select at least one available pickup day."})
+    } else {
+      self.setState({daysAvailableErrors: false})
+    }
+    if (addressRule) {
+      self.setState({addressErrors: "Must enter in an address."})
+    } else {
+      self.setState({addressErrors: false})
+    }
+    if (descriptionRule) {
+      self.setState({descriptionErrors: "Description must not be blank"})
+    } else {
+      self.setState({descriptionErrors: false})
+    }
+    if (titleRule) {
+      self.setState({titleErrors: "Must enter a title for blackout date."})
+    } else {
+      self.setState({titleErrors: false})
+    }
+
+    if(!daysAvailableRule && !addressRule && !descriptionRule && !titleRule){
       formType.submit()
+    }
   }
 
   handleDelete(url) {
