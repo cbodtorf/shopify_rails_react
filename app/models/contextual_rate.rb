@@ -108,19 +108,19 @@ class ContextualRate
         else
           rate.id.to_i == rate_id.to_i
         end
-
-      elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
-        # return subscription rate
-
-        if postal_codes_match.empty?
-          rate.delivery_method.downcase == 'shipping'
-        else
-          rate.delivery_type.downcase == 'subscription'
-        end
       else
         true
       end
+    elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
+      # return subscription rate
+
+      if postal_codes_match.empty?
+        rate.delivery_method.downcase == 'shipping'
+      else
+        rate.delivery_type.downcase == 'subscription'
+      end
     else
+
       false
     end
   end
