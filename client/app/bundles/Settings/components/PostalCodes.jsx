@@ -14,7 +14,8 @@ class PostalCodes extends React.Component {
       deleteAlertOpen: false,
       postalCode: {},
       postalCodes: this.props.postalCodes,
-      editModal: false
+      editModal: false,
+      zipErrors: false
     }
   }
 
@@ -112,6 +113,7 @@ class PostalCodes extends React.Component {
                       label="Postal Code"
                       name="postal_code[title]"
                       type="text"
+                      error={ this.state.zipErrors }
                       multiline
                       value={ this.state.postalCode.title }
                       onChange={ this.valueUpdater('title', 'postalCode') }
@@ -132,10 +134,10 @@ class PostalCodes extends React.Component {
 
   valid5DigitZipCodes(str) {
     if (! /^\d{5}(?:,\s*\d{5})*$/.test(str)) {
-      alert("You need a valid zip code");
+      this.setState({zipErrors: "You need a valid zip code"})
       return false;
     } else if (! /(?:(\d{5}),?)(?!.*\1)/.test(str)) {
-      alert("You entered a duplicate zip code");
+      this.setState({zipErrors: "You entered a duplicate zip code"})
       return false;
     }
 
