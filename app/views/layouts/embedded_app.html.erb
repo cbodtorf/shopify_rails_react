@@ -4,8 +4,8 @@
     <meta charset="utf-8" />
     <% application_name = ShopifyApp.configuration.application_name %>
     <title><%= application_name %></title>
-    <%= stylesheet_link_tag 'application' %>
     <%= stylesheet_link_tag :application, "https://sdks.shopifycdn.com/polaris/1.0.0/polaris.min.css" %>
+    <%= stylesheet_link_tag 'application' %>
     <%= csrf_meta_tags %>
   </head>
 

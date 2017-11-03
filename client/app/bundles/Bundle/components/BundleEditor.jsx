@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, TextStyle, Tabs, Badge, Stack} from '@shopify/polaris';
+import {Page, Card, FormLayout, Select, TextField, Layout, Button, Icon, ResourceList, Thumbnail, Badge, Stack} from '@shopify/polaris';
 import {EmbeddedApp, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 

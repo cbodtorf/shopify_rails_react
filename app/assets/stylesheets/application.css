@@ -14,6 +14,31 @@
  *= require_self
  */
 
+/* Polaris Changes */
+.Polaris-Banner:focus {
+  box-shadow: inset 0 3px 0 0 #637381, inset 0 0 0 0px #637381, 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+.Polaris-Banner--statusCritical:focus {
+  box-shadow: inset 0 3px 0 0 #ed6347, inset 0 0 0 0px #ed6347, 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+.Polaris-Banner--statusSuccess:focus {
+  box-shadow: inset 0 3px 0 0 #50b83c, inset 0 0 0 0px #50b83c, 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+.Polaris-Banner--statusInfo:focus {
+  box-shadow: inset 0 3px 0 0 #47c1bf, inset 0 0 0 0px #47c1bf, 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+.Polaris-Banner--statusWarning:focus {
+  box-shadow: inset 0 3px 0 0 #eec200, inset 0 0 0 0px #eec200, 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+}
+.Polaris-Banner__Actions {
+  position: absolute;
+  top: 0;
+  right: 1.6rem;
+}
+.Polaris-Banner__Content {
+    margin: 1.8rem 0;
+}
+
 /* Body */
 html body {
   background-color: #e9ebee;
