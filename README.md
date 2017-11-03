@@ -22,3 +22,7 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+# Rails Console Session:
+ * ShopifyAPI::Base.activate_session(ShopifyApp::SessionRepository
+.retrieve(Shop.find(1)))
