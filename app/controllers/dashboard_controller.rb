@@ -78,17 +78,17 @@ class DashboardController < ShopifyApp::AuthenticatedController
         if params[:time].to_i == sched[:cook_time].to_i && params[:attribute] == 'items'
           orders = sched[:orders]
           cook_title = sched[:title]
-          Rails.logger.debug("item csv: #{sched[:title].inspect} #{sched[:cook_time].inspect}")
+          # Rails.logger.debug("item csv: #{sched[:title].inspect} #{sched[:cook_time].inspect}")
         elsif params[:time].to_i == sched[:cook_time].to_i && params[:attribute] == 'addresses'
           orders = sched[:addresses]
           cook_title = sched[:title]
-          Rails.logger.debug("add csv: #{sched[:title].inspect} #{sched[:cook_time].inspect}")
+          # Rails.logger.debug("add csv: #{sched[:title].inspect} #{sched[:cook_time].inspect}")
         else
-          Rails.logger.debug("err csv: #{sched[:cook_time].inspect}")
+          # Rails.logger.debug("err csv: #{sched[:cook_time].inspect}")
         end
       end
 
-      Rails.logger.debug("orders: #{orders.size.inspect}")
+      # Rails.logger.debug("orders: #{orders.size.inspect}")
       shop = ShopifyAPI::Shop.current()
 
       respond_to do |format|
@@ -162,10 +162,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
     _attr.each do |a|
       obj[a.attributes[:name].to_sym] = a.attributes[:value]
     end
-    Rails.logger.debug("obj attr: #{obj.inspect}")
-    Rails.logger.debug("date: #{obj[:delivery_date].inspect}")
-    Rails.logger.debug("rate: #{obj[:rate_id].inspect}")
-    Rails.logger.debug("method: #{obj[:checkout_method].inspect}")
+    # Rails.logger.debug("obj attr: #{obj.inspect}")
+    # Rails.logger.debug("date: #{obj[:delivery_date].inspect}")
+    # Rails.logger.debug("rate: #{obj[:rate_id].inspect}")
+    # Rails.logger.debug("method: #{obj[:checkout_method].inspect}")
     return obj
   end
 
@@ -207,10 +207,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
         orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
         # Format order created_at
-        Rails.logger.debug("order created_at: #{order.attributes[:created_at].inspect}")
+        # Rails.logger.debug("order created_at: #{order.attributes[:created_at].inspect}")
         order_created_at = DateTime.parse(order.attributes[:created_at])
 
-        Rails.logger.debug("order: #{order.attributes[:name].inspect}")
+        # Rails.logger.debug("order: #{order.attributes[:name].inspect}")
         # Isolate Delivery Date
         note_date = orderAttributes[:delivery_date]
         # Isolate Checkout method
@@ -237,50 +237,50 @@ class DashboardController < ShopifyApp::AuthenticatedController
               sub_order = order.attributes[:tags].split(', ').include?("Subscription")
               # Subscription First Order?
               sub_first_order = order.attributes[:tags].split(', ').include?("Subscription First Order")
-              Rails.logger.debug("first sub?: #{sub_first_order.inspect}")
+              # Rails.logger.debug("first sub?: #{sub_first_order.inspect}")
 
               # last cook of day?
               deliver_next_day = false
 
               # Find cook_day and cook_schedule that rate belongs to
               day_before_blackout = blackout_dates.any? {|date| (note_date - 1.day) == date.blackout_date.to_date}
-              Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
+              # Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
               last_cook_not_available_day_before = schedules.last.cook_days.any? {|day| day.title.downcase == (note_date - 1.day).strftime("%A").downcase && day.rates.empty?}
               Rails.logger.debug("last_cook_not_available_day_before: #{last_cook_not_available_day_before}")
 
-              Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
+              # Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
               cook_days = rate.cook_day.select do |day|
                 if day.cook_schedule_id != schedules.last.id && day.title.downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15))
                   # same day as delivery, must cook this day
-                  Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                  # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
                   cook_date = (note_date)
                   deliver_next_day = false
-                  Rails.logger.debug("#sub  cook same day as delivery date")
+                  # Rails.logger.debug("#sub  cook same day as delivery date")
                   true
                 elsif day.cook_schedule_id == schedules.last.id && day.title.downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15)
                   cook_date = (note_date - 1.day)
                   deliver_next_day = true
-                  Rails.logger.debug("# cook day before delivery date")
+                  # Rails.logger.debug("# cook day before delivery date")
                   true # cook day before delivery date
                 elsif day.cook_schedule_id != schedules.last.id && day.title.downcase == note_date.strftime("%A").downcase
                   cook_date = (note_date)
                   if !sub_order
-                    Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                    # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
                     deliver_next_day = false
-                    Rails.logger.debug("# cook same day as delivery date")
+                    # Rails.logger.debug("# cook same day as delivery date")
                     true # cook on delivery date
                   elsif (sub_order && last_cook_not_available_day_before) || (sub_order && day_before_blackout)
-                    Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                    # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
                     deliver_next_day = false
-                    Rails.logger.debug("# cook same day as delivery date")
+                    # Rails.logger.debug("# cook same day as delivery date")
                     true # cook on delivery date
                   else
-                    Rails.logger.debug("err not a cook day: #{day.inspect}")
+                    # Rails.logger.debug("err not a cook day: #{day.inspect}")
                     false
                   end
                 else
                   cook_date = (note_date)
-                  Rails.logger.debug("err not a cook day: #{day.inspect}")
+                  # Rails.logger.debug("err not a cook day: #{day.inspect}")
                   false
                 end
               end
@@ -468,7 +468,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     fulfillments.each do |f|
       if f.save
-        Rails.logger.debug("success: #{f.inspect}")
+        Rails.logger.info("success: #{f.inspect}")
       else
         Rails.logger.error("error: #{f.inspect}")
       end
@@ -490,7 +490,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
     orders = ShopifyAPI::Order.find(:all, params: { status: "any", fulfillment_status: "unshipped", limit: 250, fields: "id" })
     orderIds = orders.map{|order| order.attributes[:id]}
-    Rails.logger.debug("orderIds: #{orderIds.inspect}")
 
     orders.each do |order|
       order.destroy

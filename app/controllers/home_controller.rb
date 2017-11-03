@@ -4,8 +4,6 @@ class HomeController < ShopifyApp::AuthenticatedController
   def index
     Rails.logger.debug("shop index: #{Shop.all.inspect}")
     @shop = Shop.find_by(shopify_domain: params[:shop])
-    @webhooks = ShopifyAPI::Webhook.find(:all)
-    Rails.logger.debug("webhooks: #{@webhooks.inspect}")
 
     haltable do
       handle_unsuccessful_onboarding
