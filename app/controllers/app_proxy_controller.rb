@@ -202,15 +202,14 @@ class AppProxyController < ApplicationController
       rate_dates = []
       # This logic accounts for when cooks are delivered.
       schedules.each_with_index do |sched, idx|
-        # Rails.logger.debug("[sched] #{sched.inspect} ")
         # last cook schedule is delivered next day.
-        if idx == (schedules.size - 1)
+        if idx == (schedules.size - 1) && date != Date.today
           if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
             # rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
             # Rails.logger.debug("[last no rates] #{rate_dates}")
           else
             rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
-            # Rails.logger.debug("[last rates selecte] #{rate_dates}")
+            # Rails.logger.debug("[last rates selected] #{rate_dates}")
           end
         else
           # otherwise delivered same day as cook.
@@ -218,6 +217,7 @@ class AppProxyController < ApplicationController
           # Rails.logger.debug("[same rates selecte] #{rate_dates}")
         end
       end
+
       rate_dates = rate_dates.uniq
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
 
