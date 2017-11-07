@@ -50,7 +50,7 @@ class Dashboard extends React.Component {
   }
 
   render() {
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 
     let errorBanner = this.props.errorOrders.length > 0 ? (
@@ -78,8 +78,8 @@ class Dashboard extends React.Component {
             {/* title is typically "Afternoon Cook", remove cook so we just get the general time. */}
             <Heading>{ sched.title.split(' ')[0] }</Heading>
             <ButtonGroup>
-                <Button disabled={ sched.orders.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=items&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Items</Button>
-                <Button disabled={ sched.addresses.length === 0 } outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=addresses&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Addresses</Button>
+                <Button disabled={ sched.orders.length === 0 } outline fullWidth url={`/generateCSV.csv?attribute=items&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Items</Button>
+                <Button disabled={ sched.addresses.length === 0 } outline fullWidth url={`/generateCSV.csv?attribute=addresses&time=${sched.cook_time}&date=${formatedDate}&shop=${this.props.shop_session.url}`}>Addresses</Button>
             </ButtonGroup>
           </div>
         )
@@ -88,56 +88,54 @@ class Dashboard extends React.Component {
 
       return (
         <div key={i} className="dashboard-card-primary">
-          <Stack
-          spacing="default"
-          distribution="leading"
-          >
-            <Card sectioned subdued>
-              <div className="date">
-                <h5>{w}</h5>
-                <h5>{m + ' ' + d}</h5>
-                <p> { date.blackout ? <span style={{display: "flex"}}><Icon source="alert"/>blackout date</span> : "" }</p>
-              </div>
-            </Card>
-
-            <div className="delivery-wrapper">
-              <Link url={`/showOrders?attribute=delivery&date=${formatedDate}&shop=${this.props.shop_session.url}`}>
-                <Card sectioned title="Deliveries">
-                  <div className="count-revenue">
-                    <div className="pickup-count">
-                      <h5>{date.delivery.length}</h5>
-                    </div>
-                    <div className="revenue">
-                      <h5>${date.delivery_revenue.toFixed(2)}</h5>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            </div>
-            <div className="delivery-wrapper pickup">
-              <Link url={`/showOrders?attribute=pickup&date=${formatedDate}&shop=${this.props.shop_session.url}`}>
-                <Card sectioned title="Pickups">
-                  <div className="count-revenue">
-                    <div className="pickup-count">
-                      <h5>{date.pickup.length}</h5>
-
-                    </div>
-                    <div className="revenue">
-                      <h5>${date.pickup_revenue.toFixed(2)}</h5>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            </div>
-
-            <div className="delivery-wrapper spreadsheet">
-              <Card sectioned>
-
-                { cookSchedule }
-
+            <div className="dash-date">
+              <Card sectioned subdued>
+                <div className="date">
+                  <h5>{w}</h5>
+                  <h5>{m + ' ' + d}</h5>
+                  <p> { date.blackout ? <span style={{display: "flex"}}><Icon source="alert"/>blackout date</span> : "" }</p>
+                </div>
               </Card>
             </div>
-          </Stack>
+            <div className="dash-info">
+              <div className="dash-info-data">
+                <div className="delivery-wrapper">
+                  <Link url={`/showOrders?attribute=delivery&date=${formatedDate}&shop=${this.props.shop_session.url}`}>
+                    <Card sectioned title="Deliveries">
+                      <div className="count-revenue">
+                        <div className="pickup-count">
+                          <h5>{date.delivery.length}</h5>
+                        </div>
+                        <div className="revenue">
+                          <h5>${date.delivery_revenue.toFixed(2).split('.')[0]}</h5>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                </div>
+                <div className="delivery-wrapper pickup">
+                  <Link url={`/showOrders?attribute=pickup&date=${formatedDate}&shop=${this.props.shop_session.url}`}>
+                    <Card sectioned title="Pickups">
+                      <div className="count-revenue">
+                        <div className="pickup-count">
+                          <h5>{date.pickup.length}</h5>
+                        </div>
+                        <div className="revenue">
+                          <h5>${date.pickup_revenue.toFixed(2).split('.')[0]}</h5>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                </div>
+              </div>
+              <div className="dash-info-csv">
+                <div className="delivery-wrapper spreadsheet">
+                  <Card sectioned>
+                    { cookSchedule }
+                  </Card>
+                </div>
+              </div>
+            </div>
         </div>
       )
     })
@@ -177,7 +175,7 @@ class Dashboard extends React.Component {
                             <h5>{ this.props.shippingOrdersCount }</h5>
                           </div>
                           <div className="revenue">
-                            <h5>${ this.props.shippingOrdersRevenue.toFixed(2) }</h5>
+                            <h5>${ this.props.shippingOrdersRevenue.toFixed(2).split('.')[0] }</h5>
                           </div>
                         </div>
                       </Card>
@@ -187,7 +185,7 @@ class Dashboard extends React.Component {
                     <Card sectioned>
                     <Heading>Spreadsheet</Heading>
                     <div className="time-button">
-                      <Button outline fullWidth icon="notes" url={`/generateCSV.csv?attribute=shipping&date=${new Date()}`}>Items</Button>
+                      <Button outline fullWidth url={`/generateCSV.csv?attribute=shipping&date=${new Date()}`}>Items</Button>
                     </div>
                     </Card>
                   </div>

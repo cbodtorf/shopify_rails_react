@@ -223,19 +223,20 @@ div.Polaris-Page {
   cursor: default;
 }
 
-.dashboard-card-primary .Polaris-Card, .pendingShippingOrders .Polaris-Card {
+.dashboard-card-primary .delivery-wrapper .Polaris-Card, .pendingShippingOrders .delivery-wrapper .Polaris-Card {
   color: #000;
-  height: 124px;
-  margin-bottom: 1.5rem;
-  min-width: 180px;
+  min-height: 124px;
+  /*margin-bottom: 1.5rem;*/
+  min-width: 200px;
 }
 
 .dashboard-card-primary .Polaris-Card--subdued {
   background-color: #d7dce0;
+  min-height: 124px;
 }
 
 .date {
-  width: 130px;
+  width: 80px;
 }
 .date h5 {
   text-align: left;
@@ -249,7 +250,7 @@ div.Polaris-Page {
 }
 
 .date h5:last-of-type {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 500;
   letter-spacing: 1px;
   margin-top: 15px;
@@ -287,7 +288,7 @@ div.Polaris-Page {
   width: 100%;
 }
 .spreadsheet .time-button .Polaris-Heading {
-  margin-right: 2rem;
+  margin-right: 1.3rem;
 }
 .spreadsheet .time-button:last-of-type {
   margin-top: 10px;
@@ -343,12 +344,14 @@ div.Polaris-Page {
 }
 .count-revenue {
   display: inline-flex;
+  width: 100%;
+  justify-content: space-between;
 }
 .count-revenue div {
   padding: 0px;
 }
 .count-revenue div h5 {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 500;
   letter-spacing: 1px;
 }
@@ -356,7 +359,7 @@ div.Polaris-Page {
 div.pickup-count {
   font-size: 24px;
   text-align: center;
-  padding-right: 40px;
+  padding-right: 20px;
 }
 
 .delivery-count .Polaris-Link, .pickup-count .Polaris-Link {
@@ -381,6 +384,76 @@ div.pickup-count {
 .spreadsheet .Polaris-Heading:last-of-type {
   margin-bottom: 10px;
 }
+
+.dashboard-card-primary {
+  display: flex;
+  margin-left: -1.6rem;
+}
+.dash-date {
+  display: flex;
+}
+.dash-date .Polaris-Card {
+  margin-top: 1.6rem;
+  margin-left: 1.6rem;
+}
+.dash-info {
+  display: flex;
+  flex-wrap: wrap;
+}
+.dash-info-data {
+  display: flex;
+}
+.dash-info-data .delivery-wrapper {
+  margin-top: 1.6rem;
+  margin-left: 1.6rem;
+}
+.dash-info-csv {
+  display: flex;
+}
+.dash-info-csv .delivery-wrapper {
+  margin-top: 1.6rem;
+  margin-left: 1.6rem;
+}
+
+@media only screen and (max-width: 960px) {
+  .dashboard-card-primary {
+    margin-bottom: 1.6rem;
+  }
+  .dash-info-csv {
+    min-width: 432px;
+  }
+  .dash-info-csv .delivery-wrapper {
+    width: 100%;
+  }
+}
+@media only screen and (max-width: 620px) {
+  .dashboard-card-primary {
+    flex-direction: column;
+  }
+  .dash-date .Polaris-Card {
+    width: 100%;
+  }
+  .dash-info-data {
+    width: 100%;
+  }
+  .dash-info-data .delivery-wrapper {
+    width: 50%;
+  }
+  .dash-info-csv {
+    width: 100%;
+  }
+  .dash-info-csv .delivery-wrapper {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 490px) {
+  div.Polaris-Page {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
 
 /* Bundle Editor */
 .resource-badge {
