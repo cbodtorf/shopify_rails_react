@@ -9,16 +9,6 @@ class MetafieldController < ShopifyApp::AuthenticatedController
       product.metafield = []
     end
 
-    # If id select bundle else show welcome
-    # if params[:id]
-    #   @bundle = @bundles.select do |bundle|
-    #     bundle.id.to_i == params[:id].to_i
-    #   end.first
-    # else
-    #   @bundle = nil
-    # end
-
-    # Rails.logger.debug("My res: #{@products.inspect}")
   end
 
   def update
@@ -46,22 +36,42 @@ class MetafieldController < ShopifyApp::AuthenticatedController
     product = ShopifyAPI::Product.find(params[:id])
     # tags = product.attributes[:tags].split(', ').select{|t| !t.match(/^\d benefits$|^\d ingredients$/)}
 
-    if params[:metafield][:health_benefits] != ''
-      product.add_metafield(ShopifyAPI::Metafield.new({
-         :namespace => 'product_details',
-         :key => 'health_benefits',
-         :value => params[:metafield][:health_benefits],
-         :value_type => 'string'
-      }))
+    # handle updates if these exist.
+    benefits_metafield = ShopifyAPI::Metafield.find(:first, :params=>{:resource => "products", :resource_id => params[:id], :namespace => "product_details", :key => "health_benefits"})
+    ingredients_metafield = ShopifyAPI::Metafield.find(:first, :params=>{:resource => "products", :resource_id => params[:id], :namespace => "product_details", :key => "ingredients"})
+
+    if benefits_metafield.blank?
+      if params[:metafield][:health_benefits] != ''
+        product.add_metafield(ShopifyAPI::Metafield.new({
+           :namespace => 'product_details',
+           :key => 'health_benefits',
+           :value => params[:metafield][:health_benefits],
+           :value_type => 'string'
+        }))
+      end
+    else
+      if params[:metafield][:health_benefits] == ''
+        benefits_metafield.destroy
+      else
+        benefits_metafield.update_attributes(:value => params[:metafield][:health_benefits])
+      end
     end
 
-    if params[:metafield][:ingredients] != ''
-      product.add_metafield(ShopifyAPI::Metafield.new({
-         :namespace => 'product_details',
-         :key => 'ingredients',
-         :value => params[:metafield][:ingredients],
-         :value_type => 'string'
-      }))
+    if ingredients_metafield.blank?
+      if params[:metafield][:ingredients] != ''
+        product.add_metafield(ShopifyAPI::Metafield.new({
+           :namespace => 'product_details',
+           :key => 'ingredients',
+           :value => params[:metafield][:ingredients],
+           :value_type => 'string'
+        }))
+      end
+    else
+      if params[:metafield][:ingredients] == ''
+        ingredients_metafield.destroy
+      else
+        ingredients_metafield.update_attributes(:value => params[:metafield][:ingredients])
+      end
     end
 
     redirect_to action: :index
