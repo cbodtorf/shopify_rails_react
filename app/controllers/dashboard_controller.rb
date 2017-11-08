@@ -486,14 +486,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def delete_orders
-    shop = ShopifyAPI::Shop.current()
-    shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
-    orders = ShopifyAPI::Order.find(:all, params: { status: "any", fulfillment_status: "unshipped", limit: 250, fields: "id" })
-    orderIds = orders.map{|order| order.attributes[:id]}
-
-    orders.each do |order|
-      order.destroy
-    end
-
+    # shop = ShopifyAPI::Shop.current()
+    # shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
+    # ShopifyAPI::Base.activate_session(ShopifyApp::SessionRepository.retrieve(1))
+    # orders = ShopifyAPI::Order.find(:all, params: { status: "any", limit: 75, fields: "id" })
+    # orderIds = orders.map{|order| order.attributes[:id]}
+    #
+    # orders.each do |order|
+    #   order.destroy
+    # end
   end
 end

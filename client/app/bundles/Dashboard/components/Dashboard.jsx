@@ -217,7 +217,7 @@ class Dashboard extends React.Component {
               </Layout.Section>
 
               <Layout.Section>
-                <FooterHelp>For more details on Bamboo, visit our site:<Link url="https://polaris.shopify.com"> E4 Consulting</Link>.</FooterHelp>
+                <FooterHelp>For more details on Bamboo, visit our site:<Link external="true" url="http://e4consults.com/"> E4 Consulting</Link>.</FooterHelp>
               </Layout.Section>
 
             </Layout>
