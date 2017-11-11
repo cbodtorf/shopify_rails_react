@@ -10,13 +10,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
 
     # filterErrors returns {:error_orders, :orders}
-    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", limit: 250 }))
-    @errorOrders = orders[:error_orders]
-
-
-    # Out of Stock Subs
-    subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/?status=ERROR&limit=250")['charges']
-    @errorOrders.concat(subs_with_errors)
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status"
+    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
+    # subscription errors
+    subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/count/?status=ERROR")['count']
+    @errorOrdersCount = orders[:error_orders].count + subs_with_errors
 
     @fiveDayOrders.map do |date|
       date[:delivery_revenue] = 0
@@ -35,7 +33,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     # Subscriber Count (tagged with Active Subscriber)
     # http://support.rechargepayments.com/article/191-shopify-order-tags
-    customers = ShopifyAPI::Customer.find(:all)
+    customers = ShopifyAPI::Customer.find(:all, params: { fields: "tags", limit: 250 })
     # TODO: It is not counting customers made in the recharge admin section.
     # maybe look for repeat customers.
     activeSubscribers = customers.select do |c|
@@ -55,9 +53,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     # Customer Count:
     @customerCount = ShopifyAPI::Customer.count
-
-    # Bundle Information
-    @bundles = ShopifyAPI::Product.find(:all, params: { product_type: 'bundle' })
 
     # Product Information
     @productCount = ShopifyAPI::Product.count
@@ -127,7 +122,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", limit: 250 }))
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, order_number, customer, note"
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
       @orders = orders[:error_orders]
 
 
@@ -177,8 +173,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t = Time.now
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
-    @orders = filterErrors(ShopifyAPI::Order.find(:all, params: { created_at_min: sixDaysAgo, limit: 250 }))
-    errorOrders = @orders[:error_orders]
+
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, order_number, customer, note, shipping_address"
+    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: sixDaysAgo, limit: 250 }))
+    errorOrders = orders[:error_orders]
     # Sort by cook time
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
     # blackout dates
@@ -202,7 +200,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     end
 
 
-      @orders[:orders].each do |order|
+      orders[:orders].each do |order|
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
         orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
@@ -362,7 +360,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def getShippingOrders(orders = false)
-    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { status: "open", limit: 250 }))[:orders] : orders
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, order_number, customer, note"
+    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "open", limit: 250 }))[:orders] : orders
     shippingOrders = []
     shipping_orders.select do |order|
       unless order.attributes[:fulfillment_status] == 'fulfilled' || order.attributes[:fulfillment_status] == 'shipped'
@@ -458,11 +457,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def bulk_fulfill
-    orders = ShopifyAPI::Order.find(:all, :params=>{:ids => params[:ids]})
+    order_fields = "id,line_items"
+    orders = ShopifyAPI::Order.find(:all, :params=>{:fields => order_fields, :ids => params[:ids]})
     Rails.logger.debug("orders: #{orders.inspect}")
     Rails.logger.debug("orders size: #{orders.size}")
     fulfillments = orders.map do |order|
-      ShopifyAPI::Fulfillment.new(:order_id => order.id, :line_items =>[ {"id" => order.line_items.first.id} ] )
+      ShopifyAPI::Fulfillment.new(:order_id => order.id, :line_items => order.line_items.map{|item| {"id" => item.id}} )
     end
     Rails.logger.debug("orders: #{fulfillments.inspect}")
 

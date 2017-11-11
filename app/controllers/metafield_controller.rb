@@ -8,7 +8,6 @@ class MetafieldController < ShopifyApp::AuthenticatedController
     @products.select!{|p| p.attributes[:product_type] != "cleanse" && p.attributes[:product_type] != "juice kits"}.each do |product|
       product.metafield = []
     end
-
   end
 
   def update

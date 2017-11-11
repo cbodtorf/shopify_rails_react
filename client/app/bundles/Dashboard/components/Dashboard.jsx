@@ -53,7 +53,7 @@ class Dashboard extends React.Component {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     const weekNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"]
 
-    let errorBanner = this.props.errorOrders.length > 0 ? (
+    let errorBanner = this.props.errorOrdersCount > 0 ? (
       <Banner
         title="Orders with Errors"
         status="critical"
@@ -62,7 +62,7 @@ class Dashboard extends React.Component {
           url: `/showOrders?attribute=errors&date=${new Date().toDateString()}&shop=${this.props.shop_session.url}`,
         }}
       >
-        <p>There are { this.props.errorOrders.length } orders that need attention.</p>
+        <p>There are { this.props.errorOrdersCount } orders that need attention.</p>
       </Banner>
     ) : '';
 

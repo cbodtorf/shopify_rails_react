@@ -80,6 +80,14 @@ class OrderList extends React.Component {
   render() {
     const attributeLowerCase = this.props.attribute.toLowerCase()
 
+    let bulkActionList = []
+    if (attributeLowerCase !== "errors") {
+      bulkActionList = [
+        { content: 'Print', onAction: () => { this.bulkPrint() } },
+        { content: 'Fulfill', url: `/bulk_fulfill?ids=${this.state.ordersChecked.join(',')}` },
+      ]
+    }
+
     let orderPageTitle = ""
     if (attributeLowerCase === "shipping") {
       orderPageTitle = 'Pending Shipping Orders'
@@ -175,7 +183,7 @@ class OrderList extends React.Component {
              this.setState({ ordersChecked: ordersChecked })
            }}/></td>
            <td>{ orderLink }
-           { order.note !== null || order.note !== "" ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
+           { order.note !== null && order.note !== "" ? <div className="notice-icon"><Tooltip content={ order.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
            </td>
            <td>{ customerName }</td>
            <td>{ createdAtDate.toLocaleDateString() }</td>
@@ -254,10 +262,7 @@ class OrderList extends React.Component {
                               onClose={ () => this.setState({ bulkActionSelect: !this.state.bulkActionSelect }) }
                             >
                               <ActionList
-                                items={[
-                                  { content: 'Print', onAction: () => { this.bulkPrint() } },
-                                  { content: 'Fulfill', url: `/bulk_fulfill?ids=${this.state.ordersChecked.join(',')}` },
-                                ]}
+                                items={ bulkActionList }
                               />
                             </Popover>
                           </ButtonGroup>

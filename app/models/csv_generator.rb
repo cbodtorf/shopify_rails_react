@@ -59,6 +59,7 @@ class CSVGenerator
     })
     Rails.logger.debug("bamboo: #{shop.attributes.inspect}")
     orders.each do |order|
+      Rails.logger.debug("s_a: #{order.attributes[:shipping_address].inspect}")
       s_a = order.attributes[:shipping_address].attributes
       shippingAddressArray.push({
         customer_last_name: s_a[:last_name],
@@ -68,7 +69,7 @@ class CSVGenerator
         city: s_a[:city],
         state: s_a[:province_code],
         zip: s_a[:zip],
-        notes: s_a[:note],
+        notes: order.attributes[:note],
       })
     end
 
@@ -80,4 +81,5 @@ class CSVGenerator
       end
     end
   end
+
 end
