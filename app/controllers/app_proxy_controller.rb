@@ -158,9 +158,9 @@ class AppProxyController < ApplicationController
           end
         else
           if @admin
-            rate.delivery_type == delivery_type && rate.delivery_method == 'delivery'
+            rate.delivery_type != 'subscription' && rate.delivery_method == 'delivery'
           elsif day_before_blackout
-            if date == Date.today
+            if date == Date.today || (cutoff && date == Date.tomorrow)
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
               rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'
             else
