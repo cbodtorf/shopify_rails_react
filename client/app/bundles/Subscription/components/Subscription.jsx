@@ -49,6 +49,11 @@ class Subscription extends React.Component {
         deliveryDate = <Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`}>Must edit Payment</Link>
       }
 
+      let customerName = sub.first_name + ' ' + sub.last_name
+      if (sub.shopify_customer_id) {
+        customerName = <Link external="true" url={`http://${this.props.shop_session.url}/admin/customers/${sub.shopify_customer_id}`}>{ sub.first_name + ' ' + sub.last_name }</Link>
+      }
+
       return (
           <tbody key={ sub.id } className="ui-nested-link-container">
             <tr className="">
@@ -56,7 +61,7 @@ class Subscription extends React.Component {
                 #{ sub.id }
                 { sub.note !== null ? <div className="notice-icon"><Tooltip content={ sub.note }><Icon source="notes" color="inkLightest"/></Tooltip></div> : '' }
               </td>
-              <td>{ sub.first_name + ' ' + sub.last_name }</td>
+              <td>{ customerName }</td>
               <td>{ chargeDate }</td>
               <td>{ deliveryDate }</td>
               <td>${ sub.total_price }</td>
@@ -131,7 +136,7 @@ class Subscription extends React.Component {
                       <table className="table-hover expanded">
                         <thead className="">
                           <tr className="">
-                            <th>Order</th>
+                            <th>Subscription</th>
                             <th>Customer</th>
                             <th>Charge Date</th>
                             <th>Delivery Date</th>
