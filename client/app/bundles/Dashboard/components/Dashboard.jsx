@@ -87,13 +87,13 @@ class Dashboard extends React.Component {
 
 
       return (
-        <div key={i} className="dashboard-card-primary">
+        <div key={i} className={`dashboard-card-primary ${date.blackout ? "blackout-date" : ""}`}>
             <div className="dash-date">
               <Card sectioned subdued>
                 <div className="date">
                   <h5>{w}</h5>
                   <h5>{m + ' ' + d}</h5>
-                  <p> { date.blackout ? <span style={{display: "flex"}}><Icon source="alert"/>blackout date</span> : "" }</p>
+                  <p> { date.blackout ? <span style={{display: "flex"}}>blackout</span> : "" }</p>
                 </div>
               </Card>
             </div>

@@ -83,6 +83,7 @@ Rate.create!([
   {id: 6, shop_id: 1, title: "FedEx Ground", description: "Packed in an insulated box with dry ice.", delivery_method: "shipping", price: 1953, cutoff_time: 15, cook_time: "N/A", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 7, shop_id: 1, title: "FedEx Priority Overnight", description: "Packed in an insulated box with dry ice.", delivery_method: "shipping", price: 7000, cutoff_time: 15, cook_time: "N/A", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: nil, price_weight_modifier_starter: 0},
   {id: 8, shop_id: 1, title: "Free Local Delivery", description: "Delivered 4 - 8pm.", delivery_method: "delivery", price: 0, cutoff_time: 15, cook_time: "morning", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: "only offer after day with no cooks", price_weight_modifier_starter: 0},
+  {id: 9, shop_id: 1, title: "Same Day Delivery", description: "Delivered 4 - 8pm.", delivery_method: "delivery", price: 0, cutoff_time: 11, cook_time: "morning", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: "admin", price_weight_modifier_starter: 0},
 ])
 
 CookDay.create!([

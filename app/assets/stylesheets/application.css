@@ -389,6 +389,13 @@ div.pickup-count {
   display: flex;
   margin-left: -1.6rem;
 }
+.dashboard-card-primary.blackout-date .Polaris-Card--subdued{
+  background: #637381;
+  color: #fff;
+}
+.dashboard-card-primary.blackout-date .date h5 {
+  color: #fff;
+}
 .dash-date {
   display: flex;
 }

@@ -146,6 +146,10 @@ class AppProxyController < ApplicationController
         cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
         Rails.logger.debug("[args] rate_id: #{rate.id}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
         Rails.logger.debug("notes: #{rate.notes}")
+        if rate.notes == "admin" && @admin == false
+          next
+        end
+
         if sub_present
           if date == Date.today
             rate.delivery_type == 'subscription' && cutoff && rate.delivery_method == 'delivery'
@@ -153,7 +157,9 @@ class AppProxyController < ApplicationController
             rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
           end
         else
-          if day_before_blackout
+          if @admin
+            rate.delivery_type == delivery_type && rate.delivery_method == 'delivery'
+          elsif day_before_blackout
             if date == Date.today
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
               rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'
@@ -246,10 +252,10 @@ class AppProxyController < ApplicationController
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
           if date.today?
             # offer same_day
-            createDateObject(date, 'same_day', rate_dates, false, sub_present, false)
+            createDateObject(date, 'same_day', shop.rates.all, false, sub_present, false)
           elsif !date.today?
             # offer next_day
-            createDateObject(date, 'next_day', rate_dates, false, sub_present, false)
+            createDateObject(date, 'next_day', shop.rates.all, false, sub_present, false)
           else
             # blank day
             Rails.logger.debug("[blank] #{date.inspect}")
@@ -259,7 +265,6 @@ class AppProxyController < ApplicationController
               rates: []
             }
           end
-
       else # ADMIN
         if blackout
           # blank day
