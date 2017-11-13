@@ -63,7 +63,7 @@ PostalCode.create!([
   {shop_id: 1, title: "31169"}
 ])
 PickupLocation.create!([
-  {id: 1, shop_id: 1, title: "Bamboo Juices", address: "502 Toombs St.", days_available: ["2", "3", "4"]}
+  {id: 1, shop_id: 1, title: "Bamboo Juices", address: "502 Toombs St.", description: "Pickup Time: 2pm to 4pm", days_available: ["2", "3", "4"]}
 ])
 BlackoutDate.create!([
   {id: 1, shop_id: 1, title: "Christmas", blackout_date: "2017-12-25 00:00:00"},
@@ -87,13 +87,13 @@ Rate.create!([
 ])
 
 CookDay.create!([
-  {id: 1, cook_schedule_id: 1, rate_ids: [2,3,5,8], title: "Monday"},
-  {id: 2, cook_schedule_id: 1, rate_ids: [2,3,5,8], title: "Tuesday"},
-  {id: 3, cook_schedule_id: 1, rate_ids: [2,3,5,8], title: "Wednesday"},
-  {id: 4, cook_schedule_id: 1, rate_ids: [2,3,5,8], title: "Thursday"},
-  {id: 5, cook_schedule_id: 1, rate_ids: [2,3,5,8], title: "Friday"},
+  {id: 1, cook_schedule_id: 1, rate_ids: [2,3,5,8,9], title: "Monday"},
+  {id: 2, cook_schedule_id: 1, rate_ids: [2,3,5,8,9], title: "Tuesday"},
+  {id: 3, cook_schedule_id: 1, rate_ids: [2,3,5,8,9], title: "Wednesday"},
+  {id: 4, cook_schedule_id: 1, rate_ids: [2,3,5,8,9], title: "Thursday"},
+  {id: 5, cook_schedule_id: 1, rate_ids: [2,3,5,8,9], title: "Friday"},
   {id: 6, cook_schedule_id: 1, rate_ids: [], title: "Saturday"},
-  {id: 7, cook_schedule_id: 1, rate_ids: [2,3,8], title: "Sunday"},
+  {id: 7, cook_schedule_id: 1, rate_ids: [2,3,8,9], title: "Sunday"},
   {id: 8, cook_schedule_id: 2, rate_ids: [1,4,5], title: "Monday"},
   {id: 9, cook_schedule_id: 2, rate_ids: [1,4,5], title: "Tuesday"},
   {id: 10, cook_schedule_id: 2, rate_ids: [1,4,5], title: "Wednesday"},
