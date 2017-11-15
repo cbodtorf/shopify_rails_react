@@ -159,7 +159,7 @@ class RateEditor extends React.Component {
             onSave={ () => this.handleSave() }
             title={ this.state.rate.title || " " }
           >
-            <div>
+            <div class="modal-form-container">
               <form
                 action={ this.state.url }
                 acceptCharset="UTF-8" method="post"
