@@ -5,6 +5,12 @@ import {
   TextField
 } from '@shopify/polaris';
 
+const humanize_ = function(property) {
+  return property.replace(/_/g, ' ')
+      .replace(/(\w+)/g, function(match) {
+        return match.charAt(0).toUpperCase() + match.slice(1);
+      });
+};
 
 class NoteFormElement extends Component {
   constructor(props) {
@@ -18,19 +24,19 @@ class NoteFormElement extends Component {
     const rateOptions = this.props.rates.map(rate => {
       return {
         label: rate.title,
-        value: rate.id
+        value: `[${rate.id}] ${rate.title}`
       }
     })
 
     let locationOptions = this.props.pickupLocations.map(location => {
       return {
         label: location.title,
-        value: location.id
+        value: `[${location.id}] ${location.title}`
       }
     })
 
-    switch (this.props.noteAttribute.name) {
-        case 'checkout_method':
+    switch (humanize_(this.props.noteAttribute.name)) {
+        case 'Checkout Method':
             noteElement = (
               <Stack vertical>
                 <Select
@@ -47,11 +53,11 @@ class NoteFormElement extends Component {
               </Stack>
             )
             break;
-        case 'rate_id':
+        case 'Delivery Rate':
             noteElement = (
               <Stack vertical>
                 <Select
-                  label="Rate"
+                  label="Delivery Rate"
                   disabled
                   options={ rateOptions }
                   value={ this.props.noteAttribute.value }
@@ -60,7 +66,7 @@ class NoteFormElement extends Component {
               </Stack>
             )
             break;
-        case 'delivery_date':
+        case 'Delivery Date':
             noteElement = (
               <Stack vertical>
                 <TextField
@@ -72,7 +78,7 @@ class NoteFormElement extends Component {
               </Stack>
             )
             break;
-        case 'location_id':
+        case 'Pickup Location':
             noteElement = (
               <Stack vertical>
                 <Select
@@ -84,10 +90,10 @@ class NoteFormElement extends Component {
               </Stack>
             )
             break;
-        case 'location_title':
+        case 'Location Title':
 
             break;
-        case 'postal_code':
+        case 'Postal Code':
 
             break;
         default:

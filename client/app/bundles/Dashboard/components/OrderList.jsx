@@ -20,6 +20,13 @@ const isJSON = (input) => (
   )
 );
 
+const humanize_ = function(property) {
+  return property.replace(/_/g, ' ')
+      .replace(/(\w+)/g, function(match) {
+        return match.charAt(0).toUpperCase() + match.slice(1);
+      });
+};
+
 const determineFulfillment = function(status) {
   let statusColor,
       statusText;
@@ -119,7 +126,7 @@ class OrderList extends React.Component {
      let upcomingSub = order.address_id !== undefined
      let createdAtDate = new Date(order.created_at)
      let processedAtDate = new Date(order.processed_at)
-     let deliveryMethod = order.note_attributes.filter(note => note.name === 'checkout_method' ? note.value : null)
+     let deliveryMethod = order.note_attributes.filter(note => humanize_(note.name) === 'Checkout Method' ? note.value : null)
      let urlBase = `https://${this.props.shop_session.url}/admin/`
 
      // SET ORDER NUMBER

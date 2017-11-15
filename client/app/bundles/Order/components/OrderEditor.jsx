@@ -44,6 +44,7 @@ class OrderEditor extends React.Component {
       rate: null,
       checkout: null,
       location: null,
+      receiveWindow: null,
       deliveryDate: {
         delivery_date: undefined,
         wday: undefined,
@@ -110,7 +111,7 @@ class OrderEditor extends React.Component {
         <NoteForm
           formUrl={ `/orders/${this.props.order.id}` }
           orderFormRef={ (form) => { this.orderForm = form } }
-          authenticity_token={ this.props.authenticity_token }
+          authenticity_token={ this.props.form_authenticity_token }
           method={ 'PUT' }
           noteAttributes={ this.props.order.note_attributes }
           deliveryDate={ this.state.deliveryDate }
@@ -120,6 +121,8 @@ class OrderEditor extends React.Component {
           rate={ this.state.rate }
           onRateChange={ (value) => this.setState({rate: value}) }
           location={ this.state.location }
+          receiveWindow={ this.state.receiveWindow }
+          onReceiveWindowChange={ (value) => this.setState({receiveWindow: value}) }
           onLocationChange={ (value) => this.setState({location: value}) }
           checkout={ this.state.checkout }
           onCheckoutChange={ (value) => this.setState({checkout: value}) }

@@ -8,6 +8,13 @@ import packageIcon from 'assets/package.png';
 import customerIcon from 'assets/customer.png';
 import productIcon from 'assets/bottle.png';
 
+const humanize_ = function(property) {
+  return property.replace(/_/g, ' ')
+      .replace(/(\w+)/g, function(match) {
+        return match.charAt(0).toUpperCase() + match.slice(1);
+      });
+};
+
 class Dashboard extends React.Component {
   constructor(props) {
     super(props)
@@ -21,7 +28,7 @@ class Dashboard extends React.Component {
     let shippingList = []
     this.props.shippingOrders.forEach(order => {
       /* TODO: handle orders that may not have note_attributes */
-      let checkoutMethod = order.note_attributes.filter(note => note['name'] === 'checkout_method')
+      let checkoutMethod = order.note_attributes.filter(note => humanize_(note['name']) === 'Checkout Method')
       if (checkoutMethod[0].value.toLowerCase() === 'shipping' && typeof checkoutMethod[0] !== 'undefined') {
         console.log('trying filter shipping orders', order);
         let fullfillmentBadge = {

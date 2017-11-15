@@ -156,12 +156,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
   def orderAttributesToHash(_attr)
     obj = {}
     _attr.each do |a|
-      obj[a.attributes[:name].to_sym] = a.attributes[:value]
+      obj[a.attributes[:name].parameterize.underscore.to_sym] = a.attributes[:value]
     end
-    # Rails.logger.debug("obj attr: #{obj.inspect}")
-    # Rails.logger.debug("date: #{obj[:delivery_date].inspect}")
-    # Rails.logger.debug("rate: #{obj[:rate_id].inspect}")
-    # Rails.logger.debug("method: #{obj[:checkout_method].inspect}")
     return obj
   end
 
@@ -204,8 +200,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
         # TODO: error handling for orders that do NOT have note attributes.
         # Rails.logger.debug("notes order: #{order.attributes[:note_attributes].inspect}")
         orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
+
         # Format order created_at
-        # Rails.logger.debug("order created_at: #{order.attributes[:created_at].inspect}")
+        Rails.logger.debug("order created_at: #{orderAttributes.inspect}")
         order_created_at = DateTime.parse(order.attributes[:created_at])
 
         # Rails.logger.debug("order: #{order.attributes[:name].inspect}")
@@ -214,9 +211,15 @@ class DashboardController < ShopifyApp::AuthenticatedController
         # Isolate Checkout method
         checkout_method = orderAttributes[:checkout_method]
         # Isolate Delivery Rate
-        rate_id = orderAttributes[:rate_id]
-
-        rate = shop.rates.find(rate_id)
+        rate_id = orderAttributes[:delivery_rate]
+        rate = nil
+        if rate_id.present?
+          if is_number?(rate_id)
+            rate = shop.rates.find(rate_id.to_i)
+          else
+            rate = shop.rates.find(rate_id.split(']')[0].split('[')[1].to_i)
+          end
+        end
 
         if note_date != nil && note_date != ''
           note_date = Date.parse(note_date)
@@ -366,7 +369,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shipping_orders.select do |order|
       unless order.attributes[:fulfillment_status] == 'fulfilled' || order.attributes[:fulfillment_status] == 'shipped'
         order.attributes[:note_attributes].each do |note|
-          if note.attributes[:name] == "checkout_method"
+          if note.attributes[:name] == "Checkout Method"
             if note.attributes[:value].downcase == "shipping"
                shippingOrders.push(order)
             end
@@ -405,6 +408,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
     order
   end
 
+  def is_number? string
+    true if Float(string) rescue false
+  end
+
   def filterErrors(orders_to_be_filtered)
     error_orders = []
     reg_orders = []
@@ -418,8 +425,16 @@ class DashboardController < ShopifyApp::AuthenticatedController
       # Isolate Checkout method
       checkout_method = orderAttributes[:checkout_method]
       # Isolate Delivery Rate
-      rate_id = orderAttributes[:rate_id]
-      rate = rate_id.present? ? shop.rates.find(rate_id.to_i) : nil
+      rate_id = orderAttributes[:delivery_rate]
+      rate = nil
+      if rate_id.present?
+        if is_number?(rate_id)
+          rate = shop.rates.find(rate_id.to_i)
+        else
+          rate = shop.rates.find(rate_id.split(']')[0].split('[')[1].to_i)
+        end
+      end
+
       # cook_days
       cook_days = rate.present? && note_date.present? ? rate.cook_day.select{|day| day.title.downcase == Date.parse(note_date).strftime("%A").downcase} : nil
 
@@ -491,7 +506,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # ShopifyAPI::Base.activate_session(ShopifyApp::SessionRepository.retrieve(1))
     # orders = ShopifyAPI::Order.find(:all, params: { status: "any", limit: 75, fields: "id" })
     # orderIds = orders.map{|order| order.attributes[:id]}
-    #
+
     # orders.each do |order|
     #   order.destroy
     # end

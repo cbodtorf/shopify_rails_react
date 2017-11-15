@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171113215024) do
+ActiveRecord::Schema.define(version: 20171115154933) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -105,7 +105,7 @@ ActiveRecord::Schema.define(version: 20171113215024) do
     t.string   "delivery_method"
     t.integer  "price"
     t.integer  "cutoff_time"
-    t.string   "cook_time"
+    t.string   "receive_window"
     t.string   "delivery_type"
     t.integer  "min_grams"
     t.integer  "max_grams"

@@ -104,7 +104,8 @@ class ContextualRate
 
       if rate_id != nil
         if postal_codes_match.empty?
-          rate.delivery_method.downcase == 'shipping'
+          # rate.delivery_method.downcase == 'shipping'
+          # Don't Show any of our rates
         else
           rate.id.to_i == rate_id.to_i
         end
@@ -115,7 +116,8 @@ class ContextualRate
       # return subscription rate
 
       if postal_codes_match.empty?
-        rate.delivery_method.downcase == 'shipping'
+        # rate.delivery_method.downcase == 'shipping'
+        # Don't Show any of our rates
       else
         rate.delivery_type.downcase == 'subscription'
       end
