@@ -81,10 +81,10 @@ class NoteForm extends Component {
     }
 
     let pickupLocations = null
+    let pickupLocationsInput = null
+
     if ((this.props.checkout || checkoutMethod.value) === "pickup") {
       pickupLocations = (
-        <div>
-          <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "location_id" } />
           <Select
             label="Location"
             name="order[note_attributes][][value]"
@@ -93,8 +93,8 @@ class NoteForm extends Component {
             onChange={ (value) => { this.props.onLocationChange(value) } }
             placeholder="Select"
           />
-        </div>
       )
+      pickupLocationsInput = <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "location_id" } />
     }
 
     const rateOptions = this.props.rates.filter((rate) => {return rate.delivery_method === (this.props.checkout || checkoutMethod.value)}).map(rate => {
@@ -106,7 +106,7 @@ class NoteForm extends Component {
     console.log("rateOptions", rateOptions);
 
     return (
-      <div>
+      <div className="modal-form-container">
         <Banner
           icon="notes"
           title="Note about editing delivery attributes."
@@ -123,46 +123,41 @@ class NoteForm extends Component {
             <input name="utf8" type="hidden" value="✓" />
             <input type="hidden" name="_method" value={ this.props.method } />
             <input type="hidden" name="authenticity_token" value={ this.props.authenticity_token } />
+            <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "checkout_method" } />
+            <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "rate_id" } />
+            { datePickerInputs }
+            { pickupLocationsInput }
 
-            <Stack vertical>
-              <Stack vertical>
-                <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "checkout_method" } />
-                <Select
-                  label="Checkout Method"
-                  name="order[note_attributes][][value]"
-                  options={[
-                    { label: 'Pickup', value: 'pickup' },
-                    { label: 'Delivery', value: 'delivery' },
-                    { label: 'Shipping', value: 'shipping' }
-                  ]}
-                  value={ this.props.checkout || checkoutMethod.value }
-                  onChange={ (value) => { this.props.onCheckoutChange(value) } }
-                  placeholder="Select"
-                />
-              </Stack>
-              <Stack vertical>
-                <input type="hidden" name="order[note_attributes][][name]" id="order_note_attributes__name" value={ "rate_id" } />
-                <Select
-                  label="Rate"
-                  name="order[note_attributes][][value]"
-                  options={ rateOptions }
-                  value={ this.props.rate || rateId.value }
-                  onChange={ (value) => { this.props.onRateChange(value) } }
-                  placeholder="Select"
-                />
-              </Stack>
-              <Stack vertical>
-                { pickupLocations }
-              </Stack>
-              <Stack vertical>
 
-                { datePickerInputs }
+                <FormLayout.Group>
+                  <Select
+                    label="Checkout Method"
+                    name="order[note_attributes][][value]"
+                    options={[
+                      { label: 'Pickup', value: 'pickup' },
+                      { label: 'Delivery', value: 'delivery' },
+                      { label: 'Shipping', value: 'shipping' }
+                    ]}
+                    value={ this.props.checkout || checkoutMethod.value }
+                    onChange={ (value) => { this.props.onCheckoutChange(value) } }
+                    placeholder="Select"
+                  />
 
-              </Stack>
-            </Stack>
+                  <Select
+                    label="Rate"
+                    name="order[note_attributes][][value]"
+                    options={ rateOptions }
+                    value={ this.props.rate || rateId.value }
+                    onChange={ (value) => { this.props.onRateChange(value) } }
+                    placeholder="Select"
+                  />
+
+                  { pickupLocations }
+                </FormLayout.Group>
 
           </FormLayout>
         </form>
+        <br /><br />
 
         { datePicker }
 

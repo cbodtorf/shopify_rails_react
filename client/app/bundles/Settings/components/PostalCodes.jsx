@@ -99,7 +99,7 @@ class PostalCodes extends React.Component {
             onSave={ () => this.handleSave(this.postalCodeForm) }
             title="Postal Code"
           >
-            <div>
+            <div className="modal-form-container">
               <form
                 action='/create_postal_code'
                 acceptCharset="UTF-8" method="post"

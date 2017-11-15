@@ -127,7 +127,7 @@ class PickupLocations extends React.Component {
             onSave={ () => this.handleSave(this.pickupLocationForm) }
             title="Pickup Location"
           >
-            <div>
+            <div className="modal-form-container">
               <form
                 action={ this.state.formUrl }
                 acceptCharset="UTF-8" method="post"

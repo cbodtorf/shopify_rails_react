@@ -165,7 +165,7 @@ class BlackoutDates extends React.Component {
             onSave={ () => this.handleSave(this.blackoutDateForm) }
             title="Blackout Date"
           >
-            <div>
+            <div className="modal-form-container">
               <form
                 action={ this.state.formUrl }
                 acceptCharset="UTF-8" method="post"
