@@ -100,7 +100,7 @@ class Dashboard extends React.Component {
                 <div className="date">
                   <h5>{w}</h5>
                   <h5>{m + ' ' + d}</h5>
-                  <p> { date.blackout ? <span style={{display: "flex"}}>blackout</span> : "" }</p>
+                  <p> { date.blackout ? <span style={{display: "flex", lineHeight: 0}}>blackout</span> : "" }</p>
                 </div>
               </Card>
             </div>

@@ -157,12 +157,10 @@ class AppProxyController < ApplicationController
             rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
           end
         else
-          if @admin
-            rate.delivery_type != 'subscription' && rate.delivery_method == 'delivery'
-          elsif day_before_blackout
+          if day_before_blackout
             if date == Date.today || (cutoff && date == Date.tomorrow)
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
-              rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'
+              delivery_type.include?(rate.delivery_type) && cutoff && rate.delivery_method == 'delivery'
             else
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.notes == "only offer after day with no cooks" && rate.delivery_method == 'delivery'}")
               rate.notes == "only offer after day with no cooks" && rate.delivery_method == 'delivery'
@@ -170,10 +168,10 @@ class AppProxyController < ApplicationController
           else
             if day_before_no_cooks
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && rate.delivery_method == 'delivery' && rate.notes == 'only offer after day with no cooks'}")
-              rate.delivery_type == delivery_type && rate.delivery_method == 'delivery' && rate.notes == "only offer after day with no cooks"
+              delivery_type.include?(rate.delivery_type) && rate.delivery_method == 'delivery' && rate.notes == "only offer after day with no cooks"
             else
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery' && rate.notes != 'only offer after day with no cooks'}")
-              rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery' && rate.notes != "only offer after day with no cooks"
+              delivery_type.include?(rate.delivery_type) && cutoff && rate.delivery_method == 'delivery' && rate.notes != "only offer after day with no cooks"
             end
           end
         end
@@ -246,16 +244,26 @@ class AppProxyController < ApplicationController
 
       rate_dates = rate_dates.uniq
       Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
+      Rails.logger.debug("[admin true] #{@admin.inspect}")
+      tomorrow = Date.tomorrow
 
-      if @admin
-        Rails.logger.debug("[admin true] #{@admin.inspect}")
-        # ALLOWS all possible/legitimate rates; does not honor cutoffs
+      if blackout
+        # blank day
+        Rails.logger.debug("[blank] #{date.inspect}")
+        {
+          date: date,
+          disabled: true,
+          rates: []
+        }
+      else
+        if Time.now < end_of_day # normal
+          # Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
           if date.today?
             # offer same_day
-            createDateObject(date, 'same_day', shop.rates.all, false, sub_present, false)
+            createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
           elsif !date.today?
             # offer next_day
-            createDateObject(date, 'next_day', shop.rates.all, false, sub_present, false)
+            createDateObject(date, 'next_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
           else
             # blank day
             Rails.logger.debug("[blank] #{date.inspect}")
@@ -265,59 +273,39 @@ class AppProxyController < ApplicationController
               rates: []
             }
           end
-      else # ADMIN
-        if blackout
-          # blank day
-          Rails.logger.debug("[blank] #{date.inspect}")
-          {
-            date: date,
-            disabled: true,
-            rates: []
-          }
-        else
-          if Time.now < end_of_day # normal
-            # Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
-            if date.today?
-              # offer same_day
-              createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
-            elsif !date.today?
-              # offer next_day
-              createDateObject(date, 'next_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
+        elsif Time.now > end_of_day # shift rates over one day
+
+          # Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
+          # Rails.logger.debug("[tomorrow] #{date == tomorrow} d: #{date} t: #{tomorrow}")
+          # Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.inspect}")
+          # ALLOWS all possible/legitimate rates; does not honor cutoffs
+
+          if date.today? && @admin
+            createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+          elsif date == tomorrow
+            # offer same_day
+            if @admin
+              createDateObject(date, ['same_day','next_day'], rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
             else
-              # blank day
-              Rails.logger.debug("[blank] #{date.inspect}")
-              {
-                date: date,
-                disabled: true,
-                rates: []
-              }
-            end
-          elsif Time.now > end_of_day # shift rates over one day
-            tomorrow = Date.tomorrow
-            # Rails.logger.debug("[end of day] #{Time.now > end_of_day}")
-            # Rails.logger.debug("[tomorrow] #{date == tomorrow} d: #{date} t: #{tomorrow}")
-            # Rails.logger.debug("[#{date.inspect}_rates:] #{rate_dates.inspect}")
-            if date == tomorrow
-              # offer same_day
               createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
-            elsif !date.today? && !(date == tomorrow)
-              # offer next_day
-              createDateObject(date, 'next_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
-            else
-              # blank day
-              Rails.logger.debug("[blank] #{date.inspect}")
-              {
-                date: date,
-                disabled: true,
-                rates: []
-              }
             end
+          elsif !date.today? && !(date == tomorrow)
+            # offer next_day
+            createDateObject(date, 'next_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
           else
-            # Should not run
-            Rails.logger.debug("[err] #{date.inspect}")
+            # blank day
+            Rails.logger.debug("[blank] #{date.inspect}")
+            {
+              date: date,
+              disabled: true,
+              rates: []
+            }
           end
+        else
+          # Should not run
+          Rails.logger.debug("[err] #{date.inspect}")
         end
-      end # NORMAL
+      end
 
     end
 

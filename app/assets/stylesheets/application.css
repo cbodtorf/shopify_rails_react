@@ -231,7 +231,6 @@ div.Polaris-Page {
 .dashboard-card-primary .delivery-wrapper .Polaris-Card, .pendingShippingOrders .delivery-wrapper .Polaris-Card {
   color: #000;
   min-height: 124px;
-  /*margin-bottom: 1.5rem;*/
   min-width: 200px;
 }
 
@@ -395,7 +394,7 @@ div.pickup-count {
   margin-left: -1.6rem;
 }
 .dashboard-card-primary.blackout-date .Polaris-Card--subdued{
-  background: #637381;
+  background: #454F5B;
   color: #fff;
 }
 .dashboard-card-primary.blackout-date .date h5 {
