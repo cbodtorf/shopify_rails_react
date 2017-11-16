@@ -44,8 +44,9 @@ class CSVGenerator
   end
 
   def self.generateAddressesCSV(orders, shop)
+    rates = Shop.find_by(shopify_domain: shop.attributes[:domain]).rates
 
-    attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Notes}
+    attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Receive\ Window Notes}
     shippingAddressArray = []
     shippingAddressArray.push({
       customer_last_name: shop.attributes[:name],
@@ -55,6 +56,7 @@ class CSVGenerator
       city: shop.attributes[:city],
       state: shop.attributes[:province_code],
       zip: shop.attributes[:zip],
+      receive_window: '',
       notes: '',
     })
     Rails.logger.debug("bamboo: #{shop.attributes.inspect}")
@@ -69,6 +71,7 @@ class CSVGenerator
         city: s_a[:city],
         state: s_a[:province_code],
         zip: s_a[:zip],
+        receive_window: rates.find(order.note_attributes.find {|note| note.name == "Delivery Rate"}.value.split("]")[0].split("[")[1].to_i).receive_window,
         notes: order.attributes[:note],
       })
     end
