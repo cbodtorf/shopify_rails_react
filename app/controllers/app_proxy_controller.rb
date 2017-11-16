@@ -258,9 +258,13 @@ class AppProxyController < ApplicationController
       else
         if Time.now < end_of_day # normal
           # Rails.logger.debug("[normal day] #{Time.now < end_of_day}")
+          # offer same_day
           if date.today?
-            # offer same_day
-            createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
+            if @admin
+              createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+            else
+              createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
+            end
           elsif !date.today?
             # offer next_day
             createDateObject(date, 'next_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
