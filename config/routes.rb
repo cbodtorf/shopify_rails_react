@@ -57,6 +57,7 @@ Rails.application.routes.draw do
 
   resources :rates, only: [:index, :update, :create, :destroy]
   resources :orders, only: [:index, :update]
+  get 'orders/redirect_to_recharge_address', to: 'orders#redirect_to_recharge_address'
   get 'bulk_fulfill', to: 'dashboard#bulk_fulfill'
 
 

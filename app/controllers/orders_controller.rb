@@ -43,4 +43,13 @@ class OrdersController < ShopifyApp::AuthenticatedController
     end
   end
 
+  def redirect_to_recharge_address
+    shop = Shop.find_by(shopify_domain: params[:shop])
+    session = ShopifyApp::SessionRepository.retrieve(shop.id)
+    ShopifyAPI::Base.activate_session(session)
+
+    order = shop.getRechargeData("https://api.rechargeapps.com/orders/?status=SUCCESS&shopify_order_id=#{params[:id]}")['orders'].first
+    @rechargeUrl = "https://#{params[:shop]}/admin/apps/shopify-recurring-payments/addresses/#{order["address_id"]}"
+  end
+
 end

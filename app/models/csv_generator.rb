@@ -61,6 +61,14 @@ class CSVGenerator
     })
     Rails.logger.debug("bamboo: #{shop.attributes.inspect}")
     orders.each do |order|
+
+      receive_window = ''
+      if order.attributes[:tags].split(', ').include?('Subscription')
+        receive_window = 'Subscription'
+      else
+        receive_window = rates.find(order.note_attributes.find {|note| note.name == "Delivery Rate"}.value.split("]")[0].split("[")[1].to_i).receive_window
+      end
+
       Rails.logger.debug("s_a: #{order.attributes[:shipping_address].inspect}")
       s_a = order.attributes[:shipping_address].attributes
       shippingAddressArray.push({
@@ -71,7 +79,7 @@ class CSVGenerator
         city: s_a[:city],
         state: s_a[:province_code],
         zip: s_a[:zip],
-        receive_window: rates.find(order.note_attributes.find {|note| note.name == "Delivery Rate"}.value.split("]")[0].split("[")[1].to_i).receive_window,
+        receive_window: receive_window,
         notes: order.attributes[:note],
       })
     end
