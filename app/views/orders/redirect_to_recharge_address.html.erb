@@ -1,2 +1,2 @@
-redirecting to recharge...
-<%= javascript_tag("window.top.location='#{@rechargeUrl}'") %>
+<%= @redirect_text %>
+<%= javascript_tag("window.top.location.href='#{@redirect_url}'") %>

@@ -49,7 +49,16 @@ class OrdersController < ShopifyApp::AuthenticatedController
     ShopifyAPI::Base.activate_session(session)
 
     order = shop.getRechargeData("https://api.rechargeapps.com/orders/?status=SUCCESS&shopify_order_id=#{params[:id]}")['orders'].first
-    @rechargeUrl = "https://#{params[:shop]}/admin/apps/shopify-recurring-payments/addresses/#{order["address_id"]}"
+    Rails.logger.debug("order: #{order.inspect}")
+
+    if order != nil
+      @redirect_text = "Redirecting to Recharge..."
+      @redirect_url = "https://#{params[:shop]}/admin/apps/shopify-recurring-payments/addresses/#{order["address_id"]}"
+    else
+      @redirect_text = "Not a Subscription. Redirecting to back to Shopify..."
+      @redirect_url = "https://#{params[:shop]}/admin/orders/#{params[:id]}"
+    end
+
   end
 
 end

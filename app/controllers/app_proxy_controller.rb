@@ -166,7 +166,7 @@ class AppProxyController < ApplicationController
               rate.notes == "only offer after day with no cooks" && rate.delivery_method == 'delivery'
             end
           else
-            if day_before_no_cooks
+            if day_before_no_cooks && rate.delivery_type != "same_day"
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && rate.delivery_method == 'delivery' && rate.notes == 'only offer after day with no cooks'}")
               delivery_type.include?(rate.delivery_type) && rate.delivery_method == 'delivery' && rate.notes == "only offer after day with no cooks"
             else
