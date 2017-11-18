@@ -1,5 +1,5 @@
 class CSVGenerator
-  def self.generateItemCSV(orders)
+  def self.generateItemCSV(orders, cook)
     # Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
 
     attributes = %w{product quantity}
@@ -43,10 +43,12 @@ class CSVGenerator
     end
   end
 
-  def self.generateAddressesCSV(orders, shop)
+  def self.generateAddressesCSV(orders, shop, cook)
     rates = Shop.find_by(shopify_domain: shop.attributes[:domain]).rates
+    cook_time = cook.split(' ').first.downcase
+    Rails.logger.debug("cook_time: #{cook_time}")
 
-    attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Receive\ Window Notes}
+    attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Notes}
     shippingAddressArray = []
     shippingAddressArray.push({
       customer_last_name: shop.attributes[:name],
@@ -56,10 +58,14 @@ class CSVGenerator
       city: shop.attributes[:city],
       state: shop.attributes[:province_code],
       zip: shop.attributes[:zip],
-      receive_window: '',
       notes: '',
     })
-    Rails.logger.debug("bamboo: #{shop.attributes.inspect}")
+
+    if cook_time == 'morning'
+      attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Receive\ Window Notes}
+      shippingAddressArray.first[:receive_window] = ""
+    end
+
     orders.each do |order|
 
       receive_window = ''
@@ -71,7 +77,7 @@ class CSVGenerator
 
       Rails.logger.debug("s_a: #{order.attributes[:shipping_address].inspect}")
       s_a = order.attributes[:shipping_address].attributes
-      shippingAddressArray.push({
+      address_to_push = {
         customer_last_name: s_a[:last_name],
         first_name: s_a[:first_name],
         address: s_a[:address1],
@@ -79,9 +85,13 @@ class CSVGenerator
         city: s_a[:city],
         state: s_a[:province_code],
         zip: s_a[:zip],
-        receive_window: receive_window,
         notes: order.attributes[:note],
-      })
+      }
+      if cook_time == 'morning'
+        address_to_push[:receive_window] = receive_window
+      end
+
+      shippingAddressArray.push(address_to_push)
     end
 
     CSV.generate(headers: true) do |csv|

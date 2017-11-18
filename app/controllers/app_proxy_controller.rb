@@ -117,6 +117,7 @@ class AppProxyController < ApplicationController
         "weight_unit": "g"
       }
     }
+
     Rails.logger.debug("data: #{data.to_json}")
 
     response = HTTParty.put(endpoint,

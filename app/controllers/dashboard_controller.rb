@@ -89,7 +89,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       respond_to do |format|
         format.html
         format.csv {
-          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(orders) : CSVGenerator.generateAddressesCSV(orders, shop),
+          send_data params[:attribute] == "items" ? CSVGenerator.generateItemCSV(orders, cook_title) : CSVGenerator.generateAddressesCSV(orders, shop, cook_title),
           filename: "#{Date.parse(params[:date])}_#{cook_title.split(' ').first}-#{params[:attribute]}.csv"
         }
       end
