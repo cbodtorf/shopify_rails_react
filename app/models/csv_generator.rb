@@ -1,5 +1,5 @@
 class CSVGenerator
-  def self.generateItemCSV(orders, cook)
+  def self.generateItemCSV(orders)
     # Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
 
     attributes = %w{product quantity}
