@@ -1,5 +1,5 @@
 import React from 'react';
-import {Page, Card, Banner, DatePicker, FormLayout, Select, Layout, Button, Icon, ResourceList, DisplayText, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, Badge} from '@shopify/polaris';
+import {Page, Card, Banner, DatePicker, FormLayout, Select, Layout, Button, Icon, ResourceList, DisplayText, TextStyle, TextField, Subheading, Tabs, Link, ChoiceList, Badge, Popover} from '@shopify/polaris';
 import {EmbeddedApp, Alert, Modal} from '@shopify/polaris/embedded';
 import Navigation from '../../Global/components/Navigation';
 import ModalForm from '../../Global/components/ModalForm';
@@ -14,19 +14,14 @@ class BlackoutDates extends React.Component {
 
     this.state = {
       deleteAlertBlackoutOpen: false,
+      datePickerPopover: false,
       datePickerMonth: new Date().getMonth(),
       datePickerYear: new Date().getUTCFullYear(),
       datePickerSelected: null,
       datePickerErrors: false,
       titleErrors: false,
-      blackoutDate: {
-        blackout_date: undefined,
-        title: undefined,
-        wday: undefined,
-        day: undefined,
-        month: undefined,
-        year: undefined
-      },
+      title: "",
+      blackoutDate: {},
       blackoutDates: [],
       method: 'put',
       formUrl: '/create_blackout_date',
@@ -77,9 +72,9 @@ class BlackoutDates extends React.Component {
               titleErrors: false,
               formUrl: `/update_blackout_date/${date.id}`,
               datePickerSelected: utc,
+              title: date.title,
               blackoutDate: {
                 blackout_date: utc,
-                title: date.title,
                 wday: weekNames[utc.getDay()],
                 day: this.addZ(utc.getDate()),
                 month: this.addZ(utc.getMonth() + 1),
@@ -120,9 +115,9 @@ class BlackoutDates extends React.Component {
                       method: 'post',
                       url: '/create_blackout_date',
                       datePickerSelected: null,
+                      title: undefined,
                       blackoutDate: {
                         blackout_date: undefined,
-                        title: undefined,
                         wday: undefined,
                         day: undefined,
                         month: undefined,
@@ -165,31 +160,32 @@ class BlackoutDates extends React.Component {
             onSave={ () => this.handleSave(this.blackoutDateForm) }
             title="Blackout Date"
           >
+            <form
+              action={ this.state.formUrl }
+              acceptCharset="UTF-8" method="post"
+              ref={ (form) => { this.blackoutDateForm = form } }
+              >
+              <FormLayout>
+                <input name="utf8" type="hidden" value="✓" />
+                <input type="hidden" name="_method" value={ this.state.method } />
+                <input required type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
+                <input required type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
+                <input required type="hidden" name="blackout_date[title]" value={ this.state.title } />
+              </FormLayout>
+            </form>
             <div className="modal-form-container">
-              <form
-                action={ this.state.formUrl }
-                acceptCharset="UTF-8" method="post"
-                ref={ (form) => { this.blackoutDateForm = form } }
-                >
-                <FormLayout>
-                  <input name="utf8" type="hidden" value="✓" />
-                  <input type="hidden" name="_method" value={ this.state.method } />
-                  <input required type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
-                  <input required ref={ (input) => { this.blackoutDateDateInput = input } } type="hidden" name="blackout_date[blackout_date]" value={ this.state.blackoutDate.blackout_date ? `${this.state.blackoutDate.day}-${this.state.blackoutDate.month}-${this.state.blackoutDate.year}` : '' } />
-                  <input required ref={ (input) => { this.blackoutDateTitleInput = input } } type="hidden" name="blackout_date[title]" value={ this.state.blackoutDate.title } />
-                </FormLayout>
-              </form>
               <br />
               <br />
-              <TextField
-                label="Blackout Date Title"
-                name="blackout_date[title]"
-                type="text"
-                pattern={"/^[A-Za-z0-9 ]{3,20}$/"}
-                error={ this.state.titleErrors }
-                value={ this.state.blackoutDate.title }
-                onChange={ this.valueUpdater('title', 'blackoutDate') }
-              />
+              <FormLayout>
+                <TextField
+                  label="Blackout Date Title"
+                  type="text"
+                  pattern={"/^[A-Za-z0-9 ]{3,20}$/"}
+                  error={ this.state.titleErrors }
+                  value={ this.state.title }
+                  onChange={ this.valueUpdater('title') }
+                /><br />
+              </FormLayout>
               <DatePicker
                 month={ this.state.datePickerMonth }
                 year={ this.state.datePickerYear }
@@ -199,20 +195,20 @@ class BlackoutDates extends React.Component {
                 onChange={ (selected) => { this.dateChange(selected) } }
                 onMonthChange={ (month,year) => { this.monthChange(month,year) } }
               />
+
               { datePickerErrors }
-              </div>
+            </div>
           </ModalForm>
         </Page>
       </EmbeddedApp>
       </div>
     );
   }
-  valueUpdater(field, namespace) {
-    return (value) => this.setState({ [namespace]: { ...this.state[namespace], [field]: value } });
+  valueUpdater(field) {
+    return (value) => this.setState({ [field]: value });
   }
 
   monthChange(month, year) {
-
     this.setState({
       datePickerMonth: month,
       datePickerYear: year
@@ -226,7 +222,6 @@ class BlackoutDates extends React.Component {
       datePickerSelected: d,
       blackoutDate: {
         blackout_date: d,
-        title: this.state.blackoutDate.title,
         wday: weekNames[d.getDay()],
         day: this.addZ(d.getDate()),
         month: this.addZ(d.getMonth() + 1),
@@ -236,22 +231,22 @@ class BlackoutDates extends React.Component {
   }
 
   handleSave(formType) {
-    console.log("date input", typeof this.blackoutDateDateInput.value );
-    console.log("title input", typeof this.blackoutDateTitleInput.value );
-    const self = this
+    let self = this
+    let titleRule = this.state.title === "" || this.state.title === undefined || this.state.title === null
+    let dateRule = this.state.blackoutDate.blackout_date === "" || this.state.blackoutDate.blackout_date === undefined || this.state.blackoutDate.blackout_date === null
 
-    if (this.blackoutDateDateInput.value === "" || this.blackoutDateDateInput.value === undefined || this.blackoutDateDateInput.value === null) {
+    if (dateRule) {
       self.setState({datePickerErrors: "Must select a date."})
     } else {
       self.setState({datePickerErrors: false})
     }
-    if (this.blackoutDateTitleInput.value === "" || this.blackoutDateTitleInput.value === undefined || this.blackoutDateTitleInput.value === null) {
+    if (titleRule) {
       self.setState({titleErrors: "Must enter a title for blackout date."})
     } else {
       self.setState({titleErrors: false})
     }
 
-    if(!this.state.titleErrors && !this.state.datePickerErrors){
+    if(!titleRule && !dateRule){
       formType.submit()
     }
   }

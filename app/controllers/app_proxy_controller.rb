@@ -229,7 +229,9 @@ class AppProxyController < ApplicationController
         # last cook schedule is delivered next day.
         if idx == (schedules.size - 1) && date != Date.today
           if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
-            # rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+            if @admin
+              rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+            end
             # Rails.logger.debug("[last no rates] #{rate_dates}")
           else
             rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)

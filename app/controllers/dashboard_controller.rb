@@ -251,14 +251,14 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
               # Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
               cook_days = rate.cook_day.select do |day|
-                if day.cook_schedule_id != schedules.last.id && day.title.downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15))
+                if day.cook_schedule_id != schedules.last.id && day.title.downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23))
                   # same day as delivery, must cook this day
                   # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
                   cook_date = (note_date)
                   deliver_next_day = false
                   # Rails.logger.debug("#sub  cook same day as delivery date")
                   true
-                elsif day.cook_schedule_id == schedules.last.id && day.title.downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 15)
+                elsif day.cook_schedule_id == schedules.last.id && day.title.downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23)
                   cook_date = (note_date - 1.day)
                   deliver_next_day = true
                   # Rails.logger.debug("# cook day before delivery date")
@@ -329,7 +329,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     @fiveDayOrders[dateIndex][:cook_schedules].first[:orders].push(order)
                     # cooks that go out same day go into the next schedule's addresses.
                     Rails.logger.debug("sub_first_order same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
-                    Rails.logger.debug("sub_first_order same day cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
+                    # Rails.logger.debug("sub_first_order same day cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
                     # filter out Pickups
                     if checkout_method != "pickup"
                       @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
@@ -338,7 +338,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     sched.first[:orders].push(order)
                     # cooks that go out same day go into the next schedule's addresses.
                     Rails.logger.debug("reg same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
-                    Rails.logger.debug("reg same day next cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
+                    # Rails.logger.debug("reg same day next cs: #{@fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1].inspect}")
                     # filter out Pickups
                     if checkout_method != "pickup"
                       @fiveDayOrders[dateIndex][:cook_schedules][@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1][:addresses].push(order)
