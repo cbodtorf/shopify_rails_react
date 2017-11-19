@@ -477,7 +477,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     Rails.logger.debug("orders: #{orders.inspect}")
     Rails.logger.debug("orders size: #{orders.size}")
     fulfillments = orders.map do |order|
-      ShopifyAPI::Fulfillment.new(:order_id => order.id, :line_items => order.line_items.map{|item| {"id" => item.id}} )
+      ShopifyAPI::Fulfillment.new(:order_id => order.id, :notify_customer => false, :line_items => order.line_items.map{|item| {"id" => item.id}} )
     end
     Rails.logger.debug("orders: #{fulfillments.inspect}")
 
