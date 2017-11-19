@@ -28,7 +28,7 @@ class AppProxyController < ApplicationController
       # Clear Cache, unless no shipping address
       unless shopify_checkout.attributes[:shipping_address] == nil
         # breakCarrierCache(shopify_checkout)
-        # breakCarrierCacheWeight(shopify_checkout)
+        breakCarrierCacheWeight(shopify_checkout)
       end
 
       if recharge_checkout
