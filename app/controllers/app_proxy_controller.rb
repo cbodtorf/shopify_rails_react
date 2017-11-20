@@ -160,7 +160,7 @@ class AppProxyController < ApplicationController
         else
           if day_before_blackout
             if date == Date.today || (cutoff && date == Date.tomorrow)
-              Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
+              Rails.logger.debug("[ db tort return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
               delivery_type.include?(rate.delivery_type) && cutoff && rate.delivery_method == 'delivery'
             else
               Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.notes == "only offer after day with no cooks" && rate.delivery_method == 'delivery'}")
@@ -230,7 +230,7 @@ class AppProxyController < ApplicationController
         # last cook schedule is delivered next day.
         if idx == (schedules.size - 1) && date != Date.today
           if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
-            if @admin
+            if @admin && !day_before_blackout
               rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
             end
             # Rails.logger.debug("[last no rates] #{rate_dates}")
@@ -246,7 +246,7 @@ class AppProxyController < ApplicationController
       end
 
       rate_dates = rate_dates.uniq
-      Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
+      # Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
       Rails.logger.debug("[admin true] #{@admin.inspect}")
       tomorrow = Date.tomorrow
 
