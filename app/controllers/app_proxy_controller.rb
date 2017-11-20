@@ -25,8 +25,11 @@ class AppProxyController < ApplicationController
       recharge_items = shopify_checkout.attributes[:line_items].select{|item| item.attributes[:title].include?("Auto renew")}
       recharge_items.empty? ? recharge_checkout = false : recharge_checkout = true
 
-      # Clear Cache, unless no shipping address
-      unless shopify_checkout.attributes[:shipping_address] == nil
+      # Rails.logger.debug("[rate match] #{shopify_checkout.attributes[:note_attributes].attributes["Delivery Rate"]} #{params[:rate_id]}")
+      # Rails.logger.debug("[rate match] #{shopify_checkout.attributes[:note_attributes].attributes["Delivery Rate"] == params[:rate_id]}")
+      
+      # Clear Cache, unless no shipping address or rate mismatch
+      unless shopify_checkout.attributes[:shipping_address] == nil || shopify_checkout.attributes[:note_attributes].attributes["Delivery Rate"] == params[:rate_id]
         # breakCarrierCache(shopify_checkout)
         breakCarrierCacheWeight(shopify_checkout)
       end
@@ -95,7 +98,7 @@ class AppProxyController < ApplicationController
     variant = checkout.attributes[:line_items].first
     variant_id = variant.attributes[:variant_id]
     w = variant.attributes[:grams].to_i
-    break_weight = w > 500 ? 0 : w + 100
+    break_weight = w > 1000 ? 0 : w + 100
 
     Rails.logger.debug("variant: #{variant.attributes.inspect}")
     Rails.logger.debug("break_weight: #{break_weight.inspect}")
