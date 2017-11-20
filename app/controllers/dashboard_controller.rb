@@ -3,7 +3,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
   def index
     shop = ShopifyAPI::Shop.current()
-    shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
+    shop = Shop.find_by(shopify_domain: shop.attributes[:myshopify_domain])
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true)
 
 
