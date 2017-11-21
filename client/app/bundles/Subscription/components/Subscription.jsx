@@ -195,7 +195,6 @@ class Subscription extends React.Component {
   redirectToShopifyCustomerPage(customerId) {
     const self = this
 
-
     let myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
@@ -205,7 +204,7 @@ class Subscription extends React.Component {
                mode: 'no-cors',
                cache: 'default' };
 
-    fetch(`subscription/${customerId}`, fetchSettings)
+    fetch(`/subscription/${customerId}`, fetchSettings)
     .then(self._parseJSON) // Transform the data into json
     .then(function(data) {
         // Your code for handling the data you get from the API
