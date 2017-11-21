@@ -34,6 +34,7 @@ Rails.application.routes.draw do
   get 'showOrders', to: 'dashboard#showOrders'
 
   get 'subscription', to: 'subscription#index'
+  get 'subscription/:id', to: 'subscription#get_shopify_customer_id'
 
   get 'blackout_dates', to: 'settings#blackout_dates'
   get 'pickup_locations', to: 'settings#pickup_locations'
