@@ -10,7 +10,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
 
     # filterErrors returns {:error_orders, :orders}
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, cancelled_at, closed_at"
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at"
     orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
     # subscription errors
     subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/count/?status=ERROR")['count']
@@ -42,12 +42,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
     @activeSubscriberCount = activeSubscribers.count
 
     # Shipping Orders:
-    @shippingOrders = getShippingOrders(orders[:orders])
+    shippingOrders = getShippingOrders(orders[:orders])
 
-    @shippingOrdersCount = @shippingOrders.count
+    @shippingOrdersCount = shippingOrders.count
 
     @shippingOrdersRevenue = 0
-    @shippingOrders.each do |order|
+    shippingOrders.each do |order|
       @shippingOrdersRevenue += order.attributes[:total_price].to_f
     end
 
@@ -122,7 +122,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, order_number, customer, note, cancelled_at, closed_at"
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at"
       orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
       @orders = orders[:error_orders]
 
@@ -170,7 +170,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     t8601 = t.iso8601
     sixDaysAgo = (t - 6.day).iso8601
 
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, order_number, customer, note, shipping_address"
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at"
     orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: sixDaysAgo, limit: 250 }))
     errorOrders = orders[:error_orders]
     # Sort by cook time
@@ -363,7 +363,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def getShippingOrders(orders = false)
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, fulfillment_status, order_number, customer, note, cancelled_at, closed_at"
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at"
     shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "open", limit: 250 }))[:orders] : orders
     shippingOrders = []
     shipping_orders.select do |order|
@@ -417,7 +417,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
     reg_orders = []
     orders_to_be_filtered.each do |order|
       # remove cancelled/closed orders.
-      if order.attributes[:cancelled_at] != nil || order.attributes[:closed_at] != nil
+      if order.attributes[:cancelled_at] != nil || order.attributes[:closed_at] != nil || order.attributes[:financial_status] == 'refunded'
+        # Rails.logger.debug("cancelled: #{order.attributes[:cancelled_at].inspect}, nil?#{order.attributes[:cancelled_at] != nil} ")
+        # Rails.logger.debug("closed: order_#{order.attributes[:closed_at].inspect}, nil?#{order.attributes[:closed_at] != nil} ")
         next
       end
 

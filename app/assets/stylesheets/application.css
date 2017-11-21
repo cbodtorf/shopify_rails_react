@@ -530,6 +530,9 @@ div.pickup-count {
 .bamboo-orderList .Polaris-ResourceList__Container {
   pointer-events: auto;
 }
+.bamboo-orderList .Polaris-Badge {
+  white-space: nowrap;
+}
 .table-wrapper .notice-icon {
   display: inline-block;
   width: 16px;

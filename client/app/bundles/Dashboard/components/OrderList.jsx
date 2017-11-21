@@ -61,6 +61,48 @@ const determineFulfillment = function(status) {
     statusText: statusText
   }
 }
+const determinePayment = function(status) {
+  let statusColor,
+      statusText;
+  switch (status) {
+    case 'authorized':
+      statusColor = 'attention'
+      statusText = 'Authoried'
+      break;
+    case 'pending':
+      statusColor = 'attention'
+      statusText = 'Pending'
+      break;
+    case 'partially_paid':
+      statusColor = 'default'
+      statusText = 'Partially Paid'
+      break;
+    case 'paid':
+      statusColor = 'default'
+      statusText = 'Paid'
+      break;
+    case 'partially_refunded':
+      statusColor = 'default'
+      statusText = 'Partially Refunded'
+      break;
+    case 'refunded':
+      statusColor = 'default'
+      statusText = 'Refunded'
+      break;
+    case 'voided':
+      statusColor = 'default'
+      statusText = 'Voided'
+      break;
+    default:
+    statusColor = 'attention'
+    statusText = 'Authorized'
+  }
+
+  return {
+    statusColor: statusColor,
+    statusText: statusText
+  }
+}
 
 class OrderList extends React.Component {
   constructor(props) {
@@ -175,8 +217,15 @@ class OrderList extends React.Component {
      const fulfillmentStatus = determineFulfillment(order.fulfillment_status)
      let fullfillmentBadge = (
        <Badge
-         children={fulfillmentStatus.statusText}
+         children={<TextStyle subdued>{ fulfillmentStatus.statusText }</TextStyle>}
          status={fulfillmentStatus.statusColor}
+       />
+     )
+     const paymentStatus = determinePayment(order.financial_status)
+     let paymentBadge = (
+       <Badge
+         children={<TextStyle subdued> { paymentStatus.statusText } </TextStyle>}
+         status={paymentStatus.statusColor}
        />
      )
 
@@ -194,6 +243,7 @@ class OrderList extends React.Component {
            </td>
            <td>{ customerName }</td>
            <td>{ createdAtDate.toLocaleDateString() }</td>
+           <td>{ paymentBadge }</td>
            <td>{ fullfillmentBadge }</td>
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
@@ -277,7 +327,8 @@ class OrderList extends React.Component {
                           <th>Order</th>
                           <th>Customer</th>
                           <th>Order Created</th>
-                          <th>Status</th>
+                          <th>Payment Status</th>
+                          <th>Fulfillment Status</th>
                           <th>Total</th>
                           <th>Order</th>
                           { showEditSubHeader }

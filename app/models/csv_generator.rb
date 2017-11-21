@@ -6,23 +6,25 @@ class CSVGenerator
     itemsArray = []
     orders.each do |order|
       order.attributes[:line_items].each do |item|
-        if item.attributes[:title].include?("Auto renew") # modify name of Subscriptions
-          item.attributes[:title] = item.attributes[:title].split('Auto renew').first.strip
-        end
-        if item.attributes[:properties].any?{|prop| prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != "" }
-          # account for bundle line items properties
-          item.attributes[:properties].each do |prop|
-            # make sure we get the correct properties
-            if prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != ""
-              # make sure we note quantity of line item properties.
-              itemAndQuantity = prop.attributes["value"].split(' x')
-
-              itemsArray.push([itemAndQuantity.first, (itemAndQuantity.last.to_i * item.attributes[:quantity])])
-            end
+        if item.attributes[:fulfillable_quantity] > 0
+          if item.attributes[:title].include?("Auto renew") # modify name of Subscriptions
+            item.attributes[:title] = item.attributes[:title].split('Auto renew').first.strip
           end
-        else
-          # normal behavior for non bundle items
-          itemsArray.push([item.attributes[:title], item.attributes[:quantity]])
+          if item.attributes[:properties].any?{|prop| prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != "" }
+            # account for bundle line items properties
+            item.attributes[:properties].each do |prop|
+              # make sure we get the correct properties
+              if prop.attributes["name"].split(" ").first === "item" && prop.attributes["value"] != ""
+                # make sure we note quantity of line item properties.
+                itemAndQuantity = prop.attributes["value"].split(' x')
+
+                itemsArray.push([itemAndQuantity.first, (itemAndQuantity.last.to_i * item.attributes[:fulfillable_quantity])])
+              end
+            end
+          else
+            # normal behavior for non bundle items
+            itemsArray.push([item.attributes[:title], item.attributes[:fulfillable_quantity]])
+          end
         end
       end
     end

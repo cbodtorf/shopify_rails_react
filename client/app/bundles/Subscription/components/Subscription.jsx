@@ -6,7 +6,19 @@ import bambooIcon from 'assets/green-square.jpg';
 
 import SearchBar, {createFilter} from '../../Global/components/SearchBar';
 
-const KEYS_TO_FILTERS = ['line_items.title', 'first_name', 'last_name', 'scheduled_at', ]
+const KEYS_TO_FILTERS = ['line_items.title', 'first_name', 'last_name', 'scheduled_at']
+
+const rxOne = /^[\],:{}\s]*$/;
+const rxTwo = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g;
+const rxThree = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g;
+const rxFour = /(?:^|:|,)(?:\s*\[)+/g;
+const isJSON = (input) => (
+  input.length && rxOne.test(
+    input.replace(rxTwo, '@')
+      .replace(rxThree, ']')
+      .replace(rxFour, '')
+  )
+);
 
 class Subscription extends React.Component {
   constructor(props) {
@@ -49,10 +61,7 @@ class Subscription extends React.Component {
         deliveryDate = <Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${sub.customer_hash}/subscriptions/`}>Must edit Payment</Link>
       }
 
-      let customerName = sub.first_name + ' ' + sub.last_name
-      if (sub.shopify_customer_id) {
-        customerName = <Link external="true" url={`http://${this.props.shop_session.url}/admin/customers/${sub.shopify_customer_id}`}>{ sub.first_name + ' ' + sub.last_name }</Link>
-      }
+      let customerName = <Link onClick={ () => this.redirectToShopifyCustomerPage(sub.customer_id) }>{ sub.first_name + ' ' + sub.last_name }</Link>
 
       return (
           <tbody key={ sub.id } className="ui-nested-link-container">
@@ -174,5 +183,40 @@ class Subscription extends React.Component {
   searchUpdated (term) {
     this.setState({ searchTerm: term })
   }
+
+  _parseJSON(response) {
+      console.log("parse data", response)
+
+    return response.text().then(function(text) {
+      return isJSON(text) ? JSON.parse(text) : {}
+    })
+  }
+
+  redirectToShopifyCustomerPage(customerId) {
+    const self = this
+
+
+    let myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    let fetchSettings = { method: 'GET',
+               headers: myHeaders,
+               credentials: 'same-origin',
+               mode: 'no-cors',
+               cache: 'default' };
+
+    fetch(`subscription/${customerId}`, fetchSettings)
+    .then(self._parseJSON) // Transform the data into json
+    .then(function(data) {
+        // Your code for handling the data you get from the API
+        console.log("success", data.shopifyCustomerId)
+        window.top.location.href = `http://${self.props.shop_session.url}/admin/customers/${data.shopifyCustomerId}`
+    })
+    .catch(function(error) {
+        // This is where you run code if the server returns any errors
+        console.error('Hmm something went wrong:', error)
+    });
+  }
+
 }
 export default Subscription

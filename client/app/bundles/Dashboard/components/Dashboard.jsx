@@ -25,34 +25,8 @@ class Dashboard extends React.Component {
   componentWillMount() {
     console.log('props: ', this.props)
 
-    let shippingList = []
-    this.props.shippingOrders.forEach(order => {
-      /* TODO: handle orders that may not have note_attributes */
-      let checkoutMethod = order.note_attributes.filter(note => humanize_(note['name']) === 'Checkout Method')
-      if (checkoutMethod[0].value.toLowerCase() === 'shipping' && typeof checkoutMethod[0] !== 'undefined') {
-        console.log('trying filter shipping orders', order);
-        let fullfillmentBadge = {
-          content: order.fulfillment_status === 'fulfilled' ? 'Fulfilled' : 'Unfulfilled',
-          status: order.fulfillment_status === 'fulfilled' ? 'success' : 'attention'
-        }
-        shippingList.push({
-          attributeOne: <Link external="true" url={`https://${this.props.shop_session.url}/admin/orders/${order.id}`}>{order.name}</Link>,
-          attributeTwo: new Date(order.created_at).toLocaleDateString(),
-          attributeThree: 'items csv',
-          badges: [
-            fullfillmentBadge,
-          ],
-          actions: [
-            {content: 'Order Details', onAction: () => { window.open(`https://${this.props.shop_session.url}/admin/orders/${order.id}`, '_blank').focus() }},
-          ],
-          persistActions: true,
-        })
-      }
-    })
-
     this.setState({
-      fiveDayOrders: this.props.fiveDayOrders,
-      shippingList: shippingList,
+      fiveDayOrders: this.props.fiveDayOrders
     })
   }
 
