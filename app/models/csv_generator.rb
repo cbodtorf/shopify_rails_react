@@ -44,7 +44,7 @@ class CSVGenerator
   end
 
   def self.generateAddressesCSV(orders, shop, cook)
-    rates = Shop.find_by(shopify_domain: shop.attributes[:domain]).rates
+    rates = Shop.find_by(shopify_domain: shop.attributes[:myshopify_domain]).rates
     cook_time = cook.split(' ').first.downcase
     Rails.logger.debug("cook_time: #{cook_time}")
 
