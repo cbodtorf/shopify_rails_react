@@ -149,12 +149,14 @@ class OrderList extends React.Component {
     // DYNAMIC HEADERS
     let showPrintHeader = <th>Print</th>
     let showFulfillHeader = <th>Fulfill</th>
+    let showDeliveryRate = <th>Delivery Rate</th>
     let showEditSubHeader = null,
         showViewRechargeHeader = null,
         showErrorsHeader = null;
 
     if (attributeLowerCase === "errors") {
       showPrintHeader = null
+      showDeliveryRate = null
       showFulfillHeader = null
       showEditSubHeader = <th>Subscription</th>
       showViewRechargeHeader = <th>Recharge</th>
@@ -168,7 +170,6 @@ class OrderList extends React.Component {
      let upcomingSub = order.address_id !== undefined
      let createdAtDate = new Date(order.created_at)
      let processedAtDate = new Date(order.processed_at)
-     let deliveryMethod = order.note_attributes.filter(note => humanize_(note.name) === 'Checkout Method' ? note.value : null)
      let urlBase = `https://${this.props.shop_session.url}/admin/`
 
      // SET ORDER NUMBER
@@ -183,12 +184,16 @@ class OrderList extends React.Component {
      // SET EDIT ORDER/ATTRIBUTES
      let editLink = upcomingSub ? null : <Link url={ `/orders?id=${order.id}` }>Edit</Link>
 
-      let editSubscriptionLink = null,
+     let editSubscriptionLink = null,
           viewRechargeLink = null,
+          deliveryRate = order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0],
           errorMessages = null,
           showErrorsButton = null,
           printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
           fulfillLink = <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>;
+
+      console.log("note rate: ", deliveryRate);
+
       if (attributeLowerCase === "errors") {
         editSubscriptionLink = upcomingSub ?
          <td><Link external="true" url={`http://${this.props.shop_session.url}/tools/recurring/customers/${order.customer_hash}/subscriptions/`}>Edit</Link></td> : <td></td>
@@ -196,6 +201,7 @@ class OrderList extends React.Component {
          <td><Link external="true" url={ `${urlBase}apps/shopify-recurring-payments/addresses/${order.address_id}` }>View</Link></td> : <td></td>
         printLink = null
         fulfillLink = null
+        deliveryRate = null
 
         // ERROR BUTTON
         showErrorsButton = <td><Link onClick={ () => {
@@ -245,6 +251,7 @@ class OrderList extends React.Component {
            <td>{ createdAtDate.toLocaleDateString() }</td>
            <td>{ paymentBadge }</td>
            <td>{ fullfillmentBadge }</td>
+           <td>{ deliveryRate.value.split(']')[1] }</td>
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
            { editSubscriptionLink }
@@ -329,6 +336,7 @@ class OrderList extends React.Component {
                           <th>Order Created</th>
                           <th>Payment Status</th>
                           <th>Fulfillment Status</th>
+                          { showDeliveryRate }
                           <th>Total</th>
                           <th>Order</th>
                           { showEditSubHeader }
