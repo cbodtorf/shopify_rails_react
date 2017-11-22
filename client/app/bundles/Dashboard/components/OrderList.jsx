@@ -186,13 +186,18 @@ class OrderList extends React.Component {
 
      let editSubscriptionLink = null,
           viewRechargeLink = null,
-          deliveryRate = order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0],
+          deliveryRate = "",
           errorMessages = null,
           showErrorsButton = null,
           printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
           fulfillLink = <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>;
 
-      console.log("note rate: ", deliveryRate);
+      if (order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0] !== null) {
+        if (deliveryRate.value !== undefined) {
+          deliveryRate = deliveryRate.value.split(']')[1]
+        }
+      }
+
 
       if (attributeLowerCase === "errors") {
         editSubscriptionLink = upcomingSub ?
@@ -251,7 +256,7 @@ class OrderList extends React.Component {
            <td>{ createdAtDate.toLocaleDateString() }</td>
            <td>{ paymentBadge }</td>
            <td>{ fullfillmentBadge }</td>
-           <td>{ deliveryRate.value.split(']')[1] }</td>
+           <td>{ deliveryRate }</td>
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
            { editSubscriptionLink }

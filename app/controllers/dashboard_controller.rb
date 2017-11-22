@@ -4,14 +4,17 @@ class DashboardController < ShopifyApp::AuthenticatedController
   def index
     shop = ShopifyAPI::Shop.current()
     shop = Shop.find_by(shopify_domain: shop.attributes[:myshopify_domain])
-    fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true)
-
-
-    @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
 
     # filterErrors returns {:error_orders, :orders}
     order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at"
-    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
+    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
+
+    fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true, orders)
+    Rails.logger.debug("5day error size: #{fiveDayOrdersWithErrors[:errorOrders].size}")
+
+    @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
+
+    Rails.logger.debug("5day error size: #{orders[:error_orders].size}")
     # subscription errors
     subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/count/?status=ERROR")['count']
     @errorOrdersCount = orders[:error_orders].count + subs_with_errors
@@ -31,15 +34,10 @@ class DashboardController < ShopifyApp::AuthenticatedController
       end
     end
 
-    # Subscriber Count (tagged with Active Subscriber)
-    # http://support.rechargepayments.com/article/191-shopify-order-tags
-    customers = ShopifyAPI::Customer.find(:all, params: { fields: "tags", limit: 250 })
-    # TODO: It is not counting customers made in the recharge admin section.
-    # maybe look for repeat customers.
-    activeSubscribers = customers.select do |c|
-      c.attributes[:tags].split(', ').include?('Active Subscriber')
-    end
-    @activeSubscriberCount = activeSubscribers.count
+    # Subscriber Count (Active Subscriptions with unique customer)
+    @activeSubscriberCount = shop
+      .getRechargeData("https://api.rechargeapps.com/subscriptions/?status=ACTIVE&limit=250")['subscriptions']
+      .uniq {|sub| sub["customer_id"]}.size
 
     # Shipping Orders:
     shippingOrders = getShippingOrders(orders[:orders])
@@ -161,18 +159,20 @@ class DashboardController < ShopifyApp::AuthenticatedController
     return obj
   end
 
-  def formatOrders(shop_domain = params[:shop], showErrors = false)
+  def formatOrders(shop_domain = params[:shop], showErrors = false, filteredOrders = false)
     # Shopify requires time to be iso8601 format
     # Order Information 7 day range ( limit for which orders )
     # TODO: make sure this range is right,
     shop = Shop.find_by(shopify_domain: shop_domain)
-    t = Time.now
-    t8601 = t.iso8601
-    sixDaysAgo = (t - 6.day).iso8601
 
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at"
-    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: sixDaysAgo, limit: 250 }))
+    if filteredOrders.blank?
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at"
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: (Time.now - 6.day).iso8601, limit: 250 }))
+    else
+      orders = filteredOrders
+    end
     errorOrders = orders[:error_orders]
+
     # Sort by cook time
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
     # blackout dates
@@ -416,11 +416,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
     error_orders = []
     reg_orders = []
     orders_to_be_filtered.each do |order|
-      # remove cancelled/closed/refunded/unshippable orders.
+      # remove cancelled/refunded/unshippable orders.
       next if order.attributes[:cancelled_at] != nil
-      next if order.attributes[:closed_at] != nil
       next if order.attributes[:financial_status] == 'refunded'
-      next if order.attributes[:line_items].all? {|item| item.attributes[:require_shipping] == false}
       next if order.attributes[:line_items].all? {|item| item.attributes[:require_shipping] == false}
 
       # order line item presence

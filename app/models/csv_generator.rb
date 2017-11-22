@@ -70,7 +70,7 @@ class CSVGenerator
 
     orders.each do |order|
       # Check status to see if we need to check line_item fulfillments
-      if order.attributes[:financial_status] == 'partially_refunded' || order.attributes[:fulfillment_status] == 'partial'
+      if order.attributes[:financial_status] == 'partially_refunded' || order.attributes[:fulfillment_status] == 'partial' || order.attributes[:fulfillment_status] == 'fulfilled'
         next unless order.attributes[:line_items].any? {|item| item.attributes[:fulfillable_quantity] > 0}
       end
 
