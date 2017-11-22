@@ -1,7 +1,6 @@
 import React from 'react';
 import {Page, Card, Banner, Layout, Stack, Button, ButtonGroup, Heading, Link, Icon, ResourceList, Pagination, FooterHelp} from '@shopify/polaris';
 import {EmbeddedApp} from '@shopify/polaris/embedded';
-import Order from './Order';
 import Navigation from '../../Global/components/Navigation';
 import bambooIcon from 'assets/green-square.jpg';
 import packageIcon from 'assets/package.png';

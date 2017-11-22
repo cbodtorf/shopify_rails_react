@@ -186,18 +186,11 @@ class OrderList extends React.Component {
 
      let editSubscriptionLink = null,
           viewRechargeLink = null,
-          deliveryRate = "",
+          deliveryRate = null,
           errorMessages = null,
           showErrorsButton = null,
           printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
           fulfillLink = <td><Link external="true" url={ `${urlBase}orders/${order.id}/fulfill_and_ship` }>Fulfill</Link></td>;
-
-      if (order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0] !== null) {
-        if (deliveryRate.value !== undefined) {
-          deliveryRate = deliveryRate.value.split(']')[1]
-        }
-      }
-
 
       if (attributeLowerCase === "errors") {
         editSubscriptionLink = upcomingSub ?
@@ -223,6 +216,9 @@ class OrderList extends React.Component {
               <Stack.Item key={i}><span style={{display: "inline-block", verticalAlign: "middle"}}><Icon source="risk"/></span> - { error }</Stack.Item>
             )
           })
+      } else {
+        deliveryRate = order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0]
+        deliveryRate = <td>{ deliveryRate.value.split(']')[1] }</td>
       }
 
      const fulfillmentStatus = determineFulfillment(order.fulfillment_status)
@@ -256,7 +252,7 @@ class OrderList extends React.Component {
            <td>{ createdAtDate.toLocaleDateString() }</td>
            <td>{ paymentBadge }</td>
            <td>{ fullfillmentBadge }</td>
-           <td>{ deliveryRate }</td>
+           { deliveryRate }
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
            { editSubscriptionLink }
