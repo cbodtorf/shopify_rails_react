@@ -5,7 +5,7 @@ class SubscriptionController < ShopifyApp::AuthenticatedController
   end
 
   def get_shopify_customer_id
-    shopify_customer_id = shop.getRechargeData("https://api.rechargeapps.com/customers/#{order['customer_id']}")['customer']['shopify_customer_id']
+    shopify_customer_id = shop.getRechargeData("https://api.rechargeapps.com/customers/#{params[:id]}")['customer']['shopify_customer_id']
     render json: {shopifyCustomerId: shopify_customer_id} , status: 200
   end
 end
