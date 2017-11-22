@@ -209,7 +209,7 @@ class Subscription extends React.Component {
     .then(function(data) {
         // Your code for handling the data you get from the API
         console.log("success", data.shopifyCustomerId)
-        window.top.location.href = `http://${self.props.shop_session.url}/admin/customers/${data.shopifyCustomerId}`
+        window.open(`http://${self.props.shop_session.url}/admin/customers/${data.shopifyCustomerId}`, '_blank').focus()
     })
     .catch(function(error) {
         // This is where you run code if the server returns any errors
