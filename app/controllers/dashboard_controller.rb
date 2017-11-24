@@ -516,4 +516,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
     #   order.destroy
     # end
   end
+
+  def update_webhooks(new_URI_host)
+    # Start Session
+    # ShopifyAPI::Base.activate_session(ShopifyApp::SessionRepository.retrieve(1))
+
+    # webhooks = ShopifyAPI::Webhook.find(:all)
+    # webhooks.each {|hook| hook.address.sub!(URI.parse(hook.address).host, new_URI_host) }
+  end
 end
