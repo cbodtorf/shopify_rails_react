@@ -202,7 +202,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
         orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
 
         # Format order created_at
-        Rails.logger.debug("order created_at: #{orderAttributes.inspect}")
+        # Rails.logger.debug("order created_at: #{orderAttributes.inspect}")
         order_created_at = DateTime.parse(order.attributes[:created_at])
 
         # Rails.logger.debug("order: #{order.attributes[:name].inspect}")
@@ -419,7 +419,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       # remove cancelled/refunded/unshippable orders.
       next if order.attributes[:cancelled_at] != nil
       next if order.attributes[:financial_status] == 'refunded'
-      next if order.attributes[:line_items].all? {|item| item.attributes[:require_shipping] == false}
+      next if order.attributes[:line_items].all? {|item| item.attributes[:requires_shipping] == false}
 
       # order line item presence
       product_does_not_exist = order.attributes[:line_items].select{|item| !item.attributes[:product_exists]}
