@@ -72,7 +72,7 @@ class NoteForm extends Component {
                 month={ this.props.datePickerMonth }
                 year={ this.props.datePickerYear }
                 selected={ this.props.datePickerSelected }
-                disableDatesBefore={ new Date() }
+                disableDatesBefore={ new Date(new Date().setDate(new Date().getDate()-1)) }
                 onChange={ (selected) => { this.props.onDateChange(selected) } }
                 onMonthChange={ (month,year) => { this.props.onMonthChange(month,year) } }
               />
