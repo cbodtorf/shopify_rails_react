@@ -1,11 +1,10 @@
 class ContextualRate
-  attr_accessor :rate, :items, :addrs, :postal_codes
+  attr_accessor :rate, :items, :addrs
 
-  def initialize(rate, items, addrs, postal_codes)
+  def initialize(rate, items, addrs)
     @rate = rate
     @items = items
     @addrs = addrs
-    @postal_codes = postal_codes
   end
 
   def to_hash
@@ -25,7 +24,6 @@ class ContextualRate
     # Rails.logger.debug("valid_grams?: #{valid_grams?}")
     return false unless valid_conditions?
     # Rails.logger.debug("valid_conditions?: #{valid_conditions?}")
-    return false unless valid_rate?
 
     true
   end
@@ -95,33 +93,4 @@ class ContextualRate
    end
   end
 
-  def valid_rate?
-    postal_codes_match = @postal_codes.select{|code| code[:title] == addrs[:postal_code]}
-    Rails.logger.debug("properties: #{items.first['properties'].inspect}")
-    Rails.logger.debug("properties: #{items.first['properties']['_Delivery rate id'].inspect}")
-    if items.first['properties'].present?
-      rate_id = items.first['properties']['_Delivery rate id']
-
-      if rate_id != nil
-        if postal_codes_match.empty?
-          rate.delivery_method.downcase == 'shipping'
-        else
-          rate.id.to_i == rate_id.to_i
-        end
-      else
-        true
-      end
-    elsif @items.map{|item| item["name"].include?('Auto renew')}.include?(true)
-      # return subscription rate
-
-      if postal_codes_match.empty?
-        rate.delivery_method.downcase == 'shipping'
-      else
-        rate.delivery_type.downcase == 'subscription'
-      end
-    else
-
-      false
-    end
-  end
 end
