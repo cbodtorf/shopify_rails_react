@@ -3,19 +3,15 @@ class BundleController < ShopifyApp::AuthenticatedController
   def index
     # TODO: Need to have conditional if product is not a bundle right now is handled on Client
 
-    @collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle' })
-    products = ShopifyAPI::Product.find(:all, params: { collection_id: @collection.attributes[:id], fields: 'id,title,image,product_type,tags' })
+    # bundles are designated by 'bundle' collection, which is requires 'bundle' tag.
+    collection = ShopifyAPI::SmartCollection.find(:first, params: { handle: 'bundle', fields: 'id' })
+    @bundles = ShopifyAPI::Product.find(:all, params: { collection_id: collection.attributes[:id], fields: 'id,title,image,product_type,tags' })
 
     # remove bundles, cleanses, subscriptions for a list of bundle worthy products
     @products = ShopifyAPI::Product.find(:all, params: { limit: 250, fields: 'id,title,image,product_type,tags' }).select do |product|
       !product.attributes[:title].downcase.include?("auto") ?
         !product.attributes[:tags].downcase.include?("bundle") :
         false
-    end
-
-    # bundles are designated by 'bundle' tag
-    @bundles = products.select do |product|
-      product.attributes[:tags].include?("bundle")
     end
 
     @bundles.each do |bundle|

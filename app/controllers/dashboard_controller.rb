@@ -6,7 +6,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop.attributes[:myshopify_domain])
 
     # filterErrors returns {:error_orders, :orders}
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at"
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at, refunds"
     orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
 
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true, orders)
@@ -14,23 +14,18 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     @fiveDayOrders = fiveDayOrdersWithErrors[:fiveDayOrders]
 
-    Rails.logger.debug("5day error size: #{orders[:error_orders].size}")
     # subscription errors
     subs_with_errors = shop.getRechargeData("https://api.rechargeapps.com/charges/count/?status=ERROR")['count']
     @errorOrdersCount = orders[:error_orders].count + subs_with_errors
 
-    @fiveDayOrders.map do |date|
+    @fiveDayOrders.each do |date|
       date[:delivery_revenue] = 0
       date[:pickup_revenue] = 0
       if date[:delivery].size > 0
-        date[:delivery].each do |order|
-          date[:delivery_revenue] += order.attributes[:total_price].to_f
-        end
+        date[:delivery_revenue] = date[:delivery].inject(0){|sum, order| sum + order.attributes[:total_price].to_f}
       end
       if date[:pickup].size > 0
-        date[:pickup].each do |order|
-          date[:pickup_revenue] += order.attributes[:total_price].to_f
-        end
+        date[:pickup_revenue] = date[:pickup].inject(0){|sum, order| sum + order.attributes[:total_price].to_f}
       end
     end
 
@@ -44,10 +39,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     @shippingOrdersCount = shippingOrders.count
 
-    @shippingOrdersRevenue = 0
-    shippingOrders.each do |order|
-      @shippingOrdersRevenue += order.attributes[:total_price].to_f
-    end
+    @shippingOrdersRevenue = shippingOrders.inject(0){|sum, order| sum + order.attributes[:total_price].to_f}
 
     # Customer Count:
     @customerCount = ShopifyAPI::Customer.count
@@ -120,7 +112,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at"
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds"
       orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
       @orders = orders[:error_orders]
 
@@ -166,7 +158,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop_domain)
 
     if filteredOrders.blank?
-      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at"
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at, refunds"
       orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: (Time.now - 6.day).iso8601, limit: 250 }))
     else
       orders = filteredOrders
@@ -287,9 +279,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
               end
 
               Rails.logger.debug("deliver_next_day: #{deliver_next_day.inspect}")
-
               Rails.logger.debug("rate: #{rate.inspect}")
-              Rails.logger.debug("rate cook_days: #{rate.cook_day.inspect}")
               Rails.logger.debug("cook_days: #{cook_days.inspect}")
               Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("delivery date: #{note_date.inspect} - #{note_date.strftime("%A").downcase.inspect}")
@@ -363,7 +353,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def getShippingOrders(orders = false)
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at"
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds"
     shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "open", limit: 250 }))[:orders] : orders
     shippingOrders = []
     shipping_orders.select do |order|
