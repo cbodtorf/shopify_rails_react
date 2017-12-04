@@ -13,9 +13,6 @@ class AppProxyController < ApplicationController
     shopify_checkout = nil
     recharge_checkout = false
 
-    Rails.logger.debug("[params[:checkout_token] != ""?] #{params[:checkout_token] != ""}")
-    Rails.logger.debug("[params[:checkout_token] != nil?] #{params[:checkout_token] != nil}")
-    Rails.logger.debug("params[:checkout_token] != "" || params[:checkout_token] != nil #{params[:checkout_token] != "" || params[:checkout_token] != nil}")
     if params[:checkout_token].present?
       shopify_checkout_token = params[:checkout_token]
       Rails.logger.debug("[shopify_checkout_token?] #{shopify_checkout_token.inspect}")
@@ -27,7 +24,7 @@ class AppProxyController < ApplicationController
 
       # Rails.logger.debug("[rate match] #{shopify_checkout.attributes[:note_attributes].attributes["Delivery Rate"]} #{params[:rate_id]}")
       # Rails.logger.debug("[rate match] #{shopify_checkout.attributes[:note_attributes].attributes["Delivery Rate"] == params[:rate_id]}")
-      
+
       # Clear Cache, unless no shipping address or rate mismatch
       unless shopify_checkout.attributes[:shipping_address] == nil || shopify_checkout.attributes[:note_attributes].attributes["Delivery Rate"] == params[:rate_id]
         # breakCarrierCache(shopify_checkout)
@@ -147,35 +144,35 @@ class AppProxyController < ApplicationController
       date: date,
       disabled: false,
       rates: date_rates.select do |rate|
-        cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate.cutoff_time }) : true
-        Rails.logger.debug("[args] rate_id: #{rate.id}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
-        Rails.logger.debug("notes: #{rate.notes}")
-        if rate.notes == "admin" && @admin == false
+        cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate[:cutoff_time] }) : true
+        Rails.logger.debug("[args] rate_id: #{rate[:id]}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
+        Rails.logger.debug("notes: #{rate[:notes]}")
+        if rate[:notes] == "admin" && @admin == false
           next
         end
 
         if sub_present
           if date == Date.today
-            rate.delivery_type == 'subscription' && cutoff && rate.delivery_method == 'delivery'
+            rate[:delivery_type] == 'subscription' && cutoff && rate[:delivery_method] == 'delivery'
           else
-            rate.delivery_type == 'subscription' && rate.delivery_method == 'delivery'
+            rate[:delivery_type] == 'subscription' && rate[:delivery_method] == 'delivery'
           end
         else
           if day_before_blackout
             if date == Date.today || (cutoff && date == Date.tomorrow)
-              Rails.logger.debug("[ db tort return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery'}")
-              delivery_type.include?(rate.delivery_type) && cutoff && rate.delivery_method == 'delivery'
+              Rails.logger.debug("[ db tort return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && cutoff && rate[:delivery_method] == 'delivery'}")
+              delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery'
             else
-              Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.notes == "only offer after day with no cooks" && rate.delivery_method == 'delivery'}")
-              rate.notes == "only offer after day with no cooks" && rate.delivery_method == 'delivery'
+              Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'}")
+              rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'
             end
           else
-            if day_before_no_cooks && rate.delivery_type != "same_day"
-              Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && rate.delivery_method == 'delivery' && rate.notes == 'only offer after day with no cooks'}")
-              delivery_type.include?(rate.delivery_type) && rate.delivery_method == 'delivery' && rate.notes == "only offer after day with no cooks"
+            if day_before_no_cooks && rate[:delivery_type] != "same_day"
+              Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && rate[:delivery_method] == 'delivery' && rate[:notes] == 'only offer after day with no cooks'}")
+              delivery_type.include?(rate[:delivery_type]) && rate[:delivery_method] == 'delivery' && rate[:notes] == "only offer after day with no cooks"
             else
-              Rails.logger.debug("[return rate?] #{rate.title.inspect}??? #{rate.delivery_type == delivery_type && cutoff && rate.delivery_method == 'delivery' && rate.notes != 'only offer after day with no cooks'}")
-              delivery_type.include?(rate.delivery_type) && cutoff && rate.delivery_method == 'delivery' && rate.notes != "only offer after day with no cooks"
+              Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && cutoff && rate[:delivery_method] == 'delivery' && rate[:notes] != 'only offer after day with no cooks'}")
+              delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery' && rate[:notes] != "only offer after day with no cooks"
             end
           end
         end
@@ -194,14 +191,14 @@ class AppProxyController < ApplicationController
 
     sub_present = params[:subscriptionPresent] == 'true'
 
-    pickup_rate = shop.rates.where(delivery_method: "pickup")
-    shipping_rates = shop.rates.where(delivery_method: "shipping")
+    pickup_rate = shop.rates.where(delivery_method: "pickup").pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes)
+    shipping_rates = shop.rates.where(delivery_method: "shipping").pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes)
 
     cook_schedules = shop.cook_schedules.all
-    postal_codes = shop.postal_codes.all
-    pickup_locations = shop.pickup_locations.all
+    postal_codes = shop.postal_codes.pluck_to_hash(:title)
+    pickup_locations = shop.pickup_locations.pluck_to_hash(:id, :title, :address, :description, :days_available)
 
-    blackout_dates = shop.blackout_dates.all
+    blackout_dates = shop.blackout_dates.pluck(:blackout_date)
 
     date_from  = Date.current
     Rails.logger.debug("[date] #{date_from.inspect}")
@@ -217,11 +214,11 @@ class AppProxyController < ApplicationController
 
     # loop through dates:
     cal_data = date_range.map.with_index do |date, i|
-      day_before_blackout = blackout_dates.any? {|blackout| (date - 1.day) == blackout.blackout_date.to_date}
+      day_before_blackout = blackout_dates.any? {|blackout| (date - 1.day) == blackout.to_date}
 
       day_before_no_cooks = schedules.last.cook_days.any? {|cook_day| Date.parse(cook_day.title).wday == (date - 1.day).wday && cook_day.rate_ids == []}
 
-      blackout = blackout_dates.any? {|blackout| (date) == blackout.blackout_date.to_date}
+      blackout = blackout_dates.any? {|blackout| (date) == blackout.to_date}
       Rails.logger.debug("++++++++++++++++++++++++++++")
       Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
       Rails.logger.debug("[DATE]: #{date}")
@@ -234,16 +231,16 @@ class AppProxyController < ApplicationController
         if idx == (schedules.size - 1) && date != Date.today
           if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
             if @admin && !day_before_blackout
-              rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+              rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes) )
             end
             # Rails.logger.debug("[last no rates] #{rate_dates}")
           else
-            rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates)
+            rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes) )
             # Rails.logger.debug("[last rates selected] #{rate_dates}")
           end
         else
           # otherwise delivered same day as cook.
-          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates)
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes) )
           # Rails.logger.debug("[same rates selecte] #{rate_dates}")
         end
       end
@@ -326,7 +323,7 @@ class AppProxyController < ApplicationController
       pickupEnabled = {
         date: date,
         disabled: false,
-        locations: pickup_locations.select {|location| location.days_available.include?(date.wday.to_s)},
+        locations: pickup_locations.select {|location| location[:days_available].include?(date.wday.to_s)},
         rates: pickup_rate
       }
       pickupDisabled = {
@@ -335,7 +332,7 @@ class AppProxyController < ApplicationController
         rates: []
       }
 
-      blackout = blackout_dates.any? {|blackout| (date) == blackout.blackout_date.to_date}
+      blackout = blackout_dates.any? {|blackout| (date) == blackout.to_date}
       if @admin
         # ALLOWS all possible/legitimate rates; does not honor cutoffs
         pickupEnabled
@@ -367,7 +364,7 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    blackout_dates = shop.blackout_dates.all
+    blackout_dates = shop.blackout_dates.pluck_to_hash(:title, :blackout_date)
     render json: { blackoutDates: blackout_dates } , status: 200
   end
 
@@ -376,7 +373,7 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    postal_codes = shop.postal_codes.all
+    postal_codes = shop.postal_codes.pluck_to_hash(:title)
     render json: { postalCodes: postal_codes } , status: 200
   end
 
@@ -385,8 +382,8 @@ class AppProxyController < ApplicationController
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
 
-    postal_codes = shop.postal_codes.all
-    pickup_locations = shop.pickup_locations.all
+    postal_codes = shop.postal_codes.pluck_to_hash(:title)
+    pickup_locations = shop.pickup_locations.pluck_to_hash(:id, :title, :address, :description, :days_available)
     render json: { postalCodes: postal_codes, pickupLocations: pickup_locations } , status: 200
   end
 end

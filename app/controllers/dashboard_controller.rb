@@ -168,15 +168,17 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # Sort by cook time
     schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
     # blackout dates
-    blackout_dates = shop.blackout_dates.all
+    blackout_dates = shop.blackout_dates.pluck(:blackout_date)
     # TODO: Figure this out We'll use last cook_schedule cook_time as end of day
     # end_of_day = DateTime.now.change({ hour: schedules.last.cook_time })
+
+    rates = shop.rates.select("id,delivery_type,delivery_method")
 
     date_from  = Date.current
     date_to    = date_from + 4
     date_range = (date_from..date_to).map()
     @fiveDayOrders = date_range.map do |date|
-      blackout = blackout_dates.any? {|blackout| blackout.blackout_date.to_date == date}
+      blackout = blackout_dates.any? {|d| d.to_date == date}
       obj = {
               date: date,
               cook_schedules: schedules.map {|sched| {orders: [], addresses: [], title: sched[:title], cook_time: sched[:cook_time]}},
@@ -207,9 +209,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
         rate = nil
         if rate_id.present?
           if is_number?(rate_id)
-            rate = shop.rates.find(rate_id.to_i)
+            rate = rates.select{|r| r.id == rate_id.to_i}.first
           else
-            rate = shop.rates.find(rate_id.split(']')[0].split('[')[1].to_i)
+            rate = rates.select{|r| r.id == rate_id.split(']')[0].split('[')[1].to_i}.first
           end
         end
 
@@ -236,34 +238,34 @@ class DashboardController < ShopifyApp::AuthenticatedController
               deliver_next_day = false
 
               # Find cook_day and cook_schedule that rate belongs to
-              day_before_blackout = blackout_dates.any? {|date| (note_date - 1.day) == date.blackout_date.to_date}
+              day_before_blackout = blackout_dates.any? {|date| (note_date - 1.day) == date.to_date}
               # Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
               last_cook_not_available_day_before = schedules.last.cook_days.any? {|day| day.title.downcase == (note_date - 1.day).strftime("%A").downcase && day.rates.empty?}
               Rails.logger.debug("last_cook_not_available_day_before: #{last_cook_not_available_day_before}")
 
               # Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
-              cook_days = rate.cook_day.select do |day|
-                if day.cook_schedule_id != schedules.last.id && day.title.downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23))
+              cook_days = rate.cook_day.pluck(:cook_schedule_id, :title).select do |day|
+                if day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23))
                   # same day as delivery, must cook this day
-                  # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                  # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
                   cook_date = (note_date)
                   deliver_next_day = false
                   # Rails.logger.debug("#sub  cook same day as delivery date")
                   true
-                elsif day.cook_schedule_id == schedules.last.id && day.title.downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23)
+                elsif day[0] == schedules.last.id && day[1].downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23)
                   cook_date = (note_date - 1.day)
                   deliver_next_day = true
                   # Rails.logger.debug("# cook day before delivery date")
                   true # cook day before delivery date
-                elsif day.cook_schedule_id != schedules.last.id && day.title.downcase == note_date.strftime("%A").downcase
+                elsif day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase
                   cook_date = (note_date)
                   if !sub_order
-                    # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                    # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
                     deliver_next_day = false
                     # Rails.logger.debug("# cook same day as delivery date")
                     true # cook on delivery date
                   elsif (sub_order && last_cook_not_available_day_before) || (sub_order && day_before_blackout)
-                    # Rails.logger.debug("cook day: #{day.title.downcase.inspect}, id: #{day.cook_schedule_id.inspect}")
+                    # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
                     deliver_next_day = false
                     # Rails.logger.debug("# cook same day as delivery date")
                     true # cook on delivery date
@@ -299,7 +301,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                   Rails.logger.debug("delivery next day")
                   # prevent index from cycling to last item in array
                   dateIndex > 0 ? @fiveDayOrders[dateIndex - 1][:cook_schedules].select do |sched|
-                    sched[:title] == cook_days.first.cook_schedule.title
+                    sched[:title] == schedules.select{|cook_sched| cook_sched.id == cook_days.first.first}.first.title
                   end.first[:orders].push(order) : nil
 
                   # Last cooks go into the first delivery addresses of next day.
@@ -312,7 +314,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
                   Rails.logger.debug("delivery same day")
                   sched = @fiveDayOrders[dateIndex][:cook_schedules].select do |sched|
-                    sched[:title] == cook_days.first.cook_schedule.title
+                    sched[:title] == schedules.select{|cook_sched| cook_sched.id == cook_days.first.first}.first.title
                   end
 
                   if sub_order
@@ -405,6 +407,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
   def filterErrors(orders_to_be_filtered)
     error_orders = []
     reg_orders = []
+    rates = shop.rates.all
     orders_to_be_filtered.each do |order|
       # remove cancelled/refunded/unshippable orders.
       next if order.attributes[:cancelled_at] != nil
@@ -424,9 +427,9 @@ class DashboardController < ShopifyApp::AuthenticatedController
       rate = nil
       if rate_id.present?
         if is_number?(rate_id)
-          rate = shop.rates.find(rate_id.to_i)
+          rate = rates.select{|r| r.id == rate_id.to_i}.first
         else
-          rate = shop.rates.find(rate_id.split(']')[0].split('[')[1].to_i)
+          rate = rates.select{|r| r.id == rate_id.split(']')[0].split('[')[1].to_i}.first
         end
       end
 

@@ -38,6 +38,8 @@ class Subscription extends React.Component {
   }
 
   render() {
+    let blackoutDates = this.props.blackoutDates.map( (date) => { return new Date(date).toLocaleDateString()} )
+
     let urlBase = `https://${this.props.shop_session.url}/admin/apps/shopify-recurring-payments/`
     let subscriptionList = this.props.subscriptions.filter(
       createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
@@ -51,6 +53,7 @@ class Subscription extends React.Component {
 
       let chargeDate = new Date(sub.scheduled_at).toLocaleDateString()
       let deliveryDate = new Date(new Date(sub.scheduled_at).setDate(new Date(sub.scheduled_at).getDate() + 1)).toLocaleDateString()
+      let blackoutDate = blackoutDates.includes(deliveryDate)
       /**
       * Catch error :
       * Recharge won't set a scheduled_at if there is no payment record.
@@ -72,7 +75,10 @@ class Subscription extends React.Component {
               </td>
               <td>{ customerName }</td>
               <td>{ chargeDate }</td>
-              <td>{ deliveryDate }</td>
+              <td>
+                { deliveryDate }
+                { blackoutDate ? <div className="notice-icon"><Tooltip content={ "blackout date" }><Icon source="alert" color="inkLightest"/></Tooltip></div> : '' }
+              </td>
               <td>${ sub.total_price }</td>
 
               <td>

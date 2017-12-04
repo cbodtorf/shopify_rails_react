@@ -7,6 +7,8 @@ end
 
 # simple http requests
 gem 'httparty'
+# pluck to hash for a bit of optimization
+gem 'pluck_to_hash'
 # postgres sql
 gem 'pg'
 # respond_to rule for json

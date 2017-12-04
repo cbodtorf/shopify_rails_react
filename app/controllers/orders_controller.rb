@@ -1,8 +1,8 @@
 class OrdersController < ShopifyApp::AuthenticatedController
 
   def index
-    @rates = shop.rates.all
-    @pickup_locations = shop.pickup_locations.all
+    @rates = shop.rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes)
+    @pickup_locations = shop.pickup_locations.pluck_to_hash(:id, :title, :address, :description, :days_available)
 
     @order = ShopifyAPI::Order.find(params[:id])
     @products = ShopifyAPI::Product.find(:all, :params=>{:ids => @order.line_items.map{|item| item.product_id.to_i}.join(','), :fields => "image,id"})
