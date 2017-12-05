@@ -16,7 +16,6 @@ class OrdersController < ShopifyApp::AuthenticatedController
   def update
     order = ShopifyAPI::Order.find(params[:id])
 
-    Rails.logger.debug("shop: #{shop.inspect}")
     Rails.logger.debug("order: #{params[:order][:note_attributes].inspect}")
 
     if order.update_attributes(order_params)
