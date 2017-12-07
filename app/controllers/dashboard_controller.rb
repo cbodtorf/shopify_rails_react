@@ -410,6 +410,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
     rates = shop.rates.all
     orders_to_be_filtered.each do |order|
       # remove cancelled/refunded/unshippable orders.
+
+      # TODO: feature requeset. remove archived orders from error bucket. Need to test
+      # Rails.logger.debug("attr: #{params[:attribute]}")
+      # if params[:attribute].downcase == 'errors'
+      #   next if order.attributes[:closed_at] != nil
+      # end
       next if order.attributes[:cancelled_at] != nil
       next if order.attributes[:financial_status] == 'refunded'
       next if order.attributes[:line_items].all? {|item| item.attributes[:requires_shipping] == false}
