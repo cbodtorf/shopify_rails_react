@@ -20,6 +20,21 @@ class CSVGenerator
           end
         end
       end
+      # sort fulfillments
+      if order.attributes[:fulfillment_status] != nil
+        fulfilled_item_ids = []
+        fulfilled_items = {}
+        order.attributes[:fulfillments].each do |fulfillment|
+          fulfillment.attributes[:line_items].each do |f_item|
+            fulfilled_item_ids.push(f_item.attributes[:id])
+            if fulfilled_items[f_item.attributes[:id]] == nil
+              fulfilled_items[f_item.attributes[:id]] = f_item.attributes[:quantity]
+            else
+              fulfilled_items[f_item.attributes[:id]] += f_item.attributes[:quantity]
+            end
+          end
+        end
+      end
 
       order.attributes[:line_items].each do |item|
         item_quantity = item.attributes[:quantity]
@@ -27,6 +42,12 @@ class CSVGenerator
         unless refunded_item_ids.blank?
           if refunded_item_ids.include?(item.attributes[:id])
             item_quantity -= refunded_items[item.attributes[:id]]
+          end
+        end
+        # subtract fulfillment quantities
+        unless fulfilled_item_ids.blank?
+          if fulfilled_item_ids.include?(item.attributes[:id])
+            item_quantity -= fulfilled_items[item.attributes[:id]]
           end
         end
 
