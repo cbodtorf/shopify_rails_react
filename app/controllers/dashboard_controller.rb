@@ -113,7 +113,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
       order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds, fulfillments"
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
       @orders = orders[:error_orders]
 
 
