@@ -356,7 +356,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
   def getShippingOrders(orders = false)
     order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds, fulfillments"
-    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "open", limit: 250 }))[:orders] : orders
+    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))[:orders] : orders
     shippingOrders = []
     shipping_orders.select do |order|
       unless order.attributes[:fulfillment_status] == 'fulfilled' || order.attributes[:fulfillment_status] == 'shipped'
@@ -476,20 +476,29 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def bulk_fulfill
-    order_fields = "id,line_items"
-    orders = ShopifyAPI::Order.find(:all, :params=>{:fields => order_fields, :ids => params[:ids]})
-    Rails.logger.debug("orders: #{orders.inspect}")
-    Rails.logger.debug("orders size: #{orders.size}")
-    fulfillments = orders.map do |order|
-      ShopifyAPI::Fulfillment.new(:order_id => order.id, :notify_customer => false, :line_items => order.line_items.map{|item| {"id" => item.id}} )
-    end
-    Rails.logger.debug("orders: #{fulfillments.inspect}")
+    fulfillable_order_ids = params[:ids].split(',')
 
-    fulfillments.each do |f|
-      if f.save
-        Rails.logger.info("success: #{f.inspect}")
+    # Initializing.
+    start_time = Time.now
+
+    fulfillable_order_ids.each_with_index do |id, index|
+      # Stagger calls so we avoid 429 api limit.
+      stop_time = Time.now
+      processing_duration = stop_time - start_time
+      wait_time = (0.5 - processing_duration)
+      wait_time > 0 ? sleep(wait_time) : sleep(0.5)
+      start_time = Time.now
+
+      unless ShopifyAPI.credit_maxed?
+        #make a ShopifyAPI call
+        if ShopifyAPI::Fulfillment.create(:order_id => id, :notify_customer => false)
+          Rails.logger.info("success")
+        else
+          Rails.logger.error("error: #{f.inspect}")
+        end
       else
-        Rails.logger.error("error: #{f.inspect}")
+        Rails.logger.error("too many requests: #{f.inspect}")
+        sleep 2
       end
     end
 
