@@ -476,29 +476,20 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def bulk_fulfill
-    fulfillable_order_ids = params[:ids].split(',')
+    order_fields = "id,line_items"
+    orders = ShopifyAPI::Order.find(:all, :params=>{:fields => order_fields, :ids => params[:ids]})
+    Rails.logger.debug("orders: #{orders.inspect}")
+    Rails.logger.debug("orders size: #{orders.size}")
+    fulfillments = orders.map do |order|
+      ShopifyAPI::Fulfillment.new(:order_id => order.id, :notify_customer => false, :line_items => order.line_items.map{|item| {"id" => item.id}} )
+    end
+    Rails.logger.debug("orders: #{fulfillments.inspect}")
 
-    # Initializing.
-    start_time = Time.now
-
-    fulfillable_order_ids.each_with_index do |id, index|
-      # Stagger calls so we avoid 429 api limit.
-      stop_time = Time.now
-      processing_duration = stop_time - start_time
-      wait_time = (0.5 - processing_duration)
-      wait_time > 0 ? sleep(wait_time) : sleep(0.5)
-      start_time = Time.now
-
-      unless ShopifyAPI.credit_maxed?
-        #make a ShopifyAPI call
-        if ShopifyAPI::Fulfillment.create(:order_id => id, :notify_customer => false)
-          Rails.logger.info("success")
-        else
-          Rails.logger.error("error: #{f.inspect}")
-        end
+    fulfillments.each do |f|
+      if f.save
+        Rails.logger.info("success: #{f.inspect}")
       else
-        Rails.logger.error("too many requests: #{f.inspect}")
-        sleep 2
+        Rails.logger.error("error: #{f.inspect}")
       end
     end
 
