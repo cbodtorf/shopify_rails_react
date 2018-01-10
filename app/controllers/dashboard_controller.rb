@@ -159,7 +159,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     if filteredOrders.blank?
       order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at, refunds"
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: (Time.now - 6.day).iso8601, limit: 250 }))
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: (Time.now - 35.day).iso8601, limit: 250 }))
     else
       orders = filteredOrders
     end

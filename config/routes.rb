@@ -21,6 +21,7 @@ Rails.application.routes.draw do
   get 'app_proxy/postal_codes', to: 'app_proxy#postal_codes'
   get 'app_proxy/delivery_pickup', to: 'app_proxy#delivery_pickup'
   post 'app_proxy', to: 'app_proxy#index'
+  post 'app_proxy/update_subscription_bundle_props', to: 'app_proxy#update_subscription_bundle_props'
   put 'app_proxy', to: 'app_proxy#index'
 
   get 'home', to: 'home#home'

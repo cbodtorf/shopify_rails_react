@@ -368,6 +368,13 @@ class AppProxyController < ApplicationController
     render json: { blackoutDates: blackout_dates } , status: 200
   end
 
+  def update_subscription_bundle_props
+    Rails.logger.debug("Update Subscription Line Item Properties (for bundles)")
+    SubscriptionPropUpdateJob.perform_later(shop_domain: params[:shop], variant_id: params[:variant_id], product_id: params[:product_id], address_id: params[:address_id])
+
+    render json: { update: "success" } , status: 200
+  end
+
   def postal_codes
     shop = Shop.find_by(shopify_domain: params[:shop])
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
