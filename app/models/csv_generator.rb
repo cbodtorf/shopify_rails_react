@@ -3,10 +3,55 @@ class CSVGenerator
     # Rails.logger.debug("order 4 csv (model): #{orders.inspect}")
 
     attributes = %w{product quantity}
-    itemsArray = []
+    items_array = []
     orders.each do |order|
+      # sort refunds
+      if order.attributes[:financial_status] == "partially_refunded"
+        refunded_item_ids = []
+        refunded_items = {}
+        order.attributes[:refunds].each do |refund|
+          refund.attributes[:refund_line_items].each do |r_item|
+            refunded_item_ids.push(r_item.attributes[:line_item_id])
+            if refunded_items[r_item.attributes[:line_item_id]] == nil
+              refunded_items[r_item.attributes[:line_item_id]] = r_item.attributes[:quantity]
+            else
+              refunded_items[r_item.attributes[:line_item_id]] += r_item.attributes[:quantity]
+            end
+          end
+        end
+      end
+      # sort fulfillments
+      if order.attributes[:fulfillment_status] != nil
+        fulfilled_item_ids = []
+        fulfilled_items = {}
+        order.attributes[:fulfillments].each do |fulfillment|
+          fulfillment.attributes[:line_items].each do |f_item|
+            fulfilled_item_ids.push(f_item.attributes[:id])
+            if fulfilled_items[f_item.attributes[:id]] == nil
+              fulfilled_items[f_item.attributes[:id]] = f_item.attributes[:quantity]
+            else
+              fulfilled_items[f_item.attributes[:id]] += f_item.attributes[:quantity]
+            end
+          end
+        end
+      end
+
       order.attributes[:line_items].each do |item|
-        if item.attributes[:fulfillable_quantity] > 0
+        item_quantity = item.attributes[:quantity]
+        # subtract refund quantities
+        unless refunded_item_ids.blank?
+          if refunded_item_ids.include?(item.attributes[:id])
+            item_quantity -= refunded_items[item.attributes[:id]]
+          end
+        end
+        # subtract fulfillment quantities
+        unless fulfilled_item_ids.blank?
+          if fulfilled_item_ids.include?(item.attributes[:id])
+            item_quantity -= fulfilled_items[item.attributes[:id]]
+          end
+        end
+
+        if item_quantity > 0 && item.attributes[:requires_shipping]
           if item.attributes[:title].include?("Auto renew") # modify name of Subscriptions
             item.attributes[:title] = item.attributes[:title].split('Auto renew').first.strip
           end
@@ -18,28 +63,28 @@ class CSVGenerator
                 # make sure we note quantity of line item properties.
                 itemAndQuantity = prop.attributes["value"].split(' x')
 
-                itemsArray.push([itemAndQuantity.first, (itemAndQuantity.last.to_i * item.attributes[:fulfillable_quantity])])
+                items_array.push([itemAndQuantity.first, (itemAndQuantity.last.to_i * item_quantity)])
               end
             end
           else
             # normal behavior for non bundle items
-            itemsArray.push([item.attributes[:title], item.attributes[:fulfillable_quantity]])
+            items_array.push([item.attributes[:title], item_quantity])
           end
         end
       end
     end
-    Rails.logger.debug("items 4 csv (model): #{itemsArray.inspect}")
+
     # Reduce duplicates
-    reducedItems = itemsArray.inject(Hash.new(0)) do |result, item|
+    reduced_items = items_array.inject(Hash.new(0)) do |result, item|
       result[item.first] += item.last
       result
     end.to_a
-    Rails.logger.debug("reduceed 4 csv (model): #{reducedItems.inspect}")
+    Rails.logger.debug("reduceed 4 csv (model): #{reduced_items.inspect}")
 
     CSV.generate(headers: true) do |csv|
       csv << attributes
 
-      reducedItems.each do |item|
+      reduced_items.each do |item|
         csv << attributes.map{ |attr| attr == 'product' ? item[0] : item[1] }
       end
     end
@@ -48,11 +93,11 @@ class CSVGenerator
   def self.generateAddressesCSV(orders, shop, cook)
     rates = Shop.find_by(shopify_domain: shop.attributes[:myshopify_domain]).rates
     cook_time = cook.split(' ').first.downcase
-    Rails.logger.debug("cook_time: #{cook_time}")
+    # Rails.logger.debug("cook_time: #{cook_time}")
 
     attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Notes}
-    shippingAddressArray = []
-    shippingAddressArray.push({
+    shipping_address_array = []
+    shipping_address_array.push({
       customer_last_name: shop.attributes[:name],
       first_name: '',
       address: shop.attributes[:address1],
@@ -65,7 +110,7 @@ class CSVGenerator
 
     if cook_time == 'morning'
       attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Receive\ Window Notes}
-      shippingAddressArray.first[:receive_window] = ""
+      shipping_address_array.first[:receive_window] = ""
     end
 
     orders.each do |order|
@@ -93,13 +138,13 @@ class CSVGenerator
         address_to_push[:receive_window] = receive_window
       end
 
-      shippingAddressArray.push(address_to_push)
+      shipping_address_array.push(address_to_push)
     end
 
     CSV.generate(headers: true) do |csv|
       csv << attributes
 
-      shippingAddressArray.each do |address|
+      shipping_address_array.each do |address|
         csv << attributes.map{ |attr| address[attr.parameterize.underscore.to_sym] }
       end
     end

@@ -67,7 +67,7 @@ const determinePayment = function(status) {
   switch (status) {
     case 'authorized':
       statusColor = 'attention'
-      statusText = 'Authoried'
+      statusText = 'Authorized'
       break;
     case 'pending':
       statusColor = 'attention'

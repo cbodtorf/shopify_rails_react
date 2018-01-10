@@ -6,7 +6,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop.attributes[:myshopify_domain])
 
     # filterErrors returns {:error_orders, :orders}
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at, refunds"
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at, refunds, fulfillments"
     orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
 
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true, orders)
@@ -112,8 +112,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
       @orders = self.getShippingOrders
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
-      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds"
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds, fulfillments"
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
       @orders = orders[:error_orders]
 
 
@@ -158,7 +158,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     shop = Shop.find_by(shopify_domain: shop_domain)
 
     if filteredOrders.blank?
-      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at, refunds"
+      order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at, refunds, fulfillments"
       orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: (Time.now - 35.day).iso8601, limit: 250 }))
     else
       orders = filteredOrders
@@ -355,8 +355,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def getShippingOrders(orders = false)
-    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds"
-    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "open", limit: 250 }))[:orders] : orders
+    order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds, fulfillments"
+    shipping_orders = orders == false ? filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250 }))[:orders] : orders
     shippingOrders = []
     shipping_orders.select do |order|
       unless order.attributes[:fulfillment_status] == 'fulfilled' || order.attributes[:fulfillment_status] == 'shipped'
@@ -410,6 +410,12 @@ class DashboardController < ShopifyApp::AuthenticatedController
     rates = shop.rates.all
     orders_to_be_filtered.each do |order|
       # remove cancelled/refunded/unshippable orders.
+
+      # TODO: feature requeset. remove archived orders from error bucket. Need to test
+      # Rails.logger.debug("attr: #{params[:attribute]}")
+      # if params[:attribute].downcase == 'errors'
+      #   next if order.attributes[:closed_at] != nil
+      # end
       next if order.attributes[:cancelled_at] != nil
       next if order.attributes[:financial_status] == 'refunded'
       next if order.attributes[:line_items].all? {|item| item.attributes[:requires_shipping] == false}
