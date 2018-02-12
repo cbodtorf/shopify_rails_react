@@ -7,7 +7,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     # filterErrors returns {:error_orders, :orders}
     order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, cancelled_at, closed_at, refunds, fulfillments"
-    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
+    orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, processed_at_min: (Time.now - 35.day).iso8601 }))
 
     fiveDayOrdersWithErrors = self.formatOrders(shop[:shopify_domain], true, orders)
     Rails.logger.debug("5day error size: #{fiveDayOrdersWithErrors[:errorOrders].size}")
@@ -113,7 +113,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     elsif params[:attribute].downcase == 'errors'
       # Missing Delivery Data
       order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, cancelled_at, closed_at, refunds, fulfillments"
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, created_at_min: (Time.now - 35.day).iso8601 }))
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", limit: 250, processed_at_min: (Time.now - 35.day).iso8601 }))
       @orders = orders[:error_orders]
 
 
@@ -159,7 +159,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     if filteredOrders.blank?
       order_fields = "created_at, tags, id, line_items, name, note_attributes, total_price, financial_status, fulfillment_status, order_number, customer, note, shipping_address, cancelled_at, closed_at, refunds, fulfillments"
-      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", created_at_min: (Time.now - 35.day).iso8601, limit: 250 }))
+      orders = filterErrors(ShopifyAPI::Order.find(:all, params: { fields: order_fields, status: "any", processed_at_min: (Time.now - 35.day).iso8601, limit: 250 }))
     else
       orders = filteredOrders
     end
