@@ -511,9 +511,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
     # orders = ShopifyAPI::Order.find(:all, params: { status: "any", limit: 75, fields: "id" })
     # orderIds = orders.map{|order| order.attributes[:id]}
 
-    # orders.each do |order|
-    #   order.destroy
-    # end
+    # orders.each {|order| order.destroy}
   end
 
   def update_webhooks(new_URI_host)
