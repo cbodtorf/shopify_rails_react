@@ -363,9 +363,20 @@ class AppProxyController < ApplicationController
     shop = Shop.find_by(shopify_domain: params[:shop])
     session = ShopifyApp::SessionRepository.retrieve(shop.id)
     ShopifyAPI::Base.activate_session(session)
+    subscriptions = []
+    params[:address_ids].split(',').each do |id|
+      address_id = id
+      address_1 = shop.getRechargeData("https://api.rechargeapps.com/addresses/#{id}")["address"]["address1"]
+      next_charge_scheduled_at = shop.getRechargeData("https://api.rechargeapps.com/subscriptions?address_id=#{id}")["subscriptions"].max_by do |sub|
+        Date.parse(sub["next_charge_scheduled_at"])
+      end["next_charge_scheduled_at"]
+
+      subscriptions.push({ address_id: address_id, address_1: address_1, next_charge_scheduled_at: next_charge_scheduled_at })
+    end
+    Rails.logger.debug("[subscriptions] #{subscriptions.inspect}")
 
     blackout_dates = shop.blackout_dates.pluck_to_hash(:title, :blackout_date)
-    render json: { blackoutDates: blackout_dates } , status: 200
+    render json: { blackoutDates: blackout_dates, subscriptions: subscriptions } , status: 200
   end
 
   def update_subscription_bundle_props
