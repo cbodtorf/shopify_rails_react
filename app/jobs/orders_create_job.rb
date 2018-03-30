@@ -9,6 +9,8 @@ class OrdersCreateJob < ApplicationJob
       update_delivery_date_for_recharge = false
       tags = order.tags.split(',').map(&:strip)
 
+      tag_orders_flag = false # false will not tag. Not approved by client.
+
       if webhook[:tags].split(', ').include?('Subscription')
         Rails.logger.info("[subscriptionOrder]: #{order.inspect}")
 
@@ -30,7 +32,7 @@ class OrdersCreateJob < ApplicationJob
       order.attributes[:note_attributes].each do |note|
         if note.attributes[:name] == "Delivery Date"
           if update_delivery_date_for_recharge
-            note.attributes[:value] = delivery_date.strftime("%a, %B %e, %Y")
+            note.attributes[:value] = delivery_date
             Rails.logger.info("[change delivery date?]: #{note.attributes[:value].inspect} -vs- #{delivery_date.readable_inspect}")
           end
           tags << Date.parse(note.attributes[:value]).strftime("%m/%d/%Y")
@@ -46,7 +48,7 @@ class OrdersCreateJob < ApplicationJob
 
       updated_tags = tags.uniq.join(',')
       unless updated_tags == order.tags || order.attributes[:note_attributes] == webhook[:note_attributes]
-        unless updated_tags == order.tags
+        unless updated_tags == order.tags || tag_orders_flag == false
           order.tags = updated_tags
         end
 
