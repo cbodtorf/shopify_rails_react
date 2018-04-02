@@ -379,7 +379,7 @@ class AppProxyController < ApplicationController
         end["next_charge_scheduled_at"]
       else
         Rails.logger.debug("[next charge none] #{next_charge_scheduled_at.inspect}")
-        next_charge_scheduled_at = "please enter date"
+        next_charge_scheduled_at = "Click to select and then choose date."
       end
 
       subscriptions.push({ address_id: address_id, address_1: address_1, next_charge_scheduled_at: next_charge_scheduled_at })
