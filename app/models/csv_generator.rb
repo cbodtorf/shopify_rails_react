@@ -117,7 +117,10 @@ class CSVGenerator
 
       receive_window = ''
       if order.attributes[:tags].split(', ').include?('Subscription')
-        receive_window = 'Subscription'
+        if order.note_attributes.find {|note| note.name == "Receive Window"}
+          receive_window = order.note_attributes.find {|note| note.name == "Receive Window"}.value
+        end
+        receive_window = ""
       else
         receive_window = rates.find(order.note_attributes.find {|note| note.name == "Delivery Rate"}.value.split("]")[0].split("[")[1].to_i).receive_window
       end

@@ -150,6 +150,7 @@ class OrderList extends React.Component {
     let showPrintHeader = <th>Print</th>
     let showFulfillHeader = <th>Fulfill</th>
     let showDeliveryRate = <th>Delivery Rate</th>
+    let showReceiveWindow = <th>Receive Window</th>
     let showEditSubHeader = null,
         showViewRechargeHeader = null,
         showErrorsHeader = null;
@@ -157,6 +158,7 @@ class OrderList extends React.Component {
     if (attributeLowerCase === "errors") {
       showPrintHeader = null
       showDeliveryRate = null
+      showReceiveWindow = null
       showFulfillHeader = null
       showEditSubHeader = <th>Subscription</th>
       showViewRechargeHeader = <th>Recharge</th>
@@ -187,6 +189,7 @@ class OrderList extends React.Component {
      let editSubscriptionLink = null,
           viewRechargeLink = null,
           deliveryRate = null,
+          receiveWindow = null,
           errorMessages = null,
           showErrorsButton = null,
           printLink = <td><Link external="true" url={ `${urlBase}apps/order-printer/orders/bulk?shop=${this.props.shop_session.url}&ids=${order.id}` }>Print</Link></td>,
@@ -200,6 +203,7 @@ class OrderList extends React.Component {
         printLink = null
         fulfillLink = null
         deliveryRate = null
+        receiveWindow = null
 
         // ERROR BUTTON
         showErrorsButton = <td><Link onClick={ () => {
@@ -219,6 +223,25 @@ class OrderList extends React.Component {
       } else {
         deliveryRate = order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0]
         deliveryRate = <td>{ deliveryRate.value.split(']')[1] }</td>
+
+        receiveWindow = order.note_attributes.filter(note => humanize_(note.name) === 'Receive Window' ? note.value : null)[0]
+        if (receiveWindow !== undefined) {
+          receiveWindow = <td>{ receiveWindow.value }</td>
+        } else if (subItem && receiveWindow === undefined) {
+          // This only to handle the migration of subscription rates without receive window.
+          let d_date = new Date(this.props.date).toLocaleDateString()
+          let c_date = createdAtDate.toLocaleDateString()
+          let c_hours = createdAtDate.getHours()
+          let c_date_plus_one = new Date(createdAtDate.setDate(createdAtDate.getDate() + 1)).toLocaleDateString()
+
+          if ((d_date === c_date) || (d_date === c_date_plus_one && c_hours >= 15)) {
+            receiveWindow = <td>{ "4pm - 8pm" }</td>
+          } else {
+            receiveWindow = <td>{ "10am - 4pm" }</td>
+          }
+        } else {
+          receiveWindow = <td>{ "other receive window" }</td>
+        }
       }
 
      const fulfillmentStatus = determineFulfillment(order.fulfillment_status)
@@ -253,6 +276,7 @@ class OrderList extends React.Component {
            <td>{ paymentBadge }</td>
            <td>{ fullfillmentBadge }</td>
            { deliveryRate }
+           { receiveWindow }
            <td>${order.total_price}</td>
            <td>{ editLink }</td>
            { editSubscriptionLink }
@@ -338,6 +362,7 @@ class OrderList extends React.Component {
                           <th>Payment Status</th>
                           <th>Fulfillment Status</th>
                           { showDeliveryRate }
+                          { showReceiveWindow }
                           <th>Total</th>
                           <th>Order</th>
                           { showEditSubHeader }

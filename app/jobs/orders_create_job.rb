@@ -6,6 +6,7 @@ class OrdersCreateJob < ApplicationJob
     shop.with_shopify_session do
       order = ShopifyAPI::Order.find(webhook[:id])
       delivery_date = ""
+      delivery_date_checker = ""
       update_delivery_date_for_recharge = false
       tags = order.tags.split(',').map(&:strip)
 
@@ -25,6 +26,10 @@ class OrdersCreateJob < ApplicationJob
 
           Rails.logger.info("[Recurring Sub Order]: #{order.attributes[:note_attributes].inspect}")
           Rails.logger.info("[Recurring delivery date]: #{order.attributes[:note_attributes].inspect}")
+        elsif webhook[:tags].split(', ').include?('Subscription First Order')
+          if Date.parse(webhook[:created_at])
+
+          end
         end
       end
 
@@ -35,10 +40,25 @@ class OrdersCreateJob < ApplicationJob
             note.attributes[:value] = delivery_date
             Rails.logger.info("[change delivery date?]: #{note.attributes[:value].inspect} -vs- #{delivery_date.readable_inspect}")
           end
+          delivery_date_checker = note.attributes[:value]
           tags << Date.parse(note.attributes[:value]).strftime("%m/%d/%Y")
           tags << Date.parse(note.attributes[:value]).strftime("%A")
         end
         if note.attributes[:name] == "Receive Window"
+          Rails.logger.info("[receive window]: #{note.attributes[:value].inspect}")
+          if webhook[:tags].split(', ').include?('Subscription First Order')
+            Rails.logger.info("[first sub & receive_window]: #{webhook[:tags].split(', ').include?('Subscription First Order')}")
+            Rails.logger.info("[created at today? && delivered today?]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?)}")
+            Rails.logger.info("[delivered tomorrow]: #{Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker)}")
+            Rails.logger.info("[created after 15]: #{DateTime.parse(webhook[:created_at]).hour >= 15}")
+            Rails.logger.info("[created after 15 and delivered tomorrow?]: #{(Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)}")
+            Rails.logger.info("[full conditional]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?) || (Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)}")
+            if (DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?) || (Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)
+              Rails.logger.info("[change receive_window BEFORE]: #{note.attributes[:value].inspect}")
+              note.attributes[:value] = "4pm - 8pm"
+              Rails.logger.info("[change receive_window AFTER]: #{note.attributes[:value].inspect}")
+            end
+          end
           tags << note.attributes[:value]
         end
         if note.attributes[:name] == "Checkout Method"
