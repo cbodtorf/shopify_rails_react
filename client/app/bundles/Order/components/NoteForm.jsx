@@ -143,8 +143,10 @@ class NoteForm extends Component {
 
 
     const rateOptions = this.props.rates.filter((rate) => {return rate.delivery_method === (this.props.checkout || checkoutMethod.value)}).map(rate => {
+      let title = rate.title.toLowerCase().includes("subscribe") ? `Subscription ${rate.description}` : rate.title
+
       return {
-        label: `${rate.title}: $${rate.price / 100}`,
+        label: `${title}: $${rate.price / 100}`,
         value: `[${rate.id}] ${rate.title}`
       }
     })

@@ -59,6 +59,19 @@ class OrdersCreateJob < ApplicationJob
         end
         if note.attributes[:name] == "Receive Window"
           Rails.logger.info("[receive window]: #{note.attributes[:value].inspect}")
+
+          if webhook[:tags].split(', ').include?('Subscription')
+            if day_before_blackout
+              # day before no cook or blackout
+              note.attributes[:value] = "4pm - 8pm"
+            elsif last_cook_not_available_day_before
+              # day before no cook or blackout
+              note.attributes[:value] = "4pm - 8pm"
+            else
+              note.attributes[:value] = "10am - 4pm"
+            end
+          end
+          
           if webhook[:tags].split(', ').include?('Subscription First Order')
             Rails.logger.info("[first sub & receive_window]: #{webhook[:tags].split(', ').include?('Subscription First Order')}")
               Rails.logger.info("[created at today? && delivered today?]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?)}")
@@ -70,10 +83,6 @@ class OrdersCreateJob < ApplicationJob
               # deliver same day as order
               note.attributes[:value] = "4pm - 8pm"
             end
-          end
-          if webhook[:tags].split(', ').include?('Subscription') && (last_cook_not_available_day_before || day_before_blackout)
-            # day before no cook or blackout
-            note.attributes[:value] = "4pm - 8pm"
           end
 
           tags << note.attributes[:value]
