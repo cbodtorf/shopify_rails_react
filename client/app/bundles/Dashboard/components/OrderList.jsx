@@ -164,6 +164,9 @@ class OrderList extends React.Component {
       showViewRechargeHeader = <th>Recharge</th>
       showErrorsHeader = <th>Show Errors</th>
     }
+    if (attributeLowerCase === "shipping") {
+      showReceiveWindow = null
+    }
 
    let orderItems = this.props.orders.filter(
      createFilter(this.state.searchTerm, KEYS_TO_FILTERS)
@@ -224,23 +227,25 @@ class OrderList extends React.Component {
         deliveryRate = order.note_attributes.filter(note => humanize_(note.name) === 'Delivery Rate' ? note.value : null)[0]
         deliveryRate = <td>{ deliveryRate.value.split(']')[1] }</td>
 
-        receiveWindow = order.note_attributes.filter(note => humanize_(note.name) === 'Receive Window' ? note.value : null)[0]
-        if (receiveWindow !== undefined) {
-          receiveWindow = <td>{ receiveWindow.value }</td>
-        } else if (subItem && receiveWindow === undefined) {
-          // This only to handle the migration of subscription rates without receive window.
-          let d_date = new Date(this.props.date).toLocaleDateString()
-          let c_date = createdAtDate.toLocaleDateString()
-          let c_hours = createdAtDate.getHours()
-          let c_date_plus_one = new Date(createdAtDate.setDate(createdAtDate.getDate() + 1)).toLocaleDateString()
+        if (attributeLowerCase !== "shipping") {
+          receiveWindow = order.note_attributes.filter(note => humanize_(note.name) === 'Receive Window' ? note.value : null)[0]
+          if (receiveWindow !== undefined) {
+            receiveWindow = <td>{ receiveWindow.value }</td>
+          } else if (subItem && receiveWindow === undefined) {
+            // This only to handle the migration of subscription rates without receive window.
+            let d_date = new Date(this.props.date).toLocaleDateString()
+            let c_date = createdAtDate.toLocaleDateString()
+            let c_hours = createdAtDate.getHours()
+            let c_date_plus_one = new Date(createdAtDate.setDate(createdAtDate.getDate() + 1)).toLocaleDateString()
 
-          if ((d_date === c_date) || (d_date === c_date_plus_one && c_hours >= 15)) {
-            receiveWindow = <td>{ "4pm - 8pm" }</td>
+            if ((d_date === c_date) || (d_date === c_date_plus_one && c_hours >= 15)) {
+              receiveWindow = <td>{ "4pm - 8pm" }</td>
+            } else {
+              receiveWindow = <td>{ "10am - 4pm" }</td>
+            }
           } else {
-            receiveWindow = <td>{ "10am - 4pm" }</td>
+            receiveWindow = <td>{ "other receive window" }</td>
           }
-        } else {
-          receiveWindow = <td>{ "other receive window" }</td>
         }
       }
 
