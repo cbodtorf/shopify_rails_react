@@ -138,44 +138,37 @@ class AppProxyController < ApplicationController
     puts response.body
   end
 
-  def createDateObject(date, delivery_type, date_rates, honor_cutoff, sub_present, day_before_blackout, day_before_no_cooks = false)
+  def createDateObject(date, delivery_type, date_rates, honor_cutoff, day_before_blackout, day_before_no_cooks = false)
 
     dateObj = {
       date: date,
       disabled: false,
       rates: date_rates.select do |rate|
         cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate[:cutoff_time] }) : true
-        Rails.logger.debug("[args] rate_id: #{rate[:id]}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, sub: #{sub_present.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
+        Rails.logger.debug("[args] rate_id: #{rate[:id]}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
         Rails.logger.debug("notes: #{rate[:notes]}")
         if rate[:notes] == "admin" && @admin == false
           next
         end
 
-        if sub_present
-          if date == Date.today
-            rate[:delivery_type] == 'subscription' && cutoff && rate[:delivery_method] == 'delivery'
+        if day_before_blackout
+          if date == Date.today || (cutoff && date == Date.tomorrow)
+            Rails.logger.debug("[ db tort return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && cutoff && rate[:delivery_method] == 'delivery'}")
+            delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery'
           else
-            rate[:delivery_type] == 'subscription' && rate[:delivery_method] == 'delivery'
+            Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'}")
+            rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'
           end
         else
-          if day_before_blackout
-            if date == Date.today || (cutoff && date == Date.tomorrow)
-              Rails.logger.debug("[ db tort return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && cutoff && rate[:delivery_method] == 'delivery'}")
-              delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery'
-            else
-              Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'}")
-              rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'
-            end
+          if day_before_no_cooks && rate[:delivery_type] != "same_day"
+            Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && rate[:delivery_method] == 'delivery' && rate[:notes] == 'only offer after day with no cooks'}")
+            delivery_type.include?(rate[:delivery_type]) && rate[:delivery_method] == 'delivery' && rate[:notes] == "only offer after day with no cooks"
           else
-            if day_before_no_cooks && rate[:delivery_type] != "same_day"
-              Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && rate[:delivery_method] == 'delivery' && rate[:notes] == 'only offer after day with no cooks'}")
-              delivery_type.include?(rate[:delivery_type]) && rate[:delivery_method] == 'delivery' && rate[:notes] == "only offer after day with no cooks"
-            else
-              Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && cutoff && rate[:delivery_method] == 'delivery' && rate[:notes] != 'only offer after day with no cooks'}")
-              delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery' && rate[:notes] != "only offer after day with no cooks"
-            end
+            Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:delivery_type] == delivery_type && cutoff && rate[:delivery_method] == 'delivery' && rate[:notes] != 'only offer after day with no cooks'}")
+            delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery' && rate[:notes] != "only offer after day with no cooks"
           end
         end
+
       end
     }
   end
@@ -231,22 +224,33 @@ class AppProxyController < ApplicationController
         if idx == (schedules.size - 1) && date != Date.today
           if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
             if @admin && !day_before_blackout
-              rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes) )
+              rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes, :code) )
             end
             # Rails.logger.debug("[last no rates] #{rate_dates}")
           else
-            rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes) )
+            rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes, :code) )
             # Rails.logger.debug("[last rates selected] #{rate_dates}")
           end
         else
           # otherwise delivered same day as cook.
-          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes) )
+          rate_dates = rate_dates.concat(sched.cook_days[date.wday - 1].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes, :code) )
           # Rails.logger.debug("[same rates selecte] #{rate_dates}")
         end
       end
 
       rate_dates = rate_dates.uniq
-      # Rails.logger.debug("[rate_dates] #{rate_dates.inspect}")
+
+      # filter subscription rates.
+      if sub_present
+        rate_dates = rate_dates.select do |r|
+          r[:code] == 'subscription'
+        end
+      else
+        rate_dates = rate_dates.select do |r|
+          r[:code] != 'subscription'
+        end
+      end
+
       Rails.logger.debug("[admin true] #{@admin.inspect}")
       tomorrow = Date.tomorrow
 
@@ -264,13 +268,13 @@ class AppProxyController < ApplicationController
           # offer same_day
           if date.today?
             if @admin
-              createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+              createDateObject(date, 'same_day', rate_dates, false, day_before_blackout, day_before_no_cooks)
             else
-              createDateObject(date, 'same_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
+              createDateObject(date, 'same_day', rate_dates, true, day_before_blackout, day_before_no_cooks)
             end
           elsif !date.today?
             # offer next_day
-            createDateObject(date, 'next_day', rate_dates, true, sub_present, day_before_blackout, day_before_no_cooks)
+            createDateObject(date, 'next_day', rate_dates, true, day_before_blackout, day_before_no_cooks)
           else
             # blank day
             Rails.logger.debug("[blank] #{date.inspect}")
@@ -288,17 +292,17 @@ class AppProxyController < ApplicationController
           # ALLOWS all possible/legitimate rates; does not honor cutoffs
 
           if date.today? && @admin
-            createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+            createDateObject(date, 'same_day', rate_dates, false, day_before_blackout, day_before_no_cooks)
           elsif date == tomorrow
             # offer same_day
             if @admin
-              createDateObject(date, ['same_day','next_day'], rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+              createDateObject(date, ['same_day','next_day'], rate_dates, false, day_before_blackout, day_before_no_cooks)
             else
-              createDateObject(date, 'same_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+              createDateObject(date, 'same_day', rate_dates, false, day_before_blackout, day_before_no_cooks)
             end
           elsif !date.today? && !(date == tomorrow)
             # offer next_day
-            createDateObject(date, 'next_day', rate_dates, false, sub_present, day_before_blackout, day_before_no_cooks)
+            createDateObject(date, 'next_day', rate_dates, false, day_before_blackout, day_before_no_cooks)
           else
             # blank day
             Rails.logger.debug("[blank] #{date.inspect}")

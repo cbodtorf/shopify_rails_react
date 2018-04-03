@@ -116,13 +116,8 @@ class CSVGenerator
     orders.each do |order|
 
       receive_window = ''
-      if order.attributes[:tags].split(', ').include?('Subscription')
-        if order.note_attributes.find {|note| note.name == "Receive Window"}
-          receive_window = order.note_attributes.find {|note| note.name == "Receive Window"}.value
-        end
-        receive_window = ""
-      else
-        receive_window = rates.find(order.note_attributes.find {|note| note.name == "Delivery Rate"}.value.split("]")[0].split("[")[1].to_i).receive_window
+      if order.note_attributes.find {|note| note.name == "Receive Window"}
+        receive_window = order.note_attributes.find {|note| note.name == "Receive Window"}.value
       end
 
       Rails.logger.debug("s_a: #{order.attributes[:shipping_address].inspect}")
@@ -137,9 +132,7 @@ class CSVGenerator
         zip: s_a[:zip],
         notes: order.attributes[:note],
       }
-      if cook_time == 'morning'
-        address_to_push[:receive_window] = receive_window
-      end
+      address_to_push[:receive_window] = receive_window
 
       shipping_address_array.push(address_to_push)
     end

@@ -23,7 +23,7 @@ class CallbackController < ApplicationController
     elsif items.map{|item| item["name"].include?('Auto renew')}.include?(true)
       # return subscription rate
       if postal_codes_match
-        rates = shop.rates.where(:delivery_type => 'subscription')
+        rates = shop.rates.where(:code => 'subscription')
       else
         rates = shop.rates.where(:delivery_method => 'shipping')
       end

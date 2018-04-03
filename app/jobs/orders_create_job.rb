@@ -9,8 +9,21 @@ class OrdersCreateJob < ApplicationJob
       delivery_date_checker = ""
       update_delivery_date_for_recharge = false
       tags = order.tags.split(',').map(&:strip)
-
       tag_orders_flag = false # false will not tag. Not approved by client.
+
+      orderAttributes = orderAttributesToHash(order.attributes[:note_attributes])
+      note_date = Date.parse(orderAttributes[:delivery_date])
+
+      # Sort by cook time
+      schedules = shop.cook_schedules.all.sort_by { |sched| sched[:cook_time] }
+      # blackout dates
+      blackout_dates = shop.blackout_dates.pluck(:blackout_date)
+
+      # Find cook_day and cook_schedule that rate belongs to
+      day_before_blackout = blackout_dates.any? {|date| (note_date - 1.day) == date.to_date}
+      Rails.logger.debug("day_before_blackout: #{day_before_blackout}")
+      last_cook_not_available_day_before = schedules.last.cook_days.any? {|day| day.title.downcase == (note_date - 1.day).strftime("%A").downcase && day.rates.empty?}
+
 
       if webhook[:tags].split(', ').include?('Subscription')
         Rails.logger.info("[subscriptionOrder]: #{order.inspect}")
@@ -48,17 +61,21 @@ class OrdersCreateJob < ApplicationJob
           Rails.logger.info("[receive window]: #{note.attributes[:value].inspect}")
           if webhook[:tags].split(', ').include?('Subscription First Order')
             Rails.logger.info("[first sub & receive_window]: #{webhook[:tags].split(', ').include?('Subscription First Order')}")
-            Rails.logger.info("[created at today? && delivered today?]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?)}")
-            Rails.logger.info("[delivered tomorrow]: #{Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker)}")
-            Rails.logger.info("[created after 15]: #{DateTime.parse(webhook[:created_at]).hour >= 15}")
-            Rails.logger.info("[created after 15 and delivered tomorrow?]: #{(Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)}")
-            Rails.logger.info("[full conditional]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?) || (Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)}")
+              Rails.logger.info("[created at today? && delivered today?]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?)}")
+              Rails.logger.info("[delivered tomorrow]: #{Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker)}")
+              Rails.logger.info("[created after 15]: #{DateTime.parse(webhook[:created_at]).hour >= 15}")
+              Rails.logger.info("[created after 15 and delivered tomorrow?]: #{(Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)}")
+              Rails.logger.info("[full conditional]: #{(DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?) || (Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)}")
             if (DateTime.parse(webhook[:created_at]).today? && DateTime.parse(delivery_date_checker).today?) || (Date.parse(webhook[:created_at]).tomorrow == Date.parse(delivery_date_checker) && DateTime.parse(webhook[:created_at]).hour >= 15)
-              Rails.logger.info("[change receive_window BEFORE]: #{note.attributes[:value].inspect}")
+              # deliver same day as order
               note.attributes[:value] = "4pm - 8pm"
-              Rails.logger.info("[change receive_window AFTER]: #{note.attributes[:value].inspect}")
             end
           end
+          if webhook[:tags].split(', ').include?('Subscription') && (last_cook_not_available_day_before || day_before_blackout)
+            # day before no cook or blackout
+            note.attributes[:value] = "4pm - 8pm"
+          end
+
           tags << note.attributes[:value]
         end
         if note.attributes[:name] == "Checkout Method"
@@ -75,6 +92,14 @@ class OrdersCreateJob < ApplicationJob
         order.save
       end
     end
+  end
+
+  def orderAttributesToHash(_attr)
+    obj = {}
+    _attr.each do |a|
+      obj[a.attributes[:name].parameterize.underscore.to_sym] = a.attributes[:value]
+    end
+    return obj
   end
 
 end

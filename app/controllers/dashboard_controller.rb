@@ -259,20 +259,23 @@ class DashboardController < ShopifyApp::AuthenticatedController
                   true # cook day before delivery date
                 elsif day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase
                   cook_date = (note_date)
-                  if !sub_order
-                    # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
-                    deliver_next_day = false
-                    # Rails.logger.debug("# cook same day as delivery date")
-                    true # cook on delivery date
-                  elsif (sub_order && last_cook_not_available_day_before) || (sub_order && day_before_blackout)
-                    # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
-                    deliver_next_day = false
-                    # Rails.logger.debug("# cook same day as delivery date")
-                    true # cook on delivery date
-                  else
-                    # Rails.logger.debug("err not a cook day: #{day.inspect}")
-                    false
-                  end
+                  # amended for new sub RATES
+                  deliver_next_day = false
+                  true # cook on delivery date
+                  # if !sub_order
+                  #   # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
+                  #   deliver_next_day = false
+                  #   # Rails.logger.debug("# cook same day as delivery date")
+                  #   true # cook on delivery date
+                  # elsif (sub_order && last_cook_not_available_day_before) || (sub_order && day_before_blackout)
+                  #   # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
+                  #   deliver_next_day = false
+                  #   # Rails.logger.debug("# cook same day as delivery date")
+                  #   true # cook on delivery date
+                  # else
+                  #   # Rails.logger.debug("err not a cook day: #{day.inspect}")
+                  #   false
+                  # end
                 else
                   cook_date = (note_date)
                   # Rails.logger.debug("err not a cook day: #{day.inspect}")
@@ -317,7 +320,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     sched[:title] == schedules.select{|cook_sched| cook_sched.id == cook_days.first.first}.first.title
                   end
 
-                  if sub_order
+                  if sub_order && false # amended with new sub RATES
                     @fiveDayOrders[dateIndex][:cook_schedules].first[:orders].push(order)
                     # cooks that go out same day go into the next schedule's addresses.
                     Rails.logger.debug("sub_first_order same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
@@ -440,6 +443,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
       end
 
       # cook_days
+      Rails.logger.debug("note_date: #{note_date}, order: #{order.name}")
       cook_days = rate.present? && note_date.present? ? rate.cook_day.select{|day| day.title.downcase == Date.parse(note_date).strftime("%A").downcase} : nil
 
       # Error catch
@@ -520,5 +524,50 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     # webhooks = ShopifyAPI::Webhook.find(:all)
     # webhooks.each {|hook| hook.address.sub!(URI.parse(hook.address).host, new_URI_host) }
+  end
+
+  def update_subscriptions_receive_window()
+    # Start Session
+    # ShopifyAPI::Base.activate_session(ShopifyApp::SessionRepository.retrieve(1))
+    #shop = ShopifyAPI::Shop.current()
+    # shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
+
+    addresses = shop.getRechargeData("https://api.rechargeapps.com/addresses?limit=250")["addresses"]
+    addresses.each do |addy|
+      has_receive_window = false
+      addy["cart_attributes"].map do |attr|
+        if attr["name"] == "Receive Window"
+          attr["value"] = "10am - 4pm"
+          has_receive_window = true
+        end
+      end
+      unless has_receive_window
+        addy["cart_attributes"].push({"name": "Receive Window", "value": "10am - 4pm"})
+      end
+      data = addy
+
+      Rails.logger.info("[update addy]: #{order.attributes[:note_attributes].inspect}")
+      # updateRechargeData("https://api.rechargeapps.com/addresses/#{addy["id"]}", data)
+    end
+  end
+
+  def updateRechargeData(endpoint, data)
+    # TODO: bamboo specific code,
+    # Access Recharge API
+    api_token = ENV['RECHARGE_API_KEY']
+
+    response = HTTParty.put(endpoint,
+                             :body => data.to_json,
+                             :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})
+   case response.code
+      when 200
+        puts "All good!"
+      when 404
+        puts "O noes not found!"
+      when 500...600
+        puts "ZOMG ERROR #{response.code}"
+    end
+
+    response.parsed_response
   end
 end
