@@ -157,7 +157,8 @@ class AppProxyController < ApplicationController
             delivery_type.include?(rate[:delivery_type]) && cutoff && rate[:delivery_method] == 'delivery'
           else
             Rails.logger.debug("[return rate?] #{rate[:title].inspect}??? #{rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'}")
-            rate[:notes] == "only offer after day with no cooks" && rate[:delivery_method] == 'delivery'
+            rate[:description] = "Next Day Delivered 4pm - 8pm"
+            (rate[:notes] == "show after blackout" && rate[:code] == 'subscription') || (rate[:notes] == "only offer after day with no cooks" && rate[:code] != 'subscription')
           end
         else
           if day_before_no_cooks && rate[:delivery_type] != "same_day"
@@ -224,6 +225,9 @@ class AppProxyController < ApplicationController
         if idx == (schedules.size - 1) && date != Date.today
           if day_before_blackout || Time.now > end_of_day && date == Date.tomorrow
             if @admin && !day_before_blackout
+              rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes, :code) )
+            end
+            if day_before_blackout && sub_present
               rate_dates = rate_dates.concat(sched.cook_days[(date - 2.day).wday].rates.pluck_to_hash(:id, :title, :description, :delivery_method, :price, :cutoff_time, :receive_window, :delivery_type, :notes, :code) )
             end
             # Rails.logger.debug("[last no rates] #{rate_dates}")

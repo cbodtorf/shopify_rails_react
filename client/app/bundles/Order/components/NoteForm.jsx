@@ -110,13 +110,19 @@ class NoteForm extends Component {
       )
     }
 
+    const sameDayReceiveWindow = this.props.rates.filter((rate) => {
+      return rate.title.toLowerCase().includes("same day")
+    })[0].receive_window
+    console.log("rw:", sameDayReceiveWindow);
     const receiveWindowOptions = this.props.rates.filter((rate) => {return `[${rate.id}] ${rate.title}` === (this.props.rate || deliveryRate.value)}).map(rate => {
+      if (rate.title.toLowerCase().includes("subscribe") && rate.description.toLowerCase().includes("same day")) {
+        rate.receive_window = sameDayReceiveWindow
+      }
       return {
         label: `${rate.receive_window}`,
         value: `${rate.receive_window}`
       }
     })
-    receiveWindowOptions.unshift({label: 'N/A', value: ''})
 
     let receiveWindows = null
     let receiveWindowInputs = null
@@ -162,6 +168,7 @@ class NoteForm extends Component {
           status="default"
         >
           <p>This process will move the order into the correct delivery or pickup bucket and appropriate juicing and address CSV.  It will not charge or refund the customer.</p>
+          <p>Choosing a Subscription rate will not affect</p>
         </Banner>
         <FormLayout>
           <form

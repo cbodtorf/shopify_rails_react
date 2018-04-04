@@ -108,7 +108,7 @@ class CSVGenerator
       notes: '',
     })
 
-    if cook_time == 'morning'
+    if cook_time == 'morning' || cook_time == 'afternoon'
       attributes = %w{Customer\ Last\ Name First\ Name Address Address\ 2 City State Zip Receive\ Window Notes}
       shipping_address_array.first[:receive_window] = ""
     end
