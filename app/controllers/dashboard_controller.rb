@@ -204,6 +204,8 @@ class DashboardController < ShopifyApp::AuthenticatedController
         note_date = orderAttributes[:delivery_date]
         # Isolate Checkout method
         checkout_method = orderAttributes[:checkout_method]
+        # Isolate Receive Window
+        receive_window = orderAttributes[:receive_window]
         # Isolate Delivery Rate
         rate_id = orderAttributes[:delivery_rate]
         rate = nil
@@ -243,50 +245,64 @@ class DashboardController < ShopifyApp::AuthenticatedController
               last_cook_not_available_day_before = schedules.last.cook_days.any? {|day| day.title.downcase == (note_date - 1.day).strftime("%A").downcase && day.rates.empty?}
               Rails.logger.debug("last_cook_not_available_day_before: #{last_cook_not_available_day_before}")
 
-              # Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
+              # Receive Window Amendment for finding cook day
               cook_days = rate.cook_day.pluck(:cook_schedule_id, :title).select do |day|
-                if day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23))
-                  # same day as delivery, must cook this day
-                  # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
-                  cook_date = (note_date)
-                  deliver_next_day = false
-                  # Rails.logger.debug("#sub  cook same day as delivery date")
-                  true
-                elsif day[0] == schedules.last.id && day[1].downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23)
-                  cook_date = (note_date - 1.day)
+                if receive_window == "before 9am" || receive_window == "10am - 4pm"
                   deliver_next_day = true
-                  # Rails.logger.debug("# cook day before delivery date")
-                  true # cook day before delivery date
-                elsif day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase
-                  cook_date = (note_date)
-                  # amended for new sub RATES
+                  day[0] == schedules.last.id && (day[1].downcase == (note_date - 1.day).strftime("%A").downcase)
+                elsif receive_window == "4pm - 8pm"
                   deliver_next_day = false
-                  true # cook on delivery date
-                  # if !sub_order
-                  #   # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
-                  #   deliver_next_day = false
-                  #   # Rails.logger.debug("# cook same day as delivery date")
-                  #   true # cook on delivery date
-                  # elsif (sub_order && last_cook_not_available_day_before) || (sub_order && day_before_blackout)
-                  #   # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
-                  #   deliver_next_day = false
-                  #   # Rails.logger.debug("# cook same day as delivery date")
-                  #   true # cook on delivery date
-                  # else
-                  #   # Rails.logger.debug("err not a cook day: #{day.inspect}")
-                  #   false
-                  # end
+                  day[0] != schedules.last.id && (day[1].downcase == note_date.strftime("%A").downcase)
                 else
-                  cook_date = (note_date)
-                  # Rails.logger.debug("err not a cook day: #{day.inspect}")
-                  false
+                  # put in morning
+                  Rails.logger.debug("ERR possible cookdays: #{day} rw: #{receive_window}")
+                  deliver_next_day = true
+                  day[0] == schedules.last.id && (day[1].downcase == (note_date - 1.day).strftime("%A").downcase)
                 end
               end
+
+              # Rails.logger.debug("note day: #{note_date.strftime("%A").downcase.inspect}")
+              # cook_days = rate.cook_day.pluck(:cook_schedule_id, :title).select do |day|
+              #   if day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase && (note_date == order_created_at.to_date || (note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23))
+              #     # same day as delivery, must cook this day
+              #     # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
+              #     cook_date = (note_date)
+              #     deliver_next_day = false
+              #     # Rails.logger.debug("#sub  cook same day as delivery date")
+              #     true
+              #   elsif day[0] == schedules.last.id && day[1].downcase == (note_date - 1.day).strftime("%A").downcase && !day_before_blackout && note_date != order_created_at.to_date && !(note_date == (order_created_at.to_date + 1.day) && order_created_at.hour >= 23)
+              #     cook_date = (note_date - 1.day)
+              #     deliver_next_day = true
+              #     # Rails.logger.debug("# cook day before delivery date")
+              #     true # cook day before delivery date
+              #   elsif day[0] != schedules.last.id && day[1].downcase == note_date.strftime("%A").downcase
+              #     cook_date = (note_date)
+              #     if !sub_first_order
+              #       # Rails.logger.debug("cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
+              #       deliver_next_day = false
+              #       # Rails.logger.debug("# cook same day as delivery date")
+              #       true # cook on delivery date
+              #     elsif (sub_first_order && last_cook_not_available_day_before) || (sub_first_order && day_before_blackout)
+              #       Rails.logger.debug("sub first cook day: #{day[1].downcase.inspect}, id: #{day[0].inspect}")
+              #
+              #       deliver_next_day = false
+              #       # Rails.logger.debug("# cook same day as delivery date")
+              #       true # cook on delivery date
+              #     else
+              #       # Rails.logger.debug("err not a cook day: #{day.inspect}")
+              #       false
+              #     end
+              #   else
+              #     cook_date = (note_date)
+              #     # Rails.logger.debug("err not a cook day: #{day.inspect}")
+              #     false
+              #   end
+              # end
 
               Rails.logger.debug("deliver_next_day: #{deliver_next_day.inspect}")
               Rails.logger.debug("rate: #{rate.inspect}")
               Rails.logger.debug("cook_days: #{cook_days.inspect}")
-              Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
+              # Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("delivery date: #{note_date.inspect} - #{note_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("order name: #{order.name.inspect}")
               Rails.logger.debug("order method: #{checkout_method.inspect}")
@@ -320,7 +336,7 @@ class DashboardController < ShopifyApp::AuthenticatedController
                     sched[:title] == schedules.select{|cook_sched| cook_sched.id == cook_days.first.first}.first.title
                   end
 
-                  if sub_order && false # amended with new sub RATES
+                  if sub_order && false  # amended with new sub RATES
                     @fiveDayOrders[dateIndex][:cook_schedules].first[:orders].push(order)
                     # cooks that go out same day go into the next schedule's addresses.
                     Rails.logger.debug("sub_first_order same day index: #{@fiveDayOrders[dateIndex][:cook_schedules].index(sched.first) + 1}")
@@ -524,50 +540,5 @@ class DashboardController < ShopifyApp::AuthenticatedController
 
     # webhooks = ShopifyAPI::Webhook.find(:all)
     # webhooks.each {|hook| hook.address.sub!(URI.parse(hook.address).host, new_URI_host) }
-  end
-
-  def update_subscriptions_receive_window()
-    # Start Session
-    # ShopifyAPI::Base.activate_session(ShopifyApp::SessionRepository.retrieve(1))
-    #shop = ShopifyAPI::Shop.current()
-    # shop = Shop.find_by(shopify_domain: shop.attributes[:domain])
-
-    addresses = shop.getRechargeData("https://api.rechargeapps.com/addresses?limit=250")["addresses"]
-    addresses.each do |addy|
-      has_receive_window = false
-      addy["cart_attributes"].map do |attr|
-        if attr["name"] == "Receive Window"
-          attr["value"] = "10am - 4pm"
-          has_receive_window = true
-        end
-      end
-      unless has_receive_window
-        addy["cart_attributes"].push({"name": "Receive Window", "value": "10am - 4pm"})
-      end
-      data = addy
-
-      Rails.logger.info("[update addy]: #{order.attributes[:note_attributes].inspect}")
-      # updateRechargeData("https://api.rechargeapps.com/addresses/#{addy["id"]}", data)
-    end
-  end
-
-  def updateRechargeData(endpoint, data)
-    # TODO: bamboo specific code,
-    # Access Recharge API
-    api_token = ENV['RECHARGE_API_KEY']
-
-    response = HTTParty.put(endpoint,
-                             :body => data.to_json,
-                             :headers => { "Content-Type" => 'application/json', "X-Recharge-Access-Token" => api_token})
-   case response.code
-      when 200
-        puts "All good!"
-      when 404
-        puts "O noes not found!"
-      when 500...600
-        puts "ZOMG ERROR #{response.code}"
-    end
-
-    response.parsed_response
   end
 end
