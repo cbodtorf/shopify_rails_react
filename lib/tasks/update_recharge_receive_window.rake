@@ -46,15 +46,6 @@ namespace :recharge do
             next
           end
 
-          # filter Sundays for 4pm - 8pm
-          unless cart_attributes["Delivery Date"].blank?
-            if Date.parse(cart_attributes["Delivery Date"]).strftime("%A") == "Sunday"
-              updatedReceiveWindow = "4pm - 8pm"
-            end
-          else
-            puts "err delivery date blank for address: #{addy["id"].inspect}"
-          end
-
           has_receive_window = false
           addy["cart_attributes"].map do |attr|
             if attr["name"] == "Receive Window"
