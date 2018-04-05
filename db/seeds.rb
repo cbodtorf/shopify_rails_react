@@ -84,12 +84,6 @@ Rate.create!([
   {id: 7, shop_id: 1, title: "Free Local Delivery", description: "Delivered 4 - 8pm.", delivery_method: "delivery", price: 0, cutoff_time: 15, receive_window: "4pm - 8pm", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: "only offer after day with no cooks", price_weight_modifier_starter: 0},
   {id: 8, shop_id: 1, title: "Same Day Delivery", description: "Delivered 4 - 8pm.", delivery_method: "delivery", price: 0, cutoff_time: 11, receive_window: "4pm - 8pm", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: "admin", price_weight_modifier_starter: 0},
 ])
-Rate.create!([
-  {id: 11, shop_id: 1, title: "Free Delivery for Subscribers", description: "Next Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 15, receive_window: "4pm - 8pm", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: "only offer after day with no cooks", price_weight_modifier_starter: 0},
-])
-Rate.create!([
-  {id: 12, shop_id: 1, title: "Free Delivery for Subscribers", description: "Same Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 11, receive_window: "10am - 4pm", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: nil, price_weight_modifier_starter: 0},
-])
 
 CookDay.create!([
   {id: 1, cook_schedule_id: 1, rate_ids: [2,3,5,11,12,7,8], title: "Monday"},
@@ -119,3 +113,20 @@ CookDay.create!([
 #     cd.save
 #   end
 # end
+
+# easily update rates
+#
+# r5 = Rate.find(5)
+# r5.description = "Next Day Delivered 10am - 4pm"
+# r5.cutoff_time = 15
+# r5.delivery_type = "next_day"
+# r5.receive_window = "10am - 4pm"
+# r5.notes = "show after blackout"
+# r5.code = "subscription"
+# r5.save
+# Rate.create!([
+#   {shop_id: 1, title: "Free Delivery for Subscribers", description: "Next Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 15, receive_window: "4pm - 8pm", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: "only offer after day with no cooks", price_weight_modifier_starter: 0},
+# ])
+# Rate.create!([
+#   {shop_id: 1, title: "Free Delivery for Subscribers", description: "Same Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 11, receive_window: "10am - 4pm", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: nil, price_weight_modifier_starter: 0},
+# ])

@@ -11,7 +11,7 @@ namespace :recharge do
 
 
       # Initializing.
-      limit = 50              # shopify/recharge limits max of 250 objects
+      limit = 25              # shopify/recharge limits max of 250 objects
       CYCLE = 0.5             # You can average 2 calls per second
       page = 1                # page counter starting at one
       start_time = Time.now   # start time for tracking api calls
@@ -23,37 +23,49 @@ namespace :recharge do
         puts "addresses size: #{addresses.size}"
         addresses.each do |addy|
           updatedReceiveWindow = "10am - 4pm"
-          # reduce attributes into hash
-          cart_attributes = addy["cart_attributes"].map{|a| {a["name"].titleize => a["value"]} }.reduce Hash.new, :merge
-          # filter out every but delivery
-          next if cart_attributes["Checkout Method"].downcase != "delivery"
 
-          # filter Sundays for 4pm - 8pm
-          if Date.parse(cart_attributes["Delivery Date"].strftime("%A") == "Sunday"
-            updatedReceiveWindow = "4pm - 8pm"
-          end
-
-          has_receive_window = false
-          unless addy["cart_attributes"].blank?
-            addy["cart_attributes"].map do |attr|
-              if attr["name"] == "Receive Window"
-                attr["value"] = updatedReceiveWindow
-                has_receive_window = true
-              end
-            end
-          else
+          if addy["cart_attributes"].blank?
             # handle if cart attributes are nil
             addy["cart_attributes"] == nil ? addy["cart_attributes"] = [] : nil
           end
+
+          # reduce attributes into hash
+          cart_attributes = addy["cart_attributes"].map{|a| {a["name"].titleize => a["value"]} }.reduce Hash.new, :merge
+
+          # filter out every but delivery
+          unless cart_attributes["Checkout Method"].blank?
+            next if cart_attributes["Checkout Method"].downcase != "delivery"
+          else
+            puts "err checkout method blank for address: #{addy["id"].inspect}"
+            next
+          end
+
+          # filter Sundays for 4pm - 8pm
+          unless cart_attributes["Delivery Date"].blank?
+            if Date.parse(cart_attributes["Delivery Date"]).strftime("%A") == "Sunday"
+              updatedReceiveWindow = "4pm - 8pm"
+            end
+          else
+            puts "err delivery date blank for address: #{addy["id"].inspect}"
+          end
+
+          has_receive_window = false
+          addy["cart_attributes"].map do |attr|
+            if attr["name"] == "Receive Window"
+              attr["value"] = updatedReceiveWindow
+              has_receive_window = true
+            end
+          end
+
           unless has_receive_window
             addy["cart_attributes"].push({"name" => "Receive Window", "value" => updatedReceiveWindow})
           end
           data = addy
-          puts "update data >>> #{data.inspect}"
-          # saveRechargeData("https://api.rechargeapps.com/addresses/#{addy["id"]}", data)
+          puts "update data >>> #{data["id"].inspect}"
+          saveRechargeData("https://api.rechargeapps.com/addresses/#{addy["id"]}", data)
         end
 
-        if addresses.size != limit
+        if addresses.size == limit
           break
         else
           stop_time = Time.now
