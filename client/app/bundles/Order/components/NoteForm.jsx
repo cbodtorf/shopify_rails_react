@@ -149,7 +149,10 @@ class NoteForm extends Component {
 
 
     const rateOptions = this.props.rates.filter((rate) => {return rate.delivery_method === (this.props.checkout || checkoutMethod.value)}).map(rate => {
-      let title = rate.title.toLowerCase().includes("subscribe") ? `Subscription ${rate.description}` : rate.title
+      if (rate.title.toLowerCase().includes("subscribe") && rate.description.toLowerCase().includes("same day")) {
+        rate.receive_window = sameDayReceiveWindow
+      }
+      let title = rate.title.toLowerCase().includes("subscribe") ? `Subscription ${humanize_(rate.delivery_type)} ${rate.receive_window}` : rate.title
 
       return {
         label: `${title}: $${rate.price / 100}`,

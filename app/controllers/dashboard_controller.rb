@@ -250,11 +250,11 @@ class DashboardController < ShopifyApp::AuthenticatedController
                 if receive_window == "before 9am" || receive_window == "10am - 4pm"
                   deliver_next_day = true
                   day[0] == schedules.last.id && (day[1].downcase == (note_date - 1.day).strftime("%A").downcase)
-                elsif receive_window == "4pm - 8pm"
+                elsif receive_window == "4pm - 8pm" || rate[:delivery_method].downcase == "pickup"
                   deliver_next_day = false
                   day[0] != schedules.last.id && (day[1].downcase == note_date.strftime("%A").downcase)
                 else
-                  # put in morning
+                  # deliver in morning
                   Rails.logger.debug("ERR possible cookdays: #{day} rw: #{receive_window}")
                   deliver_next_day = true
                   day[0] == schedules.last.id && (day[1].downcase == (note_date - 1.day).strftime("%A").downcase)
@@ -302,7 +302,6 @@ class DashboardController < ShopifyApp::AuthenticatedController
               Rails.logger.debug("deliver_next_day: #{deliver_next_day.inspect}")
               Rails.logger.debug("rate: #{rate.inspect}")
               Rails.logger.debug("cook_days: #{cook_days.inspect}")
-              # Rails.logger.debug("cook_date: #{cook_date.inspect} - #{cook_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("delivery date: #{note_date.inspect} - #{note_date.strftime("%A").downcase.inspect}")
               Rails.logger.debug("order name: #{order.name.inspect}")
               Rails.logger.debug("order method: #{checkout_method.inspect}")

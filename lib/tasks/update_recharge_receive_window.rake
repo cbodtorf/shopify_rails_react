@@ -22,6 +22,7 @@ namespace :recharge do
         addresses = shop.getRechargeData(rechargeAddressUrl)["addresses"]
         puts "addresses size: #{addresses.size}"
         addresses.each do |addy|
+          updatedReceiveWindow = "10am - 4pm"
           # reduce attributes into hash
           cart_attributes = addy["cart_attributes"].map{|a| {a["name"].titleize => a["value"]} }.reduce Hash.new, :merge
           # filter out every but delivery
@@ -29,13 +30,14 @@ namespace :recharge do
 
           # filter Sundays for 4pm - 8pm
           if Date.parse(cart_attributes["Delivery Date"].strftime("%A") == "Sunday"
+            updatedReceiveWindow = "4pm - 8pm"
           end
 
           has_receive_window = false
           unless addy["cart_attributes"].blank?
             addy["cart_attributes"].map do |attr|
               if attr["name"] == "Receive Window"
-                attr["value"] = "10am - 4pm"
+                attr["value"] = updatedReceiveWindow
                 has_receive_window = true
               end
             end
@@ -44,7 +46,7 @@ namespace :recharge do
             addy["cart_attributes"] == nil ? addy["cart_attributes"] = [] : nil
           end
           unless has_receive_window
-            addy["cart_attributes"].push({"name" => "Receive Window", "value" => "10am - 4pm"})
+            addy["cart_attributes"].push({"name" => "Receive Window", "value" => updatedReceiveWindow})
           end
           data = addy
           puts "update data >>> #{data.inspect}"
