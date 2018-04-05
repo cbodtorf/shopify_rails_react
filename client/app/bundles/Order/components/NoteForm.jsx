@@ -123,6 +123,7 @@ class NoteForm extends Component {
         value: `${rate.receive_window}`
       }
     })
+    receiveWindowOptions.unshift({label: 'N/A', value: ''})
 
     let receiveWindows = null
     let receiveWindowInputs = null
