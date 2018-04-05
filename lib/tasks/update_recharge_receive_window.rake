@@ -4,14 +4,19 @@ namespace :recharge do
     desc "Update "
     task update_recharge_receive_window: :environment do
       # Start Session
+
       # TODO: bamboo specific code, should figure out a way to make this work for all shops with subscriptions.
-      shop = Shop.find_by(shopify_domain: "bamboojuices-dev.myshopify.com")
+      if ENV["RAILS_ENV"] == "production"
+        shop = Shop.find_by(shopify_domain: "bamboojuices.myshopify.com")
+      else
+        shop = Shop.find_by(shopify_domain: "bamboojuices-dev.myshopify.com")
+      end
       session = ShopifyApp::SessionRepository.retrieve(shop.id)
       ShopifyAPI::Base.activate_session(session)
 
 
       # Initializing.
-      limit = 25              # shopify/recharge limits max of 250 objects
+      limit = 250              # shopify/recharge limits max of 250 objects
       CYCLE = 0.5             # You can average 2 calls per second
       page = 1                # page counter starting at one
       start_time = Time.now   # start time for tracking api calls
@@ -26,6 +31,7 @@ namespace :recharge do
 
           if addy["cart_attributes"].blank?
             # handle if cart attributes are nil
+            puts "err cart attributes blank for address: #{addy["id"].inspect}"
             addy["cart_attributes"] == nil ? addy["cart_attributes"] = [] : nil
           end
 
@@ -65,7 +71,8 @@ namespace :recharge do
           saveRechargeData("https://api.rechargeapps.com/addresses/#{addy["id"]}", data)
         end
 
-        if addresses.size == limit
+        if addresses.size != limit
+          puts "Over and out."
           break
         else
           stop_time = Time.now

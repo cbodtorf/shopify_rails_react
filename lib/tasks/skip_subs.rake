@@ -5,7 +5,11 @@ namespace :scheduler do
     task skip_subs: :environment do
 
       # TODO: bamboo specific code, should figure out a way to make this work for all shops with subscriptions.
-      shop = Shop.find_by(shopify_domain: "bamboojuices.myshopify.com")
+      if ENV["RAILS_ENV"] == "production"
+        shop = Shop.find_by(shopify_domain: "bamboojuices.myshopify.com")
+      else
+        shop = Shop.find_by(shopify_domain: "bamboojuices-dev.myshopify.com")
+      end
       session = ShopifyApp::SessionRepository.retrieve(shop.id)
       ShopifyAPI::Base.activate_session(session)
       puts "[1.] Find stores with recharge subscriptions: #{shop.attributes[:name]}"
