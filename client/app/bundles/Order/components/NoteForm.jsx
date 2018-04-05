@@ -167,11 +167,9 @@ class NoteForm extends Component {
         <Card.Section>
         <Banner
           icon="notes"
-          title="Note about editing delivery attributes."
           status="default"
         >
-          <p>This process will move the order into the correct delivery or pickup bucket and appropriate juicing and address CSV.  It will not charge or refund the customer.</p>
-          <p>Choosing a Subscription rate will not affect</p>
+          <p>This process will move the order into the correct delivery or pickup bucket and appropriate juicing and address CSV.  It will not charge or refund the customer. Also, choosing a Subscription rate will not affect subsequent orders.</p>
         </Banner>
         <FormLayout>
           <form
