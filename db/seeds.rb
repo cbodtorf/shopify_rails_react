@@ -106,15 +106,15 @@ CookDay.create!([
 
 # easily update cookdays
 #
-CookDay.all.each do |cd|
-  if [1,2,3,4,5,7].include? cd[:id]
-    cd.rate_ids = [2,3,5,9,10,7,8]
-    cd.save
-  elsif [8,9,10,11,12,14].include? cd[:id]
-    cd.rate_ids = [1,4,5,10]
-    cd.save
-  end
-end
+# CookDay.all.each do |cd|
+#   if [1,2,3,4,5,7].include? cd[:id]
+#     cd.rate_ids = [2,3,5,9,10,7,8]
+#     cd.save
+#   elsif [8,9,10,11,12,14].include? cd[:id]
+#     cd.rate_ids = [1,4,5,10]
+#     cd.save
+#   end
+# end
 
 # easily update rates
 #
