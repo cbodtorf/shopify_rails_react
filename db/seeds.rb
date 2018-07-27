@@ -93,14 +93,14 @@ CookDay.create!([
   {id: 3, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Wednesday"},
   {id: 4, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Thursday"},
   {id: 5, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Friday"},
-  {id: 6, cook_schedule_id: 1, rate_ids: [], title: "Saturday"},
+  {id: 6, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Saturday"},
   {id: 7, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Sunday"},
   {id: 8, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Monday"},
   {id: 9, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Tuesday"},
   {id: 10, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Wednesday"},
   {id: 11, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Thursday"},
   {id: 12, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Friday"},
-  {id: 13, cook_schedule_id: 2, rate_ids: [], title: "Saturday"},
+  {id: 13, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Saturday"},
   {id: 14, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Sunday"}
 ])
 
