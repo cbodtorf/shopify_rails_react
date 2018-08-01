@@ -12,6 +12,7 @@ import OrderEditor from '../Order/components/OrderEditor';
 import PickupLocations from '../Settings/components/PickupLocations';
 import BlackoutDates from '../Settings/components/BlackoutDates';
 import PostalCodes from '../Settings/components/PostalCodes';
+import ExtendedDeliveryZones from '../Settings/components/ExtendedDeliveryZones';
 import Navigation from '../Global/components/Navigation';
 import ModalForm from '../Global/components/ModalForm';
 import SearchBar from '../Global/components/SearchBar';
@@ -31,6 +32,7 @@ ReactOnRails.register({
   BlackoutDates,
   PickupLocations,
   PostalCodes,
+  ExtendedDeliveryZones,
   Navigation,
   SearchBar,
   ModalForm,

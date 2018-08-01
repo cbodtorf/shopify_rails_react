@@ -1263,3 +1263,25 @@ td a.subdued:hover {
 .fresh-ui table tr.selected td,.fresh-ui table tr:hover.selected td {
     background-color: #f4f5fa
 }
+
+/* Date Popover */
+.Polaris-PositionedOverlay {
+    z-index: 600 !important;
+}
+.Polaris-Popover__Content {
+  height: 100% !important;
+  max-height: none !important;
+}
+
+/* Delivery Zone */
+.delivery-zone-modal .Polaris-ChoiceList__Choices {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.delivery-zone-modal .Polaris-ChoiceList__Choices li {
+  flex-basis: 50%;
+}
+.Polaris-ResourceList__Badge {
+  max-width: 100%;
+}

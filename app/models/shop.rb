@@ -8,6 +8,7 @@ class Shop < ActiveRecord::Base
   has_many :pickup_locations, dependent: :destroy
   has_many :blackout_dates, dependent: :destroy
   has_many :postal_codes, dependent: :destroy
+  has_many :extended_delivery_zones, dependent: :destroy
 
   def shipping_carrier_created?
     shipping_carrier_id.present? && !shipping_carrier_error?
@@ -63,5 +64,20 @@ class Shop < ActiveRecord::Base
     end
 
     out_variants
+  end
+
+  def postal_codes_match?(postal_code_to_check)
+    # original shop postal code list
+    self.postal_codes.pluck(:title)
+      .push(
+        *self.extended_delivery_zones # asterik will concat original array and all zones' codes
+          .enabled # only enabled zones
+          .pluck(:postal_codes) # pluck only postal_code text
+          .flatten # add extended codes to original list
+      )
+      .include?(
+        postal_code_to_check # Does this code appear in the full postal code array
+          .slice(0..4) # only check first 5 digits for hyphenated zips
+      )
   end
 end

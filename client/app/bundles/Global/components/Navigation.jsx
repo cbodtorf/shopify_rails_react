@@ -21,19 +21,19 @@ class Navigation extends React.Component {
             tabs={ [
               {
                 id: 'dashboard',
-                title: 'Dashboard',
+                content: 'Dashboard',
                 panelID: 'dashboard',
                 url: `/dashboard?shop=${this.props.shop}`,
               },
               {
                 id: 'subscriptions',
-                title: 'Subscriptions',
+                content: 'Subscriptions',
                 panelID: 'subscriptions',
                 url: `/subscription?shop=${this.props.shop}`,
               },
               {
                 id: 'errors',
-                title: 'Errors',
+                content: 'Errors',
                 panelID: 'errors',
                 url: `/showOrders?attribute=errors&date=${new Date().toDateString()}&shop=${this.props.shop}`,
               },
@@ -60,6 +60,7 @@ class Navigation extends React.Component {
                   { content: 'Blackout Dates', url: `/blackout_dates?shop=${this.props.shop}` },
                   { content: 'Pickup Locations', url: `/pickup_locations?shop=${this.props.shop}` },
                   { content: 'Postal Codes', url: `/postal_codes?shop=${this.props.shop}` },
+                  { content: 'Extended Delivery Zones', url: `/extended_delivery_zones?shop=${this.props.shop}` },
                   { content: 'Bundles', url: `/bundle?shop=${this.props.shop}`},
                   { content: 'Benefits & Ingredients', url: `/metafield?shop=${this.props.shop}` },
                 ] }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171115154933) do
+ActiveRecord::Schema.define(version: 20180731135523) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -53,6 +53,22 @@ ActiveRecord::Schema.define(version: 20171115154933) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["shop_id"], name: "index_cook_schedules_on_shop_id", using: :btree
+  end
+
+  create_table "extended_delivery_zones", force: :cascade do |t|
+    t.integer  "shop_id"
+    t.text     "title",                       null: false
+    t.date     "date",                        null: false
+    t.string   "postal_codes", default: [],                array: true
+    t.boolean  "enabled",      default: true, null: false
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
+    t.index ["shop_id"], name: "index_extended_delivery_zones_on_shop_id", using: :btree
+  end
+
+  create_table "extended_delivery_zones_rates", id: false, force: :cascade do |t|
+    t.integer "extended_delivery_zone_id"
+    t.integer "rate_id"
   end
 
   create_table "order_notes", force: :cascade do |t|
@@ -158,6 +174,7 @@ ActiveRecord::Schema.define(version: 20171115154933) do
   add_foreign_key "conditions", "rates"
   add_foreign_key "cook_days", "cook_schedules"
   add_foreign_key "cook_schedules", "shops"
+  add_foreign_key "extended_delivery_zones", "shops"
   add_foreign_key "order_notes", "shops"
   add_foreign_key "pickup_locations", "shops"
   add_foreign_key "postal_codes", "shops"

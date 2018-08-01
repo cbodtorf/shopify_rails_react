@@ -143,6 +143,7 @@ class AppProxyController < ApplicationController
     dateObj = {
       date: date,
       disabled: false,
+      extended_zone: [],
       rates: date_rates.select do |rate|
         cutoff = honor_cutoff ? Time.now < DateTime.now.change({ hour: rate[:cutoff_time] }) : true
         Rails.logger.debug("[args] rate_id: #{rate[:id]}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
@@ -190,6 +191,7 @@ class AppProxyController < ApplicationController
 
     cook_schedules = shop.cook_schedules.all
     postal_codes = shop.postal_codes.pluck_to_hash(:title)
+    extended_delivery_zones = shop.extended_delivery_zones.enabled
     pickup_locations = shop.pickup_locations.pluck_to_hash(:id, :title, :address, :description, :days_available)
 
     blackout_dates = shop.blackout_dates.pluck(:blackout_date)
@@ -364,7 +366,19 @@ class AppProxyController < ApplicationController
       end
     end # END OF PICKUP DATES
 
-    render json: {deliveryDates: cal_data, pickupDates: pickup_data, blackoutDates: blackout_dates, shippingRates: shipping_rates.sort_by {|a| a[:price]}, postalCodes: postal_codes} , status: 200
+    # See if we need to extended delivery is offered on this date.
+    cal_data.each do |date_object|
+      extend_delivery_date(date_object, extended_delivery_zones)
+    end
+
+    render json: {
+        deliveryDates: cal_data,
+        pickupDates: pickup_data,
+        blackoutDates: blackout_dates,
+        shippingRates: shipping_rates.sort_by {|a| a[:price]},
+        postalCodes: postal_codes
+      },
+      status: 200
   end
 
   def customerPortal
@@ -422,5 +436,18 @@ class AppProxyController < ApplicationController
     postal_codes = shop.postal_codes.pluck_to_hash(:title)
     pickup_locations = shop.pickup_locations.pluck_to_hash(:id, :title, :address, :description, :days_available)
     render json: { postalCodes: postal_codes, pickupLocations: pickup_locations } , status: 200
+  end
+
+  def extend_delivery_date(date_object, zones)
+    zones.each do |z|
+      zone_object = z.attributes
+      zone_object['rates'] = z.rates
+      Rails.logger.debug("[date] #{date_object[:date].inspect}")
+      Rails.logger.debug("[zone] #{z[:date].inspect}")
+      if date_object[:date] == z[:date]
+        date_object[:extended_zone] = date_object[:extended_zone] || []
+        date_object[:extended_zone].push(zone_object)
+      end
+    end
   end
 end

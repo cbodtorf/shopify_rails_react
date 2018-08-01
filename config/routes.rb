@@ -40,6 +40,7 @@ Rails.application.routes.draw do
   get 'blackout_dates', to: 'settings#blackout_dates'
   get 'pickup_locations', to: 'settings#pickup_locations'
   get 'postal_codes', to: 'settings#postal_codes'
+  get 'extended_delivery_zones', to: 'settings#extended_delivery_zones'
 
   post 'create_blackout_date', to: 'settings#create_blackout_date'
   patch 'update_blackout_date/:id', to: 'settings#update_blackout_date'
@@ -51,6 +52,10 @@ Rails.application.routes.draw do
 
   post 'create_postal_code', to: 'settings#create_postal_code'
   delete 'destroy_postal_code', to: 'settings#destroy_postal_code'
+
+  post 'create_extended_delivery_zone', to: 'settings#create_extended_delivery_zone'
+  patch 'update_extended_delivery_zone/:id', to: 'settings#update_extended_delivery_zone'
+  delete 'destroy_extended_delivery_zone', to: 'settings#destroy_extended_delivery_zone'
 
   get 'metafield_product_bundle', to: 'metafield#metafield_product_bundle'
   resources :bundle, only: [:index, :update, :create]

@@ -15,6 +15,54 @@ class SettingsController < ShopifyApp::AuthenticatedController
     @postal_codes = shop.postal_codes.all
   end
 
+  def extended_delivery_zones
+    # TODO: handle if there are no extended_delivery_zones
+    zones = shop.extended_delivery_zones
+
+    # This is for Front End
+    @extended_delivery_zones = zones.map do |zone|
+      z = zone.attributes
+      z[:rate_ids] = zone.rate_ids
+      z
+    end
+    @rates = shop.rates.all
+  end
+
+  def create_extended_delivery_zone
+    Rails.logger.debug("My zone params: #{extended_delivery_zone_params.inspect}")
+    @extended_delivery_zone = shop.extended_delivery_zones.build(extended_delivery_zone_params)
+
+    if @extended_delivery_zone.save
+      redirect_to action: 'extended_delivery_zones'
+    else
+      Rails.logger.debug("hmmm #{@extended_delivery_zone.errors.full_messages}")
+      redirect_to action: 'extended_delivery_zones'
+    end
+  end
+
+  def update_extended_delivery_zone
+    @extended_delivery_zone = shop.extended_delivery_zones.find(params[:id])
+
+    if @extended_delivery_zone.update_attributes(extended_delivery_zone_params)
+      redirect_to action: 'extended_delivery_zones'
+    else
+      Rails.logger.debug("hmmm #{@extended_delivery_zone.errors.full_messages}")
+      redirect_to action: 'extended_delivery_zones'
+    end
+  end
+
+  def destroy_extended_delivery_zone
+    # TODO: there is an issue where sometimes Can't verify CSRF token authenticity.
+    extended_delivery_zone = shop.extended_delivery_zones.find(params[:id])
+
+    if extended_delivery_zone.destroy
+      redirect_to action: 'extended_delivery_zones'
+    else
+      Rails.logger.debug("hmmm #{extended_delivery_zone.errors.full_messages}")
+      redirect_to action: 'extended_delivery_zones'
+    end
+  end
+
   def create_postal_code
     Rails.logger.debug("My code params: #{postal_code_params.inspect}")
     postal_code_params[:title].split(',').uniq.each do |code|
@@ -111,6 +159,16 @@ class SettingsController < ShopifyApp::AuthenticatedController
       Rails.logger.debug("hmmm #{postal_code.errors.full_messages}")
       redirect_to action: 'postal_codes'
     end
+  end
+
+  def extended_delivery_zone_params
+    params.require(:extended_delivery_zone).permit(
+      :title,
+      :date,
+      :enabled,
+      :postal_codes => [],
+      :rate_ids => []
+    )
   end
 
   def location_params

@@ -6,7 +6,7 @@ class CallbackController < ApplicationController
     addrs = value.fetch('destination', {})
     items = value.fetch('items', [])
 
-    postal_codes_match = shop.postal_codes.pluck(:title).include?(addrs[:postal_code].slice(0..4))
+    postal_codes_match = shop.postal_codes_match?(addrs[:postal_code])
 
     if items.first['properties'].present?
       rate_id = items.first['properties']['_Delivery rate id']
