@@ -151,6 +151,9 @@ class AppProxyController < ApplicationController
         if rate[:notes] == "admin" && @admin == false
           next
         end
+        if rate[:code] == "extended"
+          next
+        end
 
         if day_before_blackout
           if date == Date.today || (cutoff && date == Date.tomorrow)
