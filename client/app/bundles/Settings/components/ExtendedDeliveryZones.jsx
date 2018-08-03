@@ -7,7 +7,7 @@ import ModalForm from '../../Global/components/ModalForm';
 import DatePopover from '../../Global/components/DatePopover';
 import bambooIcon from 'assets/green-square.jpg';
 
-
+const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 const weekNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
 
 class ExtendedDeliveryZones extends React.Component {
@@ -54,10 +54,12 @@ class ExtendedDeliveryZones extends React.Component {
     }
 
     const extendedDeliveryZones = this.state.extendedDeliveryZones.map(extendedDeliveryZone => {
+      let dropDate = new Date(extendedDeliveryZone.date.replace(/-/g, '/'));
+
       return (
         {
           attributeOne: extendedDeliveryZone.title,
-          attributeTwo: <TextStyle variation="subdued">{ extendedDeliveryZone.date }</TextStyle>,
+          attributeTwo: <TextStyle variation="subdued">{ dropDate.toLocaleDateString() }</TextStyle>,
           attributeThree: <TextStyle variation="subdued">{ extendedDeliveryZone.enabled }</TextStyle>,
           badges: extendedDeliveryZone.postal_codes.map((code, i) => { return ({ content: code, status: "info", key: i }) }),
           actions: [
@@ -71,7 +73,7 @@ class ExtendedDeliveryZones extends React.Component {
 
     let ratesChoices = []
     if (this.props.rates) {
-      ratesChoices = this.props.rates.map((rate, idx) => {
+      ratesChoices = this.props.rates.filter(r => r.code === "extended").map((rate, idx) => {
         return (
           {
             key: idx,
@@ -114,6 +116,15 @@ class ExtendedDeliveryZones extends React.Component {
           <Badge key={ 1 }>Currently there are no available zip codes</Badge>
         )
       )
+    }
+
+    let dropDate = new Date();
+    if (this.state.extendedDeliveryZone.date) {
+      console.log('drop I', this.state.extendedDeliveryZone.date)
+      dropDate = new Date(this.state.extendedDeliveryZone.date.replace(/-/g, '/'));
+      console.log('drop II', dropDate)
+      dropDate = `${weekNames[dropDate.getDay()]}, ${monthNames[dropDate.getMonth()]} ${dropDate.getDate()}, ${dropDate.getFullYear()}`;
+      console.log('drop III', dropDate)
     }
 
     return (
@@ -212,12 +223,12 @@ class ExtendedDeliveryZones extends React.Component {
                     readOnly
                     helpText="Click calendar icon to select a date"
                     error={ this.state.dateErrors }
-                    value={ this.state.extendedDeliveryZone.date }
+                    value={ dropDate }
                     onChange={ this.valueUpdater('date', 'extendedDeliveryZone') }
                     connectedRight={
                       <DatePopover handleDateChange={ (selected) => {
                         let zone = this.state.extendedDeliveryZone
-                        zone.date = selected
+                        zone.date = `${weekNames[selected.getDay()]}, ${monthNames[selected.getMonth()]} ${selected.getDate()}, ${selected.getFullYear()}`;
                         this.setState({
                           extendedDeliveryZone: zone
                         })

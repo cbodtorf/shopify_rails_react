@@ -139,7 +139,7 @@ class AppProxyController < ApplicationController
   end
 
   def createDateObject(date, delivery_type, date_rates, honor_cutoff, day_before_blackout, day_before_no_cooks = false)
-
+    Rails.logger.debug("[args] date_rates: #{date_rates.inspect}, date: #{date.inspect}, type: #{delivery_type.inspect}, cutoff?: #{honor_cutoff.inspect}, day_before_blackout?: #{day_before_blackout}, day_before_no_cooks: #{day_before_no_cooks}")
     dateObj = {
       date: date,
       disabled: false,

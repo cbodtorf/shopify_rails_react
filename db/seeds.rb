@@ -84,7 +84,8 @@ Rate.create!([
   {id: 7, shop_id: 1, title: "Free Local Delivery", description: "Delivered 4 - 8pm.", delivery_method: "delivery", price: 0, cutoff_time: 15, receive_window: "4pm - 8pm", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: "only offer after day with no cooks", price_weight_modifier_starter: 0},
   {id: 8, shop_id: 1, title: "Same Day Delivery", description: "Delivered 4 - 8pm.", delivery_method: "delivery", price: 0, cutoff_time: 11, receive_window: "4pm - 8pm", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: nil, notes: "admin", price_weight_modifier_starter: 0},
   {id: 9, shop_id: 1, title: "Free Delivery for Subscribers", description: "Next Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 15, receive_window: "4pm - 8pm", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: "only offer after day with no cooks", price_weight_modifier_starter: 0},
-  {id: 10, shop_id: 1, title: "Free Delivery for Subscribers", description: "Same Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 11, receive_window: "10am - 4pm", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: nil, price_weight_modifier_starter: 0}
+  {id: 10, shop_id: 1, title: "Free Delivery for Subscribers", description: "Same Day Delivered 4pm - 8pm", delivery_method: "delivery", price: 0, cutoff_time: 11, receive_window: "10am - 4pm", delivery_type: "same_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "subscription", notes: nil, price_weight_modifier_starter: 0},
+  {id: 11, shop_id: 1, title: "Extended Delivery Zone", description: "Delivered 10am - 4pm.", delivery_method: "delivery", price: 500, cutoff_time: 15, receive_window: "10am - 4pm", delivery_type: "next_day", min_grams: nil, max_grams: nil, min_price: nil, max_price: nil, price_weight_modifier: 0.0, code: "extended", notes: nil, price_weight_modifier_starter: 0},
 ])
 
 CookDay.create!([
@@ -95,26 +96,26 @@ CookDay.create!([
   {id: 5, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Friday"},
   {id: 6, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Saturday"},
   {id: 7, cook_schedule_id: 1, rate_ids: [2,3,5,9,10,7,8], title: "Sunday"},
-  {id: 8, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Monday"},
-  {id: 9, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Tuesday"},
-  {id: 10, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Wednesday"},
-  {id: 11, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Thursday"},
-  {id: 12, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Friday"},
-  {id: 13, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Saturday"},
-  {id: 14, cook_schedule_id: 2, rate_ids: [1,4,5,10], title: "Sunday"}
+  {id: 8, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Monday"},
+  {id: 9, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Tuesday"},
+  {id: 10, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Wednesday"},
+  {id: 11, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Thursday"},
+  {id: 12, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Friday"},
+  {id: 13, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Saturday"},
+  {id: 14, cook_schedule_id: 2, rate_ids: [1,4,5,10,11], title: "Sunday"}
 ])
 
 # easily update cookdays
 #
-# CookDay.all.each do |cd|
-#   if [1,2,3,4,5,7].include? cd[:id]
-#     cd.rate_ids = [2,3,5,9,10,7,8]
-#     cd.save
-#   elsif [8,9,10,11,12,14].include? cd[:id]
-#     cd.rate_ids = [1,4,5,10]
-#     cd.save
-#   end
-# end
+CookDay.all.each do |cd|
+  if [1,2,3,4,5,7].include? cd[:id]
+    cd.rate_ids = [2,3,5,9,10,7,8]
+    cd.save
+  elsif [8,9,10,11,12,14].include? cd[:id]
+    cd.rate_ids = [1,4,5,10,11]
+    cd.save
+  end
+end
 
 # easily update rates
 #

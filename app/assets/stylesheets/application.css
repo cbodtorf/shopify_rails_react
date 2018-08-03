@@ -1280,7 +1280,7 @@ td a.subdued:hover {
   justify-content: flex-start;
 }
 .delivery-zone-modal .Polaris-ChoiceList__Choices li {
-  flex-basis: 50%;
+  /* flex-basis: 50%; */
 }
 .Polaris-ResourceList__Badge {
   max-width: 100%;
