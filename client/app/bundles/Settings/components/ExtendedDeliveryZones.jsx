@@ -113,12 +113,14 @@ class ExtendedDeliveryZones extends React.Component {
     } else {
       zipCodes.push(
         (
-          <Badge key={ 1 }>Currently there are no available zip codes</Badge>
+          <Badge key={ 1 }>No zip codes yet. Add one with the plus button above.</Badge>
         )
       )
     }
 
     let dropDate = new Date();
+    dropDate = null;
+    // dropDate = `${weekNames[dropDate.getDay()]}, ${monthNames[dropDate.getMonth()]} ${dropDate.getDate()}, ${dropDate.getFullYear()}`
     if (this.state.extendedDeliveryZone.date) {
       console.log('drop I', this.state.extendedDeliveryZone.date)
       dropDate = new Date(this.state.extendedDeliveryZone.date.replace(/-/g, '/'));
@@ -150,9 +152,13 @@ class ExtendedDeliveryZones extends React.Component {
                   <Button onClick={ () => {
                     this.setState({
                       extendedDeliveryZone: {},
+                      postal_code: '',
                       method: 'post',
                       formUrl: '/create_extended_delivery_zone',
-                      editModal: true
+                      editModal: true,
+                      titleErrors: false,
+                      dateErrors: false,
+                      postalCodesErrors: false
                     })
                   } }>Create new extended delivery zone</Button>
                 </div>
@@ -194,7 +200,7 @@ class ExtendedDeliveryZones extends React.Component {
                 <Checkbox
                   label="Enable this Zone"
                   name="extended_delivery_zone[enabled]"
-                  checked={ this.state.extendedDeliveryZone.enabled }
+                  checked={ this.state.extendedDeliveryZone.enabled || false }
                   onChange={ this.valueUpdater('enabled', 'extendedDeliveryZone') }
                 />
               </FormLayout>
@@ -207,7 +213,7 @@ class ExtendedDeliveryZones extends React.Component {
                   <input name="utf8" type="hidden" value="✓" />
                   <input type="hidden" name="_method" value={ this.state.method } />
                   <input type="hidden" name="authenticity_token" value={ this.props.form_authenticity_token } />
-                  <input type="hidden" name="extended_delivery_zone[enabled]" value={ this.state.extendedDeliveryZone.enabled } />
+                  <input type="hidden" name="extended_delivery_zone[enabled]" value={ this.state.extendedDeliveryZone.enabled || false } />
                   { zipCodesInputs }
                   <TextField
                     label="Zone Name"
@@ -251,6 +257,7 @@ class ExtendedDeliveryZones extends React.Component {
                 name="extended_delivery_zone[postal_codes]"
                 type="text"
                 minLength={ 5 }
+                maxLength={ 5 }
                 error={ this.state.postalCodesErrors }
                 value={ this.state.postal_code }
                 onChange={ (value) => {

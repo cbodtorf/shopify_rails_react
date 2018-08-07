@@ -53,8 +53,10 @@ class DatePopover extends React.Component {
         <Popover
           active={ this.state.active }
           activator={ activator }
-          onClose={ () => {
-            this.togglePopover()
+          onClose={ (evt) => {
+            if (!(evt > 0)) {
+              this.togglePopover()
+            }
           } }
         >
           <div style={ {minHeight: '406px'} }>
