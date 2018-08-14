@@ -371,7 +371,7 @@ class AppProxyController < ApplicationController
 
     # See if we need to extended delivery is offered on this date.
     cal_data.each do |date_object|
-      extend_delivery_date(date_object, extended_delivery_zones)
+      extend_delivery_date(date_object, extended_delivery_zones, end_of_day)
     end
 
     render json: {
@@ -441,7 +441,7 @@ class AppProxyController < ApplicationController
     render json: { postalCodes: postal_codes, pickupLocations: pickup_locations } , status: 200
   end
 
-  def extend_delivery_date(date_object, zones)
+  def extend_delivery_date(date_object, zones, end_of_day)
     zones.each do |z|
       zone_object = z.attributes
       zone_object['rates'] = z.rates
@@ -449,7 +449,9 @@ class AppProxyController < ApplicationController
       Rails.logger.debug("[zone] #{z[:date].inspect}")
       if date_object[:date] == z[:date]
         date_object[:extended_zone] = date_object[:extended_zone] || []
-        date_object[:extended_zone].push(zone_object)
+        unless z[:date] == Date.today || (z[:date] == Date.tomorrow && Time.now > end_of_day)
+          date_object[:extended_zone].push(zone_object)
+        end
       end
     end
   end
