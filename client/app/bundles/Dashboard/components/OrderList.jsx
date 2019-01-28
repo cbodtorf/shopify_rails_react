@@ -137,6 +137,10 @@ class OrderList extends React.Component {
       ]
     }
 
+    if (window.location.href.indexOf('scoutside_testing=true') >= 1 || window.location.href.indexOf('bamboojuices-dev.myshopify.com') >= 1) {
+      bulkActionList.push({ content: 'Cancel Fulfillments', url: `/bulk_cancel_fulfill?ids=${this.state.ordersChecked.join(',')}` })
+    }
+
     let orderPageTitle = ""
     if (attributeLowerCase === "shipping") {
       orderPageTitle = 'Pending Shipping Orders'

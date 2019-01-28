@@ -17,6 +17,8 @@ gem 'responders'
 gem 'haltable'
 # shopify auth/api
 gem 'shopify_app', '~> 7'
+# shopify api throttler for blocks
+gem 'shopify-api-throttle', github: 'bradrees/shopify-api-throttle'
 # shopify_app needs this for rails 5
 gem 'activeresource', github: 'rails/activeresource'
 # React on rails
@@ -25,6 +27,8 @@ gem "react_on_rails", "~> 6"
 gem 'dotenv-rails', groups: [:development, :test]
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.0.2'
+# active job adapter
+gem 'sidekiq'
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 # Use SCSS for stylesheets

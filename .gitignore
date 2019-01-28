@@ -32,3 +32,6 @@ node_modules
 
 # Generated js bundles
 /app/assets/webpack/*
+
+# Ignore redis binary dump (dump.rdb) files
+*.rdb 

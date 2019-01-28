@@ -456,22 +456,13 @@ class DashboardController < ShopifyApp::AuthenticatedController
   end
 
   def bulk_fulfill
-    order_fields = "id,line_items"
-    orders = ShopifyAPI::Order.find(:all, :params=>{:fields => order_fields, :ids => params[:ids]})
-    Rails.logger.debug("orders: #{orders.inspect}")
-    Rails.logger.debug("orders size: #{orders.size}")
-    fulfillments = orders.map do |order|
-      ShopifyAPI::Fulfillment.new(:order_id => order.id, :notify_customer => false, :line_items => order.line_items.map{|item| {"id" => item.id}} )
-    end
-    Rails.logger.debug("orders: #{fulfillments.inspect}")
+    BulkFulfillJob.perform_later(shop.shopify_domain, params[:ids])
 
-    fulfillments.each do |f|
-      if f.save
-        Rails.logger.info("success: #{f.inspect}")
-      else
-        Rails.logger.error("error: #{f.inspect}")
-      end
-    end
+    redirect_back fallback_location: { action: "index" }
+  end
+
+  def bulk_cancel_fulfill
+    BulkCancelFulfillJob.perform_later(shop.shopify_domain, params[:ids])
 
     redirect_back fallback_location: { action: "index" }
   end

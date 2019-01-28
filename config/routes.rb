@@ -66,6 +66,7 @@ Rails.application.routes.draw do
   resources :orders, only: [:index, :update]
   get 'orders/redirect_to_recharge_address', to: 'orders#redirect_to_recharge_address'
   get 'bulk_fulfill', to: 'dashboard#bulk_fulfill'
+  get 'bulk_cancel_fulfill', to: 'dashboard#bulk_cancel_fulfill'
 
 
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
